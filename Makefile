@@ -30,6 +30,14 @@ status:
 destroy:
 	vagrant destroy --force
 
+.PHONY: requirements
+requirements:
+	rm --recursive --force roles/
+	ansible-galaxy install \
+		--roles-path="roles/" \
+		--role-file="requirements.yml" \
+		--ignore-errors
+
 .PHONY: test
 test: up provision down
 
