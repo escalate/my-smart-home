@@ -1,0 +1,4 @@
+- hosts: smart_home
+  roles:
+    - role: common
+      tags: common
