@@ -1,0 +1,5 @@
+*.swp
+.vagrant/
+*.retry
+.vault_pass.txt
+.vscode/
