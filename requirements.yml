@@ -1,0 +1,7 @@
+- src: https://github.com/escalate/ansible-common.git
+  name: common
+  scm: git
+
+- src: https://github.com/escalate/ansible-docker.git
+  name: docker
+  scm: git
