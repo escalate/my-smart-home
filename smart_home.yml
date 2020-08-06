@@ -4,3 +4,5 @@
       tags: common
     - role: docker
       tags: docker
+    - role: timesyncd
+      tags: timesyncd
