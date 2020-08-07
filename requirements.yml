@@ -2,10 +2,11 @@
   name: common
   scm: git
 
+- src: https://github.com/escalate/ansible-systemd-timesyncd.git
+  name: timesyncd
+  scm: git
+
 - src: https://github.com/escalate/ansible-docker.git
   name: docker
   scm: git
 
-- src: https://github.com/escalate/ansible-systemd-timesyncd.git
-  name: timesyncd
-  scm: git
