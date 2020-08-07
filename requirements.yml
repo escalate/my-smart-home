@@ -10,3 +10,6 @@
   name: docker
   scm: git
 
+- src: https://github.com/escalate/ansible-influxdb-docker.git
+  name: influxdb
+  scm: git

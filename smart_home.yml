@@ -6,3 +6,5 @@
       tags: timesyncd
     - role: docker
       tags: docker
+    - role: influxdb
+      tags: influxdb
