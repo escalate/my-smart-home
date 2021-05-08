@@ -1,15 +1,40 @@
-- src: https://github.com/escalate/ansible-common.git
-  name: common
-  scm: git
+roles:
+  - src: https://github.com/escalate/ansible-raspberry-common.git
+    name: common
+    scm: git
 
-- src: https://github.com/escalate/ansible-systemd-timesyncd.git
-  name: timesyncd
-  scm: git
+  - src: https://github.com/escalate/ansible-raspberry-systemd-timesyncd.git
+    name: timesyncd
+    scm: git
 
-- src: https://github.com/escalate/ansible-docker.git
-  name: docker
-  scm: git
+  - src: https://github.com/escalate/ansible-raspberry-sshd.git
+    name: sshd
+    scm: git
 
-- src: https://github.com/escalate/ansible-influxdb-docker.git
-  name: influxdb
-  scm: git
+  - src: https://github.com/escalate/ansible-raspberry-ssh-login.git
+    name: ssh_login
+    scm: git
+
+  - src: https://github.com/escalate/ansible-raspberry-msmtp.git
+    name: msmtp
+    scm: git
+
+  - src: https://github.com/escalate/ansible-raspberry-docker.git
+    name: docker
+    scm: git
+
+  - src: https://github.com/escalate/ansible-raspberry-influxdb-docker.git
+    name: influxdb
+    scm: git
+
+  - src: https://github.com/escalate/ansible-raspberry-grafana-docker.git
+    name: grafana
+    scm: git
+
+  - src: https://github.com/escalate/ansible-raspberry-traefik-proxy-docker.git
+    name: traefik
+    scm: git
+
+collections:
+  - name: ansible.posix
+  - name: community.general
