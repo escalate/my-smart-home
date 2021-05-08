@@ -60,7 +60,7 @@ test: up provision down
 
 .PHONY: lint
 lint:
-	yamllint --strict .
+	yamllint --config-file=.yamllint --strict .
 	ansible-lint *.yml
 
 .PHONY: deploy
