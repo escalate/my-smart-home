@@ -4,3 +4,4 @@
 roles/
 .vault_pass.txt
 .vscode/
+.cache/

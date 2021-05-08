@@ -60,8 +60,10 @@ test: up provision down
 
 .PHONY: lint
 lint:
-	yamllint --config-file=.yamllint --strict .
-	ansible-lint *.yml
+	rm --recursive --force .cache/
+	ec
+	yamllint --strict --config-file .yamllint .
+	ansible-lint .
 
 .PHONY: deploy
 deploy:
@@ -70,3 +72,10 @@ deploy:
 		--inventory="hosts" \
 		--limit="$(ANSIBLE_LIMIT)" \
 		$(ANSIBLE_PLAYBOOK)
+
+.PHONY: version
+version:
+	ansible --version
+	ansible-lint --version
+	ec --version
+	yamllint --version
