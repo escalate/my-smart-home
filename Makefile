@@ -1,4 +1,5 @@
-SHELL = /bin/bash -eo pipefail
+SHELL = /bin/bash
+.SHELLFLAGS = -e -o pipefail -c
 ANSIBLE_ARGS ?= $(ANSIBLE_OPTIONS)
 ANSIBLE_PLAYBOOK ?= smart_home.yml
 
