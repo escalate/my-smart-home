@@ -68,4 +68,5 @@ deploy:
 	ansible-playbook \
 		$(ANSIBLE_ARGS) \
 		--inventory="hosts" \
+		--limit="$(ANSIBLE_LIMIT)" \
 		$(ANSIBLE_PLAYBOOK)
