@@ -26,6 +26,9 @@ Vagrant.configure("2") do |config|
       if ENV["ANSIBLE_ARGS"]
         ansible.raw_arguments = Shellwords.shellsplit(ENV["ANSIBLE_ARGS"])
       end
+      ansible.extra_vars = {
+        sshd_allow_groups: ["root", "vagrant"]
+      }
     end
 
   end

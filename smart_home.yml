@@ -4,7 +4,17 @@
       tags: common
     - role: timesyncd
       tags: timesyncd
+    - role: sshd
+      tags: sshd
+    - role: ssh_login
+      tags: ssh_login
+    - role: msmtp
+      tags: msmtp
     - role: docker
       tags: docker
     - role: influxdb
       tags: influxdb
+    - role: grafana
+      tags: grafana
+    - role: traefik
+      tags: traefik
