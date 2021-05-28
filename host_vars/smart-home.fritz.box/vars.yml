@@ -34,7 +34,7 @@ influxdb_buckets:
     retention: 14d
 
 # https://github.com/grafana/grafana/releases
-grafana_docker_image_version: 7.5.6
+grafana_docker_image_version: 7.5.7
 grafana_docker_labels:
   traefik.enable: "true"
   traefik.http.routers.grafana.rule: Host(`grafana.clubstr.de`)
