@@ -2,4 +2,4 @@
 ansible_become=true
 
 [smart_home]
-smart-home.fritz.box
+smarthome.fritz.box
