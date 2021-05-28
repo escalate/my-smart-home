@@ -46,3 +46,46 @@ grafana_admin_password: "{{ vault_grafana_admin_password }}"
 
 # https://github.com/traefik/traefik/releases
 traefik_docker_image_version: 2.4.8
+traefik_docker_labels:
+  traefik.enable: "true"
+  traefik.http.routers.dashboard.rule: Host(`traefik.clubstr.de`)
+  traefik.http.routers.dashboard.entrypoints: websecure
+  traefik.http.routers.dashboard.service: api@internal
+  traefik.http.routers.dashboard.middlewares: auth
+  traefik.http.middlewares.auth.basicauth.users: "{{ vault_traefik_api_basic_auth_credentials }}"
+traefik_config:
+  global:
+    checkNewVersion: false
+    sendAnonymousUsage: false
+  log:
+    level: INFO
+  accessLog: {}
+  api:
+    dashboard: true
+  entryPoints:
+    web:
+      address: ":80"
+      http:
+        redirections:
+          entryPoint:
+            to: websecure
+            scheme: https
+    websecure:
+      address: ":443"
+      http:
+        tls:
+          certResolver: letsencryptresolver
+  certificatesResolvers:
+    letsencryptresolver:
+      acme:
+        email: "{{ vault_email_address }}"
+        storage: acme.json
+        # caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+        dnsChallenge:
+          provider: cloudflare
+  providers:
+    docker:
+      exposedByDefault: false
+traefik_env_vars:
+  CF_DNS_API_TOKEN: "{{ vault_traefik_env_cf_dns_api_token }}"
+  CF_ZONE_API_TOKEN: "{{ vault_traefik_env_cf_zone_api_token }}"
