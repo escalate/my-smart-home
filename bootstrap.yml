@@ -1,0 +1,13 @@
+- hosts: smart_home
+  vars:
+    ansible_user: pi
+    ansible_password: raspberry
+  roles:
+    - role: common
+      tags: common
+    - role: timesyncd
+      tags: timesyncd
+    - role: sshd
+      tags: sshd
+    - role: ssh_login
+      tags: ssh_login

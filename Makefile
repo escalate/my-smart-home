@@ -65,6 +65,14 @@ lint:
 	yamllint --strict --config-file .yamllint .
 	ansible-lint .
 
+.PHONY: bootstrap
+bootstrap:
+	ansible-playbook \
+		$(ANSIBLE_ARGS) \
+		--inventory="hosts" \
+		--limit="$(ANSIBLE_LIMIT)" \
+		bootstrap.yml
+
 .PHONY: deploy
 deploy:
 	ansible-playbook \
