@@ -65,6 +65,14 @@ lint:
 	yamllint --strict --config-file .yamllint .
 	ansible-lint .
 
+.PHONY: format-usb-disk
+format-usb-disk:
+	ansible-playbook \
+		$(ANSIBLE_ARGS) \
+		--inventory="hosts" \
+		--limit="$(ANSIBLE_LIMIT)" \
+		format_usb_disk.yml
+
 .PHONY: bootstrap
 bootstrap:
 	ansible-playbook \

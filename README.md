@@ -23,13 +23,7 @@ My Smart Home on Raspberry Pi
 
 ### Format attached USB storage device
 ```
-$ fdisk /dev/sda
-(fdisk) o
-(fdisk) n
-(fdisk) p
-(fdisk) 1
-(fdisk) w
-$ mkfs.ext4 /dev/sda1
+$ make format-usb-disk
 ```
 
 ### Copy root filesystem of Raspberry Pi OS Lite to attached USB storage device
