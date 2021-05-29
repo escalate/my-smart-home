@@ -5,10 +5,14 @@ My Smart Home on Raspberry Pi
 
 ## Preparation
 
-### Download latest Raspberry Pi OS Lite custom image
-* URL: https://github.com/escalate/raspberry-pi-os-custom-image/releases/tag/latest
+### Build Raspberry Pi OS Lite custom image
+```
+$ git clone git@github.com:escalate/raspberry-pi-os-custom-image.git
+cd raspberry-pi-os-custom-image
+make build
+```
 
-### Flash Raspberry Pi OS Lite image on SD Card
+### Flash Raspberry Pi OS Lite custom image on SD Card
 * Open balenaEtcher tool
 * Click "Flash from file" button
 * Select YYYY-MM-DD-raspios-buster-armhf-lite.img
@@ -17,9 +21,14 @@ My Smart Home on Raspberry Pi
 
 ## Next steps after successful boot of Raspberry Pi
 
-### Login on Raspberry Pi via SSH
+### SSH login credential for Raspberry Pi
 * Username: pi
 * Password: raspberry
+
+### Copy Raspberry Pi OS Lite custom image on Raspberry Pi
+```
+$ scp YYYY-MM-DD-raspios-buster-armhf-lite.img pi@IPADDRESS:/var/tmp
+```
 
 ### Format attached USB storage device
 ```
