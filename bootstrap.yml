@@ -8,7 +8,7 @@
   vars_prompt:
     - name: raspberry_pi_os_image_file
       prompt: Please define the path to Raspberry Pi OS image file (e.g. ./YYYY-MM-DD-raspios-buster-armhf-lite.img)
-      private: no
+      private: false
   pre_tasks:
     - name: Copy Raspberry Pi OS image file on Raspberry Pi
       ansible.builtin.copy:
@@ -76,8 +76,8 @@
 
     - name: Copy root filesystem to USB disk
       ansible.posix.synchronize:
-          src: /mnt/raspios/
-          dest: /mnt/usbdisk
+        src: /mnt/raspios/
+        dest: /mnt/usbdisk
       delegate_to: "{{ inventory_hostname }}"
       no_log: true
 
