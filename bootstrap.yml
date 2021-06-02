@@ -24,7 +24,7 @@
         state: present
         update_cache: true
 
-    - name: Read device information
+    - name: Get partition information of USB disk
       community.general.parted:
         device: /dev/sda
         unit: MiB
@@ -121,12 +121,17 @@
         state: absent
         path: /mnt/usbdisk
 
+    - name: Get PARTUUID of USB disk
+      ansible.builtin.command:
+        cmd: blkid /dev/sda1 --match-tag PARTUUID --output value
+      register: usbdisk_partuuid
+
+    # Using PARTUUID of USB disk because with UUID the system does not boot
     - name: Switch to USB disk root partition
       ansible.builtin.replace:
         path: /boot/cmdline.txt
         regexp: "root=PARTUUID=[-a-z0-9]* "
-        # replace: "root=UUID={{ ansible_facts.devices['sda'].partitions['sda1'].uuid }} "
-        replace: "root=/dev/sda1 "
+        replace: "root=PARTUUID={{ usbdisk_partuuid.stdout }} "
 
     - name: Activate SSHD on boot
       ansible.builtin.file:
