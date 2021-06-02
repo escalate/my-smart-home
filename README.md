@@ -19,78 +19,27 @@ make build
 * Click "Flash!" button
 * Close balenaEtcher tool
 
-## Next steps after successful boot of Raspberry Pi
+### Bootstrap system after successful boot of Raspberry Pi
+* Copy Raspberry Pi OS Lite custom image on Raspberry Pi
+* Format attached USB storage device
+* Copy root filesystem of Raspberry Pi OS Lite to attached USB storage device
+* Switch root partition
 
-### SSH login credential for Raspberry Pi
-* Username: pi
-* Password: raspberry
-
-### Copy Raspberry Pi OS Lite custom image on Raspberry Pi
 ```
-$ scp YYYY-MM-DD-raspios-buster-armhf-lite.img pi@IPADDRESS:/var/tmp
-```
-
-### Format attached USB storage device
-```
-$ make format-usb-disk
+$ make bootstrap
 ```
 
-### Copy root filesystem of Raspberry Pi OS Lite to attached USB storage device
+Hint: During the reboot task, delete old known_hosts entry and connect to machine to accept new host key
+
+## Update Raspberry Pi OS Lite
 ```
-$ mkdir /mnt/usbdisk
-$ mount /dev/sda1 /mnt/usbdisk
-$ mkdir /mnt/raspios
-$ losetup --show --find --read-only --partscan /tmp/YYYY-MM-DD-raspios-buster-armhf-lite.img
-$ mount /dev/loop0p2 /mnt/raspios
-$ rsync -ax --progress /mnt/raspios/ /mnt/usbdisk
-$ umount /mnt/raspios
-$ losetup --detach-all
+$ make update
 ```
 
-### Switch root partition
-```
-$ cp /etc/fstab /mnt/usbdisk/etc/fstab
-$ blkid
-$ vi /mnt/usbdisk/etc/fstab
-proc                  /proc           proc    defaults          0       0
-PARTUUID=418a81cb-01  /boot           vfat    defaults          0       2
-PARTUUID=8538718e-01  /               ext4    defaults,noatime  0       1
-$ vi /boot/cmdline.txt
-console=serial0,115200 console=tty1 root=PARTUUID=8538718e-01 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait
-$ touch /boot/ssh
-$ sync
-$ reboot
-```
-
-### Update Raspberry Pi OS Lite
-```
-$ apt update
-$ apt full-upgrade
-$ reboot
-```
-
-### Update Raspberry Pi firmware
-```
-$ rpi-update
-$ reboot
-```
-
-### Run Ansible bootstrap playbook
-```
-$ ANSIBLE_PLAYBOOK=bootstrap.yml make deploy
-```
-
-### Run Ansible smart-home playbook
+## Deploy Ansible smart-home playbook
 ```
 $ make deploy
 ```
-
-## More information
-* https://www.raspberrypi.org/documentation/installation/installing-images/linux.md
-* https://www.raspberrypi.org/documentation/raspbian/updating.md
-* https://www.raspberrypi.org/documentation/hardware/raspberrypi/bootmodes/README.md
-* http://elinux.org/RPi_Resize_Flash_Partitions
-* https://www.raspberrypi.org/forums/viewtopic.php?f=29&t=44177
 
 ## License
 MIT

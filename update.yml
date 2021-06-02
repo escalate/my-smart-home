@@ -1,0 +1,11 @@
+# Updating: https://www.raspberrypi.org/documentation/raspbian/updating.md
+
+- hosts: smart_home
+  tasks:
+    - name: Update Raspberry Pi OS
+      apt:
+        upgrade: full
+        update_cache: true
+
+    - name: Reboot Raspberry Pi
+      reboot:

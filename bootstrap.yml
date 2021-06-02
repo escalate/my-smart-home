@@ -1,7 +1,144 @@
+# Bootmodes: https://www.raspberrypi.org/documentation/hardware/raspberrypi/bootmodes/README.md
+# Boot from USB: https://www.raspberrypi.org/forums/viewtopic.php?f=29&t=44177
+
 - hosts: smart_home
   vars:
     ansible_user: pi
     ansible_password: raspberry
+  vars_prompt:
+    - name: raspberry_pi_os_image_file
+      prompt: Please define the path to Raspberry Pi OS image file (e.g. ./YYYY-MM-DD-raspios-buster-armhf-lite.img)
+      private: no
+  pre_tasks:
+    - name: Copy Raspberry Pi OS image file on Raspberry Pi
+      ansible.builtin.copy:
+        src: "{{ raspberry_pi_os_image_file }}"
+        dest: /var/tmp/
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Install parted package
+      ansible.builtin.apt:
+        name: parted
+        state: present
+        update_cache: true
+
+    - name: Read device information
+      community.general.parted:
+        device: /dev/sda
+        unit: MiB
+      register: sda_info
+
+    - name: Remove all partitions from disk
+      community.general.parted:
+        device: /dev/sda
+        number: "{{ item.num }}"
+        state: absent
+      loop: "{{ sda_info.partitions }}"
+
+    # Using fdisk because parted v3.2-25 performs on Debian Buster not idempotent
+    - name: Create partition on disk
+      ansible.builtin.shell:
+        cmd: echo -e "o\nn\np\n1\n81920\n\nw" | fdisk /dev/sda
+
+    - name: Create ext4 filesystem on partition
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/sda1
+        state: present
+        force: true
+
+    - name: Mount USB disk
+      ansible.posix.mount:
+        state: mounted
+        src: /dev/sda1
+        path: /mnt/usbdisk
+        fstype: ext4
+
+    - name: Set up loop device
+      ansible.builtin.command:
+        cmd: "losetup --show --find --read-only --partscan /var/tmp/{{ raspberry_pi_os_image_file | basename }}"
+      register: loop_device
+
+    - name: Mount loop device
+      ansible.posix.mount:
+        state: mounted
+        src: "{{ loop_device.stdout }}p2"
+        path: /mnt/raspios
+        fstype: ext4
+
+    - name: Install sshpass package
+      ansible.builtin.apt:
+        name: sshpass
+        state: present
+        update_cache: true
+
+    - name: Copy root filesystem to USB disk
+      ansible.posix.synchronize:
+          src: /mnt/raspios/
+          dest: /mnt/usbdisk
+      delegate_to: "{{ inventory_hostname }}"
+      no_log: true
+
+    - name: Umount loop device
+      ansible.posix.mount:
+        state: absent
+        path: /mnt/raspios
+
+    - name: Detach all loop devices
+      ansible.builtin.command:
+        cmd: losetup --detach-all
+
+    - name: Regather facts
+      ansible.builtin.setup:
+        gather_subset: all
+
+    - name: Configure boot partition
+      ansible.posix.mount:
+        state: present
+        src: "UUID={{ ansible_facts.devices['mmcblk0'].partitions['mmcblk0p1'].uuid }}"
+        path: /boot
+        fstype: vfat
+        opts: defaults
+        dump: 0
+        passno: 2
+        fstab: /mnt/usbdisk/etc/fstab
+
+    - name: Configure root partition
+      ansible.posix.mount:
+        state: present
+        src: "UUID={{ ansible_facts.devices['sda'].partitions['sda1'].uuid }}"
+        path: /
+        fstype: ext4
+        opts: defaults,noatime
+        dump: 0
+        passno: 1
+        fstab: /mnt/usbdisk/etc/fstab
+
+    - name: Umount USB disk
+      ansible.posix.mount:
+        state: absent
+        path: /mnt/usbdisk
+
+    - name: Switch to USB disk root partition
+      ansible.builtin.replace:
+        path: /boot/cmdline.txt
+        regexp: "root=PARTUUID=[-a-z0-9]* "
+        # replace: "root=UUID={{ ansible_facts.devices['sda'].partitions['sda1'].uuid }} "
+        replace: "root=/dev/sda1 "
+
+    - name: Activate SSHD on boot
+      ansible.builtin.file:
+        path: /boot/ssh
+        state: touch
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Reboot Raspberry Pi
+      reboot:
+
   roles:
     - role: common
       tags: common
