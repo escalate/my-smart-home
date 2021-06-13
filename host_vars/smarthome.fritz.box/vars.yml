@@ -12,6 +12,9 @@ msmtp_acounts:
     user: "{{ vault_msmtp_default_user_name }}"
     password: "{{ vault_msmtp_default_password }}"
 
+docker_networks:
+  - internal
+
 # https://github.com/influxdata/influxdb/releases
 influxdb_docker_image_version: 2.0.6
 influxdb_docker_labels:
@@ -20,6 +23,7 @@ influxdb_docker_labels:
   traefik.http.routers.influxdb.entrypoints: websecure
   traefik.http.routers.influxdb.service: influxdb-service
   traefik.http.services.influxdb-service.loadbalancer.server.port: 8086
+influxdb_docker_network: internal
 influxdb_primary_user: "{{ vault_influxdb_primary_user }}"
 influxdb_primary_user_password: "{{ vault_influxdb_primary_user_password }}"
 influxdb_primary_organization_name: ClubStr
@@ -41,6 +45,7 @@ grafana_docker_labels:
   traefik.http.routers.grafana.entrypoints: websecure
   traefik.http.routers.grafana.service: grafana-service
   traefik.http.services.grafana-service.loadbalancer.server.port: 3000
+grafana_docker_network: internal
 grafana_admin_user: "{{ vault_grafana_admin_user }}"
 grafana_admin_password: "{{ vault_grafana_admin_password }}"
 
@@ -53,6 +58,7 @@ traefik_docker_labels:
   traefik.http.routers.dashboard.service: api@internal
   traefik.http.routers.dashboard.middlewares: auth
   traefik.http.middlewares.auth.basicauth.users: "{{ vault_traefik_api_basic_auth_credentials }}"
+traefik_docker_network: internal
 traefik_config:
   global:
     checkNewVersion: false
