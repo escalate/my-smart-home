@@ -9,13 +9,18 @@ My Smart Home on Raspberry Pi
 ```
 $ git clone git@github.com:escalate/raspberry-pi-os-custom-image.git
 cd raspberry-pi-os-custom-image
-make build
+
+make build32
+
+or
+
+make build64
 ```
 
 ### Flash Raspberry Pi OS Lite custom image on SD Card
 * Open balenaEtcher tool
 * Click "Flash from file" button
-* Select YYYY-MM-DD-raspios-buster-armhf-lite.img
+* Select YYYY-MM-DD-raspios-buster-\[armhf|arm64\]-lite.img
 * Click "Flash!" button
 * Close balenaEtcher tool
 
