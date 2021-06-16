@@ -48,6 +48,20 @@ grafana_docker_labels:
 grafana_docker_network: internal
 grafana_admin_user: "{{ vault_grafana_admin_user }}"
 grafana_admin_password: "{{ vault_grafana_admin_password }}"
+grafana_datasources:
+  apiVersion: 1
+  datasources:
+    - name: InfluxDB
+      type: influxdb
+      access: proxy
+      url: http://influxdb:8086
+      jsonData:
+        version: Flux
+        httpMode: POST
+        organization: ClubStr
+        defaultBucket: General
+      secureJsonData:
+        token: "{{ grafana_datasources_influxdb_token }}"
 
 # https://github.com/traefik/traefik/releases
 traefik_docker_image_version: 2.4.8
