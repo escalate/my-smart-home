@@ -1,7 +1,5 @@
 *.swp
 .vagrant/
 *.retry
-roles/
 .vault_pass.txt
 .vscode/
-.cache/

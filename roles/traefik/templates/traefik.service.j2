@@ -1,0 +1,39 @@
+[Unit]
+Description=Traefik
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull traefik:{{ traefik_docker_image_version }}
+ExecStart=/usr/bin/docker run \
+--name %n \
+--init \
+--memory={{ traefik_docker_memory }} \
+{% if traefik_env_vars | dict2items | length > 0 %}
+--env-file={{ traefik_etc_path }}/traefik.env \
+{% endif %}
+{% if traefik_docker_labels | dict2items | length > 0 %}
+--label-file={{ traefik_etc_path }}/traefik.label \
+{% endif %}
+--mount=type=bind,source={{ traefik_data_path }},destination=/etc/traefik/acme \
+--mount=type=bind,source={{ traefik_etc_path }}/traefik.yml,destination=/etc/traefik/traefik.yml,readonly=true \
+--mount=type=bind,source=/var/run/docker.sock,destination=/var/run/docker.sock,readonly=true \
+--network={{ traefik_docker_network }} \
+--network-alias=traefik \
+--publish=80:80 \
+--publish=443:443 \
+--publish=127.0.0.1:8080:8080 \
+traefik:{{ traefik_docker_image_version }}
+ExecStop=/usr/bin/docker stop %n
+SyslogIdentifier=%n
+TimeoutStartSec=infinity
+StartLimitInterval=30
+StartLimitBurst=5
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+- name: Converge
+  hosts: all
+  vars:
+    msmtp_defaults:
+      auth: "on"
+      syslog: "on"
+      tls: "on"
+    msmtp_acounts:
+      - account: gmail
+        host: smtp.gmail.com
+        port: 587
+        from: username@gmail.com
+        user: username
+        password: plain-text-password
+    msmtp_default_account: gmail
+  roles:
+    - role: ansible-raspberry-msmtp
+      tags: msmtp

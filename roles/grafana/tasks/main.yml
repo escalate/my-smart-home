@@ -1,0 +1,190 @@
+- name: Create read-only directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - "{{ grafana_etc_path }}"
+    - "{{ grafana_etc_path }}/dashboards"
+    - "{{ grafana_etc_path }}/provisioning"
+    - "{{ grafana_etc_path }}/provisioning/dashboards"
+    - "{{ grafana_etc_path }}/provisioning/datasources"
+    - "{{ grafana_etc_path }}/provisioning/notifiers"
+    - "{{ grafana_etc_path }}/provisioning/plugins"
+
+- name: Create writeable data directory
+  ansible.builtin.file:
+    path: "{{ grafana_data_path }}"
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: 0700
+
+- name: Create writeable backup directory
+  ansible.builtin.file:
+    path: "{{ grafana_backup_path }}"
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: 0755
+
+- name: Create service configuration
+  ansible.builtin.template:
+    src: grafana.ini.j2
+    dest: "{{ grafana_etc_path }}/grafana.ini"
+    owner: root
+    group: root
+    mode: 0644
+  no_log: true
+  notify: Restart grafana service
+
+- name: Define environment variables
+  community.general.ini_file:
+    path: "{{ grafana_etc_path }}/grafana.env"
+    section: ""
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  loop: "{{ grafana_env_vars | dict2items }}"
+  notify: Restart grafana service
+
+- name: Create datasources configuration
+  ansible.builtin.template:
+    src: datasources.yml.j2
+    dest: "{{ grafana_etc_path }}/provisioning/datasources/datasources.yml"
+    owner: root
+    group: root
+    mode: 0644
+  no_log: true
+  notify: Restart grafana service
+
+- name: Create dashboards configuration
+  ansible.builtin.template:
+    src: dashboards.yml.j2
+    dest: "{{ grafana_etc_path }}/provisioning/dashboards/dashboards.yml"
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart grafana service
+
+- name: Create dashboards
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ grafana_etc_path }}/dashboards"
+    owner: nobody
+    group: nogroup
+    mode: 0644
+  with_fileglob:
+    - static_files/grafana/*.json
+
+- name: Define Docker container labels
+  community.general.ini_file:
+    path: "{{ grafana_etc_path }}/grafana.label"
+    section: ""
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  loop: "{{ grafana_docker_labels | dict2items }}"
+  notify: Restart grafana service
+
+- name: Pull Docker image
+  community.general.docker_image:
+    name: "grafana/grafana:{{ grafana_docker_image_version }}"
+    source: pull
+
+- name: Create systemd service
+  ansible.builtin.template:
+    src: grafana.service.j2
+    dest: /etc/systemd/system/grafana.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart grafana service
+
+- name: Start and enable service
+  ansible.builtin.systemd:
+    name: grafana
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Force all notified handlers to run at this point
+  meta: flush_handlers
+
+- name: Wait for service to become available
+  ansible.builtin.uri:
+    url: http://localhost:3000
+  register: result
+  until: result.status == 200
+  retries: 60
+  delay: 1
+
+- name: List users
+  ansible.builtin.uri:
+    url: "http://localhost:3000/api/org/users"
+    method: GET
+    user: "{{ grafana_admin_user }}"
+    password: "{{ grafana_admin_password }}"
+    force_basic_auth: true
+    status_code: 200
+    return_content: true
+  register: grafana_user_list
+
+- name: Add users
+  ansible.builtin.uri:
+    url: "http://localhost:3000/api/admin/users"
+    method: POST
+    user: "{{ grafana_admin_user }}"
+    password: "{{ grafana_admin_password }}"
+    force_basic_auth: true
+    headers:
+      Content-Type: application/json
+    body_format: json
+    body: |
+      {
+        "name":"{{ item.name }}",
+        "email":"{{ item.email }}",
+        "login":"{{ item.login }}",
+        "password":"{{ item.password }}"
+      }
+    status_code: 200
+  loop: "{{ grafana_users }}"
+  when: item.login not in (grafana_user_list.json | map(attribute='login') | list)
+
+- name: Install plugins
+  ansible.builtin.command: |
+    docker exec --interactive grafana.service \
+    grafana-cli plugins install {{ item }}
+  args:
+    creates: "{{ grafana_data_path }}/plugins/{{ item }}"
+  loop: "{{ grafana_plugins }}"
+
+- name: Install backup script prerequsite packages
+  ansible.builtin.apt:
+    name: sqlite3
+    state: present
+    update_cache: true
+
+- name: Create backup script
+  ansible.builtin.template:
+    src: backup_grafana.sh.j2
+    dest: /usr/local/bin/backup_grafana.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Add backup cron job
+  ansible.builtin.cron:
+    name: Backup Grafana
+    minute: "0"
+    hour: "4"
+    job: "/usr/local/bin/backup_grafana.sh || echo \"ERROR: A problem occurred during backup of Grafana. Please check the logfiles. journalctl -t backup_grafana.sh\""  # noqa 204
+    user: root

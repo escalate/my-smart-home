@@ -1,0 +1,7 @@
+- name: Converge
+  hosts: all
+  vars:
+    common_timezone: Europe/Berlin
+  roles:
+    - role: ansible-raspberry-common
+      tags: common

@@ -1,0 +1,2 @@
+common_hostname: "{{ inventory_hostname }}"
+common_timezone: Europe/Berlin

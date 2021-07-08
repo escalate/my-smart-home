@@ -1,0 +1,3 @@
+ssh_login_user: admin
+ssh_login_public_key: ssh-ed25519 RANDOM
+ssh_login_group: admins

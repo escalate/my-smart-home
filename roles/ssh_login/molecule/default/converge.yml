@@ -1,0 +1,9 @@
+- name: Converge
+  hosts: all
+  vars:
+    ssh_login_user: rasp
+    ssh_login_public_key: ssh-ed25519 RASPI
+    ssh_login_group: berry
+  roles:
+    - role: ansible-raspberry-ssh-login
+      tags: sshlogin

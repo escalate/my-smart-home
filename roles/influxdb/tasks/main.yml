@@ -1,0 +1,153 @@
+- name: Create read-only directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - "{{ influxdb_etc_path }}"
+
+- name: Create writeable data directories
+  ansible.builtin.file:
+    path: "{{ influxdb_data_path }}"
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: 0700
+
+- name: Create writeable backup directories
+  ansible.builtin.file:
+    path: "{{ influxdb_backup_path }}"
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: 0755
+
+- name: Define environment variables
+  community.general.ini_file:
+    path: "{{ influxdb_etc_path }}/influxdb.env"
+    section: ""
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  loop: "{{ influxdb_env_vars | dict2items }}"
+  notify: Restart influxdb service
+
+- name: Define Docker container labels
+  community.general.ini_file:
+    path: "{{ influxdb_etc_path }}/influxdb.label"
+    section: ""
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  loop: "{{ influxdb_docker_labels | dict2items }}"
+  notify: Restart influxdb service
+
+- name: Pull Docker image
+  community.general.docker_image:
+    name: "influxdb:{{ influxdb_docker_image_version }}"
+    source: pull
+
+- name: Create systemd service
+  ansible.builtin.template:
+    src: influxdb.service.j2
+    dest: /etc/systemd/system/influxdb.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart influxdb service
+
+- name: Start and enable service
+  ansible.builtin.systemd:
+    name: influxdb
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Force all notified handlers to run at this point
+  meta: flush_handlers
+
+- name: Wait for service to become available
+  ansible.builtin.uri:
+    url: http://localhost:8086
+  register: result
+  until: result.status == 200
+  retries: 60
+  delay: 1
+
+- name: Configure service
+  ansible.builtin.command: |
+    docker exec --interactive influxdb.service \
+    influx setup \
+    --username '{{ influxdb_primary_user }}' \
+    --password '{{ influxdb_primary_user_password }}' \
+    --org '{{ influxdb_primary_organization_name }}' \
+    --bucket '{{ influxdb_primary_bucket_name }}' \
+    --retention '{{ influxdb_primary_bucket_name_retention_period }}' \
+    --force
+  args:
+    creates: "{{ influxdb_data_path }}/configs"
+
+- name: List users
+  ansible.builtin.command: |
+    docker exec --interactive influxdb.service \
+    influx user list \
+    --name '{{ item.name }}'
+  failed_when: false
+  changed_when: false
+  loop: "{{ influxdb_users }}"
+  register: influxdb_user_list
+
+- name: Create users
+  ansible.builtin.command: |
+    docker exec --interactive influxdb.service \
+    influx user create \
+    --name '{{ item.0.name }}' \
+    --password '{{ item.0.password }}' \
+    --org '{{ influxdb_primary_organization_name }}'
+  when: item.1.rc != 0
+  loop: "{{ influxdb_users | zip(influxdb_user_list.results) | list }}"
+
+- name: List buckets
+  ansible.builtin.command: |
+    docker exec --interactive influxdb.service \
+    influx bucket list \
+    --name '{{ item.name }}'
+  failed_when: false
+  changed_when: false
+  loop: "{{ influxdb_buckets }}"
+  register: influxdb_bucket_list
+
+- name: Create buckets
+  ansible.builtin.command: |
+    docker exec --interactive influxdb.service \
+    influx bucket create \
+    --name '{{ item.0.name }}' \
+    --description '{{ item.0.description }}' \
+    --org '{{ influxdb_primary_organization_name }}' \
+    --retention '{{ item.0.retention }}'
+  when: item.1.rc != 0
+  loop: "{{ influxdb_buckets | zip(influxdb_bucket_list.results) | list }}"
+
+- name: Create backup script
+  ansible.builtin.template:
+    src: backup_influxdb.sh.j2
+    dest: /usr/local/bin/backup_influxdb.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Add backup cron job
+  ansible.builtin.cron:
+    name: Backup InfluxDB
+    minute: "30"
+    hour: "4"
+    job: "/usr/local/bin/backup_influxdb.sh || echo \"ERROR: A problem occurred during backup of InfluxDB. Please check the logfiles. journalctl -t backup_influxdb.sh\""  # noqa 204
+    user: root

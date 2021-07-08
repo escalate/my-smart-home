@@ -1,0 +1,93 @@
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ common_hostname }}"
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ common_timezone }}"
+
+- name: Install package manager utilities
+  ansible.builtin.apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
+  vars:
+    packages:
+      - apt-transport-https
+      - software-properties-common
+
+- name: Install TERM screen-256color-bce
+  ansible.builtin.apt:
+    name: ncurses-term
+    state: present
+    update_cache: true
+
+- name: Install enhanced editor
+  ansible.builtin.apt:
+    name: vim
+    state: present
+    update_cache: true
+
+- name: Install process observation tools
+  ansible.builtin.apt:
+    name: htop
+    state: present
+    update_cache: true
+
+- name: Install web tools
+  ansible.builtin.apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
+  vars:
+    packages:
+      - curl
+      - wget
+
+- name: Install shell completion
+  ansible.builtin.apt:
+    name: bash-completion
+    state: present
+    update_cache: true
+
+- name: Install Python pip
+  ansible.builtin.apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
+  vars:
+    packages:
+      - python-pip
+      - python3-pip
+
+- name: Install BSD commandline tools
+  ansible.builtin.apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
+  vars:
+    packages:
+      - bsdutils
+      - bsdmainutils
+
+- name: Install cron job scheduler
+  ansible.builtin.apt:
+    name: cron
+    state: present
+    update_cache: true
+
+- name: Set PATH variable to crontab
+  ansible.builtin.cron:
+    name: PATH
+    user: root
+    env: true
+    job: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    state: present
+
+- name: Set SHELL variable to crontab
+  ansible.builtin.cron:
+    name: SHELL
+    user: root
+    env: true
+    job: /bin/bash
+    state: present

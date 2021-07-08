@@ -1,0 +1,11 @@
+docker_version: 5:20.10.6~3-0~debian-buster
+docker_containerd_version: 1.4.4-1
+docker_python_version: 4.4.1
+docker_system_prune_cron: true
+docker_daemon_json:
+  live-restore: true
+  log-driver: local
+  log-opts:
+    max-size: 100m
+docker_networks: []
+  # - internal

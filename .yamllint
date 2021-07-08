@@ -4,3 +4,7 @@ rules:
   comments-indentation: disable
   document-start: {present: false}
   line-length: disable
+
+ignore: |
+  /collections/
+  /roles/

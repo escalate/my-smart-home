@@ -1,0 +1,88 @@
+- name: Create read-only directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - "{{ traefik_etc_path }}"
+
+- name: Create writeable data directory
+  ansible.builtin.file:
+    path: "{{ traefik_data_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+
+- name: Create service configuration
+  ansible.builtin.template:
+    src: traefik.yml.j2
+    dest: "{{ traefik_etc_path }}/traefik.yml"
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart traefik service
+
+- name: Define environment variables
+  community.general.ini_file:
+    path: "{{ traefik_etc_path }}/traefik.env"
+    section: ""
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  loop: "{{ traefik_env_vars | dict2items }}"
+  notify: Restart traefik service
+
+- name: Define Docker container labels
+  community.general.ini_file:
+    path: "{{ traefik_etc_path }}/traefik.label"
+    section: ""
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  loop: "{{ traefik_docker_labels | dict2items }}"
+  notify: Restart traefik service
+
+- name: Pull Docker image
+  community.general.docker_image:
+    name: "traefik:{{ traefik_docker_image_version }}"
+    source: pull
+
+- name: Create systemd service
+  ansible.builtin.template:
+    src: traefik.service.j2
+    dest: /etc/systemd/system/traefik.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart traefik service
+
+- name: Start and enable service
+  ansible.builtin.systemd:
+    name: traefik
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Force all notified handlers to run at this point
+  meta: flush_handlers
+
+- name: Wait for service to become available
+  ansible.builtin.uri:
+    url: http://localhost/
+    status_code:
+      - 200
+      - 301
+    follow_redirects: none
+  register: result
+  until: result.status == 200 or result.status == 301
+  retries: 60
+  delay: 1

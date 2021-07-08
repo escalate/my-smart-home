@@ -1,0 +1,86 @@
+- name: Install SDK prerequisites
+  ansible.builtin.apt:
+    name: python-backports.ssl-match-hostname
+    state: present
+    update_cache: true
+
+- name: Install SDK for Python
+  ansible.builtin.pip:
+    name: "docker=={{ docker_python_version }}"
+    state: present
+
+- name: Add GPG key fo apt repository
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    state: present
+
+- name: Configure apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ docker_package_arch }}] https://download.docker.com/linux/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} stable"
+    state: present
+    filename: docker-ce-stable
+
+- name: Install packages
+  ansible.builtin.apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
+  vars:
+    packages:
+      - "docker-ce={{ docker_version }}"
+      - "docker-ce-cli={{ docker_version }}"
+      - "containerd.io={{ docker_containerd_version }}"
+
+- name: Add version pinning for packages
+  ansible.builtin.copy:
+    content: |
+            Package: docker-ce
+            Pin: version {{ docker_version }}
+            Pin-Priority: 1000
+
+            Package: docker-ce-cli
+            Pin: version {{ docker_version }}
+            Pin-Priority: 1000
+
+            Package: containerd.io
+            Pin: version {{ docker_containerd_version }}
+            Pin-Priority: 1000
+    dest: /etc/apt/preferences.d/docker
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Add system prune cron job
+  ansible.builtin.cron:
+    name: docker_system_prune
+    minute: "30"
+    hour: "3"
+    weekday: "6"
+    user: root
+    job: "docker system prune --all --volumes --force"
+  when: docker_system_prune_cron
+
+- name: Start and enable service
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Create service configuration
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart docker service
+
+- name: Force all notified handlers to run at this point
+  meta: flush_handlers
+
+- name: Create networks
+  community.docker.docker_network:
+    name: "{{ item }}"
+  loop: "{{ docker_networks }}"

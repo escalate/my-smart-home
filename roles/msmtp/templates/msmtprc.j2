@@ -1,0 +1,14 @@
+defaults
+{% for command, argument in msmtp_defaults.items() %}
+{{ command }} "{{ argument }}"
+{% endfor %}
+
+{% for account in msmtp_acounts %}
+{% for command, argument in account.items() %}
+{{ command }} "{{ argument }}"
+{% endfor %}
+
+{% endfor %}
+{% if msmtp_default_account %}
+account default :{{ msmtp_default_account }}
+{% endif %}

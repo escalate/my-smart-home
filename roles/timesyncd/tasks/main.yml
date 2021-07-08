@@ -1,0 +1,30 @@
+- name: Configure NTP servers
+  community.general.ini_file:
+    path: /etc/systemd/timesyncd.conf
+    section: Time
+    option: NTP
+    value: "{{ systemd_timesyncd_ntp_servers }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart service
+
+- name: Configure FallbackNTP servers
+  community.general.ini_file:
+    path: /etc/systemd/timesyncd.conf
+    section: Time
+    option: FallbackNTP
+    value: "{{ systemd_timesyncd_fallback_ntp_servers }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart service
+
+- name: Start and enable service
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: started
+    enabled: true
+    daemon_reload: true

@@ -41,14 +41,13 @@ destroy:
 
 .PHONY: roles
 roles:
-	rm --recursive --force roles/
+	rm --recursive --force ./roles/
 	ansible-galaxy role install \
-		--roles-path="roles/" \
 		--role-file="requirements.yml"
 
 .PHONY: collections
 collections:
-	rm --recursive --force ~/.ansible/collections/
+	rm --recursive --force ./collections/
 	ansible-galaxy collection install \
 		--requirements-file="requirements.yml"
 
@@ -60,7 +59,6 @@ test: up provision down
 
 .PHONY: lint
 lint:
-	rm --recursive --force .cache/
 	ec
 	yamllint --strict --config-file .yamllint .
 	ansible-lint .

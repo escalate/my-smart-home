@@ -1,32 +1,58 @@
 roles:
+  # https://galaxy.ansible.com/escalate/common
   - name: common
     src: escalate.common
+    version: v1.5.0
 
+  # https://galaxy.ansible.com/escalate/timesyncd
   - name: timesyncd
     src: escalate.timesyncd
+    version: v1.0.0
 
+  # https://galaxy.ansible.com/escalate/sshd
   - name: sshd
     src: escalate.sshd
+    version: v1.0.0
 
+  # https://galaxy.ansible.com/escalate/ssh_login
   - name: ssh_login
     src: escalate.ssh_login
+    version: v1.2.0
 
+  # https://galaxy.ansible.com/escalate/msmtp
   - name: msmtp
     src: escalate.msmtp
+    version: v1.0.0
 
+  # https://galaxy.ansible.com/escalate/docker
   - name: docker
     src: escalate.docker
+    version: v1.4.0
 
+  # https://galaxy.ansible.com/escalate/influxdb
   - name: influxdb
     src: escalate.influxdb
+    version: v1.5.0
 
+  # https://galaxy.ansible.com/escalate/grafana
   - name: grafana
     src: escalate.grafana
+    version: v1.4.0
 
+  # https://galaxy.ansible.com/escalate/traefik
   - name: traefik
     src: escalate.traefik
+    version: v1.5.0
 
 collections:
+  # https://galaxy.ansible.com/ansible/posix
   - name: ansible.posix
+    version: 1.2.0
+
+  # https://galaxy.ansible.com/community/docker
   - name: community.docker
+    verion: 1.8.0
+
+  # https://galaxy.ansible.com/community/general
   - name: community.general
+    version: 3.3.1
