@@ -1,5 +1,5 @@
 [all:vars]
 ansible_become=true
 
-[smart_home]
+[gitops]
 smarthome.fritz.box

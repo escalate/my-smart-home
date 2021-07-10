@@ -1,4 +1,4 @@
-- hosts: smart_home
+- hosts: gitops
   roles:
     - role: common
       tags: common

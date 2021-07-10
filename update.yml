@@ -1,6 +1,6 @@
 # Updating: https://www.raspberrypi.org/documentation/raspbian/updating.md
 
-- hosts: smart_home
+- hosts: gitops
   tasks:
     - name: Update Raspberry Pi OS
       apt:

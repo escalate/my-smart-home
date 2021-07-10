@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 ansible_playbook = "smart_home.yml"
-ansible_group = "smart_home"
+ansible_group = "gitops"
 ansible_host = "smart-home.fritz.box"
 
 Vagrant.configure("2") do |config|
