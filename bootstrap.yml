@@ -98,9 +98,10 @@
 
     - name: Create ansible-pull cron job
       ansible.builtin.cron:
-        name: ansible-pull
+        name: ansible-pull job
         minute: "*/10"
-        job: "ansible-pull --url https://github.com/escalate/my-smart-home.git --directory /etc/gitops --inventory /etc/ansible/hosts --vault-password-file /etc/ansible/.vault_pass.txt smart_home.yml 2>&1 | logger --tag ansible-pull"
+        user: root
+        job: "ansible-pull --url=https://github.com/escalate/my-smart-home.git --directory=/etc/gitops --inventory=/etc/ansible/hosts --vault-password-file=/etc/ansible/.vault_pass.txt smart_home.yml 2>&1 | logger --tag ansible-pull"
         cron_file: /mnt/usbdisk/var/spool/cron/crontabs/root
 
     - name: Regather facts
