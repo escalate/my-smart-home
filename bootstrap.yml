@@ -1,23 +1,8 @@
 # Bootmodes: https://www.raspberrypi.org/documentation/hardware/raspberrypi/bootmodes/README.md
 # Boot from USB: https://www.raspberrypi.org/forums/viewtopic.php?f=29&t=44177
 
-- hosts: smart_home
-  vars:
-    ansible_user: pi
-    ansible_password: raspberry
-  vars_prompt:
-    - name: raspberry_pi_os_image_file
-      prompt: Please define the path to Raspberry Pi OS image file (e.g. ./YYYY-MM-DD-raspios-buster-armhf-lite.img)
-      private: false
-  pre_tasks:
-    - name: Copy Raspberry Pi OS image file on Raspberry Pi
-      ansible.builtin.copy:
-        src: "{{ raspberry_pi_os_image_file }}"
-        dest: /var/tmp/
-        owner: root
-        group: root
-        mode: 0644
-
+- hosts: gitops
+  tasks:
     - name: Install parted package
       ansible.builtin.apt:
         name: parted
@@ -56,9 +41,27 @@
         path: /mnt/usbdisk
         fstype: ext4
 
+    - name: Get Raspberry Pi OS image archive
+      ansible.builtin.find:
+        paths: /var/tmp
+        patterns: "*.zip"
+      register: raspberry_pi_os_image_archive
+
+    - name: Unarchive Raspberry Pi OS image archive
+      ansible.builtin.unarchive:
+        src: "{{ raspberry_pi_os_image_archive.files[0].path }}"
+        dest: /var/tmp
+        remote_src: true
+
+    - name: Get Raspberry Pi OS image file
+      ansible.builtin.find:
+        paths: /var/tmp
+        patterns: "*.img"
+      register: raspberry_pi_os_image_file
+
     - name: Set up loop device
       ansible.builtin.command:
-        cmd: "losetup --show --find --read-only --partscan /var/tmp/{{ raspberry_pi_os_image_file | basename }}"
+        cmd: "losetup --show --find --read-only --partscan /var/tmp/{{ raspberry_pi_os_image_file.files[0].path | basename }}"
       register: loop_device
 
     - name: Mount loop device
@@ -79,7 +82,6 @@
         src: /mnt/raspios/
         dest: /mnt/usbdisk
       delegate_to: "{{ inventory_hostname }}"
-      no_log: true
 
     - name: Umount loop device
       ansible.posix.mount:
@@ -89,6 +91,13 @@
     - name: Detach all loop devices
       ansible.builtin.command:
         cmd: losetup --detach-all
+
+    - name: Create ansible-pull cron job
+      ansible.builtin.cron:
+        name: ansible-pull
+        minute: "*/10"
+        job: "ansible-pull --url https://github.com/escalate/my-smart-home.git --directory /etc/gitops --inventory /etc/ansible/hosts --vault-password-file /etc/ansible/.vault_pass.txt smart_home.yml 2>&1 | logger --tag ansible-pull"
+        path: /mnt/usbdisk/var/spool/cron/crontabs/root
 
     - name: Regather facts
       ansible.builtin.setup:
@@ -142,14 +151,4 @@
         mode: 0755
 
     - name: Reboot Raspberry Pi
-      reboot:
-
-  roles:
-    - role: common
-      tags: common
-    - role: timesyncd
-      tags: timesyncd
-    - role: sshd
-      tags: sshd
-    - role: ssh_login
-      tags: ssh_login
+      ansible.builtin.reboot:
