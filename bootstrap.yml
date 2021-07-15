@@ -155,6 +155,3 @@
         owner: root
         group: root
         mode: 0755
-
-    - name: Reboot Raspberry Pi
-      ansible.builtin.reboot:
