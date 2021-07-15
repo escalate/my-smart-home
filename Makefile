@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 .SHELLFLAGS = -e -o pipefail -c
 ANSIBLE_ARGS ?= $(ANSIBLE_OPTIONS)
-ANSIBLE_PLAYBOOK ?= smart_home.yml
+ANSIBLE_PLAYBOOK ?= site.yml
 
 ifdef ANSIBLE_GROUP
 ANSIBLE_LIMIT := $(ANSIBLE_GROUP)

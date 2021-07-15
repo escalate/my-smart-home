@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-ansible_playbook = "smart_home.yml"
+ansible_playbook = "site.yml"
 ansible_group = "gitops"
 ansible_host = "smart-home.fritz.box"
 
