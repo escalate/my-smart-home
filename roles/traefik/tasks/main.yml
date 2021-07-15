@@ -52,7 +52,7 @@
   notify: Restart traefik service
 
 - name: Pull Docker image
-  community.general.docker_image:
+  community.docker.docker_image:
     name: "traefik:{{ traefik_docker_image_version }}"
     source: pull
 
