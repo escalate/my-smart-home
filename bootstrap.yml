@@ -82,6 +82,7 @@
         src: /mnt/raspios/
         dest: /mnt/usbdisk
       delegate_to: "{{ inventory_hostname }}"
+      no_log: true
 
     - name: Umount loop device
       ansible.posix.mount:
