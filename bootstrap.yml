@@ -26,6 +26,7 @@
     - name: Create partition on disk
       ansible.builtin.shell:
         cmd: echo -e "o\nn\np\n1\n81920\n\nw" | fdisk /dev/sda
+      changed_when: false
 
     - name: Create ext4 filesystem on partition
       community.general.filesystem:
@@ -62,6 +63,7 @@
     - name: Set up loop device
       ansible.builtin.command:
         cmd: "losetup --show --find --read-only --partscan /var/tmp/{{ raspberry_pi_os_image_file.files[0].path | basename }}"
+      changed_when: false
       register: loop_device
 
     - name: Mount loop device
@@ -92,6 +94,7 @@
     - name: Detach all loop devices
       ansible.builtin.command:
         cmd: losetup --detach-all
+      changed_when: false
 
     - name: Create ansible-pull cron job
       ansible.builtin.cron:
@@ -134,6 +137,7 @@
     - name: Get PARTUUID of USB disk
       ansible.builtin.command:
         cmd: blkid /dev/sda1 --match-tag PARTUUID --output value
+      changed_when: false
       register: usbdisk_partuuid
 
     # Using PARTUUID of USB disk because with UUID the system does not boot
