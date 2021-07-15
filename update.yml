@@ -3,9 +3,9 @@
 - hosts: gitops
   tasks:
     - name: Update Raspberry Pi OS
-      apt:
+      ansible.builtin.apt:
         upgrade: full
         update_cache: true
 
     - name: Reboot Raspberry Pi
-      reboot:
+      ansible.builtin.reboot:
