@@ -15,6 +15,13 @@ ifdef ANSIBLE_TAGS
 ANSIBLE_ARGS := $(ANSIBLE_ARGS) --tags='$(ANSIBLE_TAGS)'
 endif
 
+.PHONY: version
+version:
+	ansible --version
+	ansible-lint --version
+	ec --version
+	yamllint --version
+
 .PHONY: up
 up:
 	vagrant up
@@ -90,10 +97,3 @@ deploy:
 		--vault-password-file="./.vault_pass.txt" \
 		--limit="$(ANSIBLE_LIMIT)" \
 		$(ANSIBLE_PLAYBOOK)
-
-.PHONY: version
-version:
-	ansible --version
-	ansible-lint --version
-	ec --version
-	yamllint --version
