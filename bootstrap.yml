@@ -96,13 +96,27 @@
         cmd: losetup --detach-all
       changed_when: false
 
-    - name: Create ansible-pull cron job
+    - name: Adopt current hostname
+      ansible.builtin.copy:
+        src: /etc/hostname
+        dest: /mnt/usbdisk/etc/hostname
+        remote_src: true
+
+    - name: Create Ansible installation cron job
       ansible.builtin.cron:
-        name: ansible-pull job
+        name: Ansible installation
+        special_time: reboot
+        user: root
+        job: "export $(cat /boot/gitops-bootstrap.env | xargs) && /boot/gitops-install-and-configure-ansible.sh 2>&1 | logger --tag ansible-installation"
+        cron_file: /mnt/usbdisk/etc/crontab
+
+    - name: Create Ansible deployment cron job
+      ansible.builtin.cron:
+        name: Ansible deployment
         minute: "*/10"
         user: root
-        job: "ansible-pull --url=https://github.com/escalate/my-smart-home.git --directory=/etc/gitops --inventory=/etc/ansible/hosts --vault-password-file=/etc/ansible/.vault_pass.txt site.yml 2>&1 | logger --tag ansible-pull"
-        cron_file: /mnt/usbdisk/var/spool/cron/crontabs/root
+        job: "ansible-pull --url=https://github.com/escalate/my-smart-home.git --directory=/etc/gitops --inventory=/etc/ansible/hosts --vault-password-file=/etc/ansible/.vault_pass.txt site.yml 2>&1 | logger --tag ansible-deployment"
+        cron_file: /mnt/usbdisk/etc/crontab
 
     - name: Regather facts
       ansible.builtin.setup:
