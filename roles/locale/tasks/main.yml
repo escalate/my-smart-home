@@ -1,0 +1,11 @@
+- name: Install package
+  ansible.builtin.apt:
+    name: locales
+    state: present
+    update_cache: true
+
+- name: Generate locales
+  community.general.locale_gen:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ locale_languages }}"

@@ -2,6 +2,10 @@
   roles:
     - role: common
       tags: common
+    - role: cron
+      tags: cron
+    - role: locale
+      tags: locale
     - role: timesyncd
       tags: timesyncd
     - role: sshd

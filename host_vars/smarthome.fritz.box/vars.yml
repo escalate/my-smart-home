@@ -1,5 +1,10 @@
 common_hostname: smarthome.fritz.box
 
+locale_languages:
+  - de_DE.UTF-8
+  - en_GB.UTF-8
+  - en_US.UTF-8
+
 ssh_login_user: "{{ vault_ssh_login_user }}"
 ssh_login_public_key: "{{ vault_ssh_login_public_key }}"
 

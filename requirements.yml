@@ -4,6 +4,16 @@ roles:
     src: escalate.common
     version: v1.6.0
 
+  # https://galaxy.ansible.com/escalate/cron
+  - name: cron
+    src: escalate.cron
+    version: v1.0.1
+
+  # https://galaxy.ansible.com/escalate/locale
+  - name: locale
+    src: escalate.locale
+    version: v1.0.0
+
   # https://galaxy.ansible.com/escalate/timesyncd
   - name: timesyncd
     src: escalate.timesyncd
