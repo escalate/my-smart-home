@@ -2,7 +2,7 @@ roles:
   # https://galaxy.ansible.com/escalate/common
   - name: common
     src: escalate.common
-    version: v1.6.0
+    version: v1.7.0
 
   # https://galaxy.ansible.com/escalate/cron
   - name: cron

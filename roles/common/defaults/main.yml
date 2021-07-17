@@ -22,8 +22,6 @@ common_install_packages:
   # BSD commandline tools
   - bsdutils
   - bsdmainutils
-  # cron job scheduler
-  - cron
 
 common_remove_packages:
   # unused editors
