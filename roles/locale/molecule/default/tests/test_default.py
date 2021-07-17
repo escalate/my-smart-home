@@ -9,3 +9,9 @@ def test_locale_generation(host):
 
     cmd = host.run("locale --all-locales")
     assert "en_GB.utf8" in cmd.stdout
+
+
+def test_default_locale(host):
+    """Check default locale"""
+    cmd = host.run("localectl")
+    assert "LANG=en_GB.UTF-8" in cmd.stdout

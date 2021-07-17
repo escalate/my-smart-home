@@ -9,3 +9,11 @@
     name: "{{ item }}"
     state: present
   loop: "{{ locale_languages }}"
+
+- name: Set default locale
+  ansible.builtin.template:
+    src: locale.j2
+    dest: /etc/default/locale
+    owner: root
+    group: root
+    mode: 0644
