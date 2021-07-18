@@ -65,4 +65,4 @@ collections:
 
   # https://galaxy.ansible.com/community/general
   - name: community.general
-    version: 3.3.1
+    version: 3.3.2
