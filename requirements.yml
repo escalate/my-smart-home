@@ -17,7 +17,7 @@ roles:
   # https://galaxy.ansible.com/escalate/locale
   - name: locale
     src: escalate.locale
-    version: v1.1.0
+    version: v1.2.0
 
   # https://galaxy.ansible.com/escalate/timesyncd
   - name: timesyncd

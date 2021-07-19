@@ -10,6 +10,11 @@
     state: present
   loop: "{{ locale_languages }}"
 
+- name: Ensure default locale is generated
+  ansible.builtin.fail:
+    msg: Default locale is not generated
+  when: locale_default_language not in locale_languages
+
 - name: Set default locale
   ansible.builtin.template:
     src: locale.j2
