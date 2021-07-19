@@ -4,6 +4,11 @@ roles:
     src: escalate.common
     version: v1.7.0
 
+  # https://galaxy.ansible.com/escalate/swap
+  - name: swap
+    src: escalate.swap
+    version: v1.0.0
+
   # https://galaxy.ansible.com/escalate/cron
   - name: cron
     src: escalate.cron

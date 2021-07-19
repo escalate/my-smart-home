@@ -1,0 +1,6 @@
+swap_enabled: false
+swap_config:
+  CONF_SWAPSIZE: 100
+  # CONF_SWAPFILE: /var/swap
+  # CONF_SWAPFACTOR: 2
+  # CONF_MAXSWAP: 2048

@@ -1,5 +1,7 @@
 common_hostname: smarthome.fritz.box
 
+swap_enabled: false
+
 locale_languages:
   - de_DE.UTF-8
   - en_GB.UTF-8
