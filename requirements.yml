@@ -54,6 +54,11 @@ roles:
     src: escalate.grafana
     version: v1.4.1
 
+  # https://galaxy.ansible.com/escalate/home_assistant
+  - name: home_assistant
+    src: escalate.home_assistant
+    version: v1.2.0
+
   # https://galaxy.ansible.com/escalate/traefik
   - name: traefik
     src: escalate.traefik

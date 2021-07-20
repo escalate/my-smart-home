@@ -20,5 +20,7 @@
       tags: influxdb
     - role: grafana
       tags: grafana
+    - role: home_assistant
+      tags: homeassistant
     - role: traefik
       tags: traefik
