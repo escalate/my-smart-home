@@ -82,5 +82,7 @@
 
 - name: Create networks
   community.docker.docker_network:
-    name: "{{ item }}"
+    name: "{{ item.name }}"
+    ipam_config:
+      - subnet: "{{ item.subnet }}"
   loop: "{{ docker_networks }}"

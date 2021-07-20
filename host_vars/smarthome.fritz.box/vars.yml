@@ -22,7 +22,8 @@ msmtp_acounts:
     password: "{{ vault_msmtp_default_password }}"
 
 docker_networks:
-  - internal
+  - name: internal
+    subnet: 172.18.0.0/16
 
 # https://github.com/influxdata/influxdb/releases
 influxdb_docker_image_version: 2.0.6

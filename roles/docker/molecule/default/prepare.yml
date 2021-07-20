@@ -3,3 +3,5 @@
   roles:
     - role: common
       tags: common
+    - role: cron
+      tags: cron
