@@ -43,13 +43,24 @@ URL_REALM = "{url}/admin/realms/{realm}"
 URL_TOKEN = "{url}/realms/{realm}/protocol/openid-connect/token"
 URL_CLIENT = "{url}/admin/realms/{realm}/clients/{id}"
 URL_CLIENTS = "{url}/admin/realms/{realm}/clients"
+
 URL_CLIENT_ROLES = "{url}/admin/realms/{realm}/clients/{id}/roles"
+URL_CLIENT_ROLE = "{url}/admin/realms/{realm}/clients/{id}/roles/{name}"
+URL_CLIENT_ROLE_COMPOSITES = "{url}/admin/realms/{realm}/clients/{id}/roles/{name}/composites"
+
 URL_REALM_ROLES = "{url}/admin/realms/{realm}/roles"
+URL_REALM_ROLE = "{url}/admin/realms/{realm}/roles/{name}"
+URL_REALM_ROLE_COMPOSITES = "{url}/admin/realms/{realm}/roles/{name}/composites"
 
 URL_CLIENTTEMPLATE = "{url}/admin/realms/{realm}/client-templates/{id}"
 URL_CLIENTTEMPLATES = "{url}/admin/realms/{realm}/client-templates"
 URL_GROUPS = "{url}/admin/realms/{realm}/groups"
 URL_GROUP = "{url}/admin/realms/{realm}/groups/{groupid}"
+
+URL_CLIENTSCOPES = "{url}/admin/realms/{realm}/client-scopes"
+URL_CLIENTSCOPE = "{url}/admin/realms/{realm}/client-scopes/{id}"
+URL_CLIENTSCOPE_PROTOCOLMAPPERS = "{url}/admin/realms/{realm}/client-scopes/{id}/protocol-mappers/models"
+URL_CLIENTSCOPE_PROTOCOLMAPPER = "{url}/admin/realms/{realm}/client-scopes/{id}/protocol-mappers/models/{mapper_id}"
 
 URL_AUTHENTICATION_FLOWS = "{url}/admin/realms/{realm}/authentication/flows"
 URL_AUTHENTICATION_FLOW = "{url}/admin/realms/{realm}/authentication/flows/{id}"
@@ -505,6 +516,239 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not delete client template %s in realm %s: %s'
                                       % (id, realm, str(e)))
 
+    def get_clientscopes(self, realm="master"):
+        """ Fetch the name and ID of all clientscopes on the Keycloak server.
+
+        To fetch the full data of the group, make a subsequent call to
+        get_clientscope_by_clientscopeid, passing in the ID of the group you wish to return.
+
+        :param realm: Realm in which the clientscope resides; default 'master'.
+        :return The clientscopes of this realm (default "master")
+        """
+        clientscopes_url = URL_CLIENTSCOPES.format(url=self.baseurl, realm=realm)
+        try:
+            return json.loads(to_native(open_url(clientscopes_url, method="GET", headers=self.restheaders,
+                                                 validate_certs=self.validate_certs).read()))
+        except Exception as e:
+            self.module.fail_json(msg="Could not fetch list of clientscopes in realm %s: %s"
+                                      % (realm, str(e)))
+
+    def get_clientscope_by_clientscopeid(self, cid, realm="master"):
+        """ Fetch a keycloak clientscope from the provided realm using the clientscope's unique ID.
+
+        If the clientscope does not exist, None is returned.
+
+        gid is a UUID provided by the Keycloak API
+        :param cid: UUID of the clientscope to be returned
+        :param realm: Realm in which the clientscope resides; default 'master'.
+        """
+        clientscope_url = URL_CLIENTSCOPE.format(url=self.baseurl, realm=realm, id=cid)
+        try:
+            return json.loads(to_native(open_url(clientscope_url, method="GET", headers=self.restheaders,
+                                                 validate_certs=self.validate_certs).read()))
+
+        except HTTPError as e:
+            if e.code == 404:
+                return None
+            else:
+                self.module.fail_json(msg="Could not fetch clientscope %s in realm %s: %s"
+                                          % (cid, realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg="Could not clientscope group %s in realm %s: %s"
+                                      % (cid, realm, str(e)))
+
+    def get_clientscope_by_name(self, name, realm="master"):
+        """ Fetch a keycloak clientscope within a realm based on its name.
+
+        The Keycloak API does not allow filtering of the clientscopes resource by name.
+        As a result, this method first retrieves the entire list of clientscopes - name and ID -
+        then performs a second query to fetch the group.
+
+        If the clientscope does not exist, None is returned.
+        :param name: Name of the clientscope to fetch.
+        :param realm: Realm in which the clientscope resides; default 'master'
+        """
+        try:
+            all_clientscopes = self.get_clientscopes(realm=realm)
+
+            for clientscope in all_clientscopes:
+                if clientscope['name'] == name:
+                    return self.get_clientscope_by_clientscopeid(clientscope['id'], realm=realm)
+
+            return None
+
+        except Exception as e:
+            self.module.fail_json(msg="Could not fetch clientscope %s in realm %s: %s"
+                                      % (name, realm, str(e)))
+
+    def create_clientscope(self, clientscoperep, realm="master"):
+        """ Create a Keycloak clientscope.
+
+        :param clientscoperep: a ClientScopeRepresentation of the clientscope to be created. Must contain at minimum the field name.
+        :return: HTTPResponse object on success
+        """
+        clientscopes_url = URL_CLIENTSCOPES.format(url=self.baseurl, realm=realm)
+        try:
+            return open_url(clientscopes_url, method='POST', headers=self.restheaders,
+                            data=json.dumps(clientscoperep), validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg="Could not create clientscope %s in realm %s: %s"
+                                      % (clientscoperep['name'], realm, str(e)))
+
+    def update_clientscope(self, clientscoperep, realm="master"):
+        """ Update an existing clientscope.
+
+        :param grouprep: A GroupRepresentation of the updated group.
+        :return HTTPResponse object on success
+        """
+        clientscope_url = URL_CLIENTSCOPE.format(url=self.baseurl, realm=realm, id=clientscoperep['id'])
+
+        try:
+            return open_url(clientscope_url, method='PUT', headers=self.restheaders,
+                            data=json.dumps(clientscoperep), validate_certs=self.validate_certs)
+
+        except Exception as e:
+            self.module.fail_json(msg='Could not update clientscope %s in realm %s: %s'
+                                      % (clientscoperep['name'], realm, str(e)))
+
+    def delete_clientscope(self, name=None, cid=None, realm="master"):
+        """ Delete a clientscope. One of name or cid must be provided.
+
+        Providing the clientscope ID is preferred as it avoids a second lookup to
+        convert a clientscope name to an ID.
+
+        :param name: The name of the clientscope. A lookup will be performed to retrieve the clientscope ID.
+        :param cid: The ID of the clientscope (preferred to name).
+        :param realm: The realm in which this group resides, default "master".
+        """
+
+        if cid is None and name is None:
+            # prefer an exception since this is almost certainly a programming error in the module itself.
+            raise Exception("Unable to delete group - one of group ID or name must be provided.")
+
+        # only lookup the name if cid isn't provided.
+        # in the case that both are provided, prefer the ID, since it's one
+        # less lookup.
+        if cid is None and name is not None:
+            for clientscope in self.get_clientscopes(realm=realm):
+                if clientscope['name'] == name:
+                    cid = clientscope['id']
+                    break
+
+        # if the group doesn't exist - no problem, nothing to delete.
+        if cid is None:
+            return None
+
+        # should have a good cid by here.
+        clientscope_url = URL_CLIENTSCOPE.format(realm=realm, id=cid, url=self.baseurl)
+        try:
+            return open_url(clientscope_url, method='DELETE', headers=self.restheaders,
+                            validate_certs=self.validate_certs)
+
+        except Exception as e:
+            self.module.fail_json(msg="Unable to delete clientscope %s: %s" % (cid, str(e)))
+
+    def get_clientscope_protocolmappers(self, cid, realm="master"):
+        """ Fetch the name and ID of all clientscopes on the Keycloak server.
+
+        To fetch the full data of the group, make a subsequent call to
+        get_clientscope_by_clientscopeid, passing in the ID of the group you wish to return.
+
+        :param cid: id of clientscope (not name).
+        :param realm: Realm in which the clientscope resides; default 'master'.
+        :return The protocolmappers of this realm (default "master")
+        """
+        protocolmappers_url = URL_CLIENTSCOPE_PROTOCOLMAPPERS.format(id=cid, url=self.baseurl, realm=realm)
+        try:
+            return json.loads(to_native(open_url(protocolmappers_url, method="GET", headers=self.restheaders,
+                                                 validate_certs=self.validate_certs).read()))
+        except Exception as e:
+            self.module.fail_json(msg="Could not fetch list of protocolmappers in realm %s: %s"
+                                      % (realm, str(e)))
+
+    def get_clientscope_protocolmapper_by_protocolmapperid(self, pid, cid, realm="master"):
+        """ Fetch a keycloak clientscope from the provided realm using the clientscope's unique ID.
+
+        If the clientscope does not exist, None is returned.
+
+        gid is a UUID provided by the Keycloak API
+
+        :param cid: UUID of the protocolmapper to be returned
+        :param cid: UUID of the clientscope to be returned
+        :param realm: Realm in which the clientscope resides; default 'master'.
+        """
+        protocolmapper_url = URL_CLIENTSCOPE_PROTOCOLMAPPER.format(url=self.baseurl, realm=realm, id=cid, mapper_id=pid)
+        try:
+            return json.loads(to_native(open_url(protocolmapper_url, method="GET", headers=self.restheaders,
+                                                 validate_certs=self.validate_certs).read()))
+
+        except HTTPError as e:
+            if e.code == 404:
+                return None
+            else:
+                self.module.fail_json(msg="Could not fetch protocolmapper %s in realm %s: %s"
+                                          % (pid, realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg="Could not fetch protocolmapper %s in realm %s: %s"
+                                      % (cid, realm, str(e)))
+
+    def get_clientscope_protocolmapper_by_name(self, cid, name, realm="master"):
+        """ Fetch a keycloak clientscope within a realm based on its name.
+
+        The Keycloak API does not allow filtering of the clientscopes resource by name.
+        As a result, this method first retrieves the entire list of clientscopes - name and ID -
+        then performs a second query to fetch the group.
+
+        If the clientscope does not exist, None is returned.
+        :param cid: Id of the clientscope (not name).
+        :param name: Name of the protocolmapper to fetch.
+        :param realm: Realm in which the clientscope resides; default 'master'
+        """
+        try:
+            all_protocolmappers = self.get_clientscope_protocolmappers(cid, realm=realm)
+
+            for protocolmapper in all_protocolmappers:
+                if protocolmapper['name'] == name:
+                    return self.get_clientscope_protocolmapper_by_protocolmapperid(protocolmapper['id'], cid, realm=realm)
+
+            return None
+
+        except Exception as e:
+            self.module.fail_json(msg="Could not fetch protocolmapper %s in realm %s: %s"
+                                      % (name, realm, str(e)))
+
+    def create_clientscope_protocolmapper(self, cid, mapper_rep, realm="master"):
+        """ Create a Keycloak clientscope protocolmapper.
+
+        :param cid: Id of the clientscope.
+        :param mapper_rep: a ProtocolMapperRepresentation of the protocolmapper to be created. Must contain at minimum the field name.
+        :return: HTTPResponse object on success
+        """
+        protocolmappers_url = URL_CLIENTSCOPE_PROTOCOLMAPPERS.format(url=self.baseurl, id=cid, realm=realm)
+        try:
+            return open_url(protocolmappers_url, method='POST', headers=self.restheaders,
+                            data=json.dumps(mapper_rep), validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg="Could not create protocolmapper %s in realm %s: %s"
+                                      % (mapper_rep['name'], realm, str(e)))
+
+    def update_clientscope_protocolmappers(self, cid, mapper_rep, realm="master"):
+        """ Update an existing clientscope.
+
+        :param cid: Id of the clientscope.
+        :param mapper_rep: A ProtocolMapperRepresentation of the updated protocolmapper.
+        :return HTTPResponse object on success
+        """
+        protocolmapper_url = URL_CLIENTSCOPE_PROTOCOLMAPPER.format(url=self.baseurl, realm=realm, id=cid, mapper_id=mapper_rep['id'])
+
+        try:
+            return open_url(protocolmapper_url, method='PUT', headers=self.restheaders,
+                            data=json.dumps(mapper_rep), validate_certs=self.validate_certs)
+
+        except Exception as e:
+            self.module.fail_json(msg='Could not update protocolmappers for clientscope %s in realm %s: %s'
+                                      % (mapper_rep, realm, str(e)))
+
     def get_groups(self, realm="master"):
         """ Fetch the name and ID of all groups on the Keycloak server.
 
@@ -632,9 +876,196 @@ class KeycloakAPI(object):
         try:
             return open_url(group_url, method='DELETE', headers=self.restheaders,
                             validate_certs=self.validate_certs)
-
         except Exception as e:
             self.module.fail_json(msg="Unable to delete group %s: %s" % (groupid, str(e)))
+
+    def get_realm_roles(self, realm='master'):
+        """ Obtains role representations for roles in a realm
+
+        :param realm: realm to be queried
+        :return: list of dicts of role representations
+        """
+        rolelist_url = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
+        try:
+            return json.loads(to_native(open_url(rolelist_url, method='GET', headers=self.restheaders,
+                                                 validate_certs=self.validate_certs).read()))
+        except ValueError as e:
+            self.module.fail_json(msg='API returned incorrect JSON when trying to obtain list of roles for realm %s: %s'
+                                      % (realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not obtain list of roles for realm %s: %s'
+                                      % (realm, str(e)))
+
+    def get_realm_role(self, name, realm='master'):
+        """ Fetch a keycloak role from the provided realm using the role's name.
+
+        If the role does not exist, None is returned.
+        :param name: Name of the role to fetch.
+        :param realm: Realm in which the role resides; default 'master'.
+        """
+        role_url = URL_REALM_ROLE.format(url=self.baseurl, realm=realm, name=name)
+        try:
+            return json.loads(to_native(open_url(role_url, method="GET", headers=self.restheaders,
+                                                 validate_certs=self.validate_certs).read()))
+        except HTTPError as e:
+            if e.code == 404:
+                return None
+            else:
+                self.module.fail_json(msg='Could not fetch role %s in realm %s: %s'
+                                          % (name, realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not fetch role %s in realm %s: %s'
+                                      % (name, realm, str(e)))
+
+    def create_realm_role(self, rolerep, realm='master'):
+        """ Create a Keycloak realm role.
+
+        :param rolerep: a RoleRepresentation of the role to be created. Must contain at minimum the field name.
+        :return: HTTPResponse object on success
+        """
+        roles_url = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
+        try:
+            return open_url(roles_url, method='POST', headers=self.restheaders,
+                            data=json.dumps(rolerep), validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg='Could not create role %s in realm %s: %s'
+                                      % (rolerep['name'], realm, str(e)))
+
+    def update_realm_role(self, rolerep, realm='master'):
+        """ Update an existing realm role.
+
+        :param rolerep: A RoleRepresentation of the updated role.
+        :return HTTPResponse object on success
+        """
+        role_url = URL_REALM_ROLE.format(url=self.baseurl, realm=realm, name=rolerep['name'])
+        try:
+            return open_url(role_url, method='PUT', headers=self.restheaders,
+                            data=json.dumps(rolerep), validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg='Could not update role %s in realm %s: %s'
+                                      % (rolerep['name'], realm, str(e)))
+
+    def delete_realm_role(self, name, realm='master'):
+        """ Delete a realm role.
+
+        :param name: The name of the role.
+        :param realm: The realm in which this role resides, default "master".
+        """
+        role_url = URL_REALM_ROLE.format(url=self.baseurl, realm=realm, name=name)
+        try:
+            return open_url(role_url, method='DELETE', headers=self.restheaders,
+                            validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg='Unable to delete role %s in realm %s: %s'
+                                      % (name, realm, str(e)))
+
+    def get_client_roles(self, clientid, realm='master'):
+        """ Obtains role representations for client roles in a specific client
+
+        :param clientid: Client id to be queried
+        :param realm: Realm to be queried
+        :return: List of dicts of role representations
+        """
+        cid = self.get_client_id(clientid, realm=realm)
+        if cid is None:
+            self.module.fail_json(msg='Could not find client %s in realm %s'
+                                      % (clientid, realm))
+        rolelist_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=cid)
+        try:
+            return json.loads(to_native(open_url(rolelist_url, method='GET', headers=self.restheaders,
+                                                 validate_certs=self.validate_certs).read()))
+        except ValueError as e:
+            self.module.fail_json(msg='API returned incorrect JSON when trying to obtain list of roles for client %s in realm %s: %s'
+                                      % (clientid, realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not obtain list of roles for client %s in realm %s: %s'
+                                      % (clientid, realm, str(e)))
+
+    def get_client_role(self, name, clientid, realm='master'):
+        """ Fetch a keycloak client role from the provided realm using the role's name.
+
+        :param name: Name of the role to fetch.
+        :param clientid: Client id for the client role
+        :param realm: Realm in which the role resides
+        :return: Dict of role representation
+        If the role does not exist, None is returned.
+        """
+        cid = self.get_client_id(clientid, realm=realm)
+        if cid is None:
+            self.module.fail_json(msg='Could not find client %s in realm %s'
+                                      % (clientid, realm))
+        role_url = URL_CLIENT_ROLE.format(url=self.baseurl, realm=realm, id=cid, name=name)
+        try:
+            return json.loads(to_native(open_url(role_url, method="GET", headers=self.restheaders,
+                                                 validate_certs=self.validate_certs).read()))
+        except HTTPError as e:
+            if e.code == 404:
+                return None
+            else:
+                self.module.fail_json(msg='Could not fetch role %s in client %s of realm %s: %s'
+                                          % (name, clientid, realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not fetch role %s for client %s in realm %s: %s'
+                                      % (name, clientid, realm, str(e)))
+
+    def create_client_role(self, rolerep, clientid, realm='master'):
+        """ Create a Keycloak client role.
+
+        :param rolerep: a RoleRepresentation of the role to be created. Must contain at minimum the field name.
+        :param clientid: Client id for the client role
+        :param realm: Realm in which the role resides
+        :return: HTTPResponse object on success
+        """
+        cid = self.get_client_id(clientid, realm=realm)
+        if cid is None:
+            self.module.fail_json(msg='Could not find client %s in realm %s'
+                                      % (clientid, realm))
+        roles_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=cid)
+        try:
+            return open_url(roles_url, method='POST', headers=self.restheaders,
+                            data=json.dumps(rolerep), validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg='Could not create role %s for client %s in realm %s: %s'
+                                      % (rolerep['name'], clientid, realm, str(e)))
+
+    def update_client_role(self, rolerep, clientid, realm="master"):
+        """ Update an existing client role.
+
+        :param rolerep: A RoleRepresentation of the updated role.
+        :param clientid: Client id for the client role
+        :param realm: Realm in which the role resides
+        :return HTTPResponse object on success
+        """
+        cid = self.get_client_id(clientid, realm=realm)
+        if cid is None:
+            self.module.fail_json(msg='Could not find client %s in realm %s'
+                                      % (clientid, realm))
+        role_url = URL_CLIENT_ROLE.format(url=self.baseurl, realm=realm, id=cid, name=rolerep['name'])
+        try:
+            return open_url(role_url, method='PUT', headers=self.restheaders,
+                            data=json.dumps(rolerep), validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg='Could not update role %s for client %s in realm %s: %s'
+                                      % (rolerep['name'], clientid, realm, str(e)))
+
+    def delete_client_role(self, name, clientid, realm="master"):
+        """ Delete a role. One of name or roleid must be provided.
+
+        :param name: The name of the role.
+        :param clientid: Client id for the client role
+        :param realm: Realm in which the role resides
+        """
+        cid = self.get_client_id(clientid, realm=realm)
+        if cid is None:
+            self.module.fail_json(msg='Could not find client %s in realm %s'
+                                      % (clientid, realm))
+        role_url = URL_CLIENT_ROLE.format(url=self.baseurl, realm=realm, id=cid, name=name)
+        try:
+            return open_url(role_url, method='DELETE', headers=self.restheaders,
+                            validate_certs=self.validate_certs)
+        except Exception as e:
+            self.module.fail_json(msg='Unable to delete role %s for client %s in realm %s: %s'
+                                      % (name, clientid, realm, str(e)))
 
     def get_authentication_flow_by_alias(self, alias, realm='master'):
         """

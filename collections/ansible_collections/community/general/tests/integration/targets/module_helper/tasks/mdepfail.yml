@@ -1,3 +1,6 @@
+# (c) 2021, Alexei Znamensky
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 - name: test failing dependency
   mdepfail:
     a: 123
@@ -7,8 +10,8 @@
 - name: assert failing dependency
   assert:
     that:
-      - result.failed is true
+      - result is failed
       - '"Failed to import" in result.msg'
       - '"nopackagewiththisname" in result.msg'
-      - '"ModuleNotFoundError:" in result.exception'
+      - '"ModuleNotFoundError:" in result.exception or "ImportError:" in result.exception'
       - '"nopackagewiththisname" in result.exception'
