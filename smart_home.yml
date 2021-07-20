@@ -11,7 +11,7 @@
     - role: sshd
       tags: sshd
     - role: ssh_login
-      tags: ssh_login
+      tags: sshlogin
     - role: msmtp
       tags: msmtp
     - role: docker
