@@ -72,6 +72,16 @@ grafana_datasources:
       secureJsonData:
         token: "{{ grafana_datasources_influxdb_token }}"
 
+# https://github.com/home-assistant/core/releases
+home_assistant_docker_image_version: 2021.7.3
+home_assistant_docker_labels:
+  traefik.enable: "true"
+  traefik.http.routers.homeassistant.rule: Host(`homeassistant.clubstr.de`)
+  traefik.http.routers.homeassistant.entrypoints: websecure
+  traefik.http.routers.homeassistant.service: homeassistant-service
+  traefik.http.services.homeassistant-service.loadbalancer.server.port: 8123
+home_assistant_docker_network: internal
+
 # https://github.com/traefik/traefik/releases
 traefik_docker_image_version: 2.4.8
 traefik_docker_labels:
