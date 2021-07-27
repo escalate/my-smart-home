@@ -1,4 +1,12 @@
-- name: Create read-only directories
+- name: Create application user
+  ansible.builtin.user:
+    name: grafana
+    uid: 10100
+    group: root
+    create_home: false
+    shell: /sbin/nologin
+
+- name: Create config directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -14,21 +22,21 @@
     - "{{ grafana_etc_path }}/provisioning/notifiers"
     - "{{ grafana_etc_path }}/provisioning/plugins"
 
-- name: Create writeable data directory
+- name: Create data directory
   ansible.builtin.file:
     path: "{{ grafana_data_path }}"
     state: directory
-    owner: nobody
-    group: nogroup
-    mode: 0700
+    owner: grafana
+    group: root
+    mode: 0775
 
-- name: Create writeable backup directory
+- name: Create backup directory
   ansible.builtin.file:
     path: "{{ grafana_backup_path }}"
     state: directory
-    owner: nobody
-    group: nogroup
-    mode: 0755
+    owner: grafana
+    group: root
+    mode: 0775
 
 - name: Create service configuration
   ansible.builtin.template:
@@ -42,7 +50,7 @@
 
 - name: Define environment variables
   community.general.ini_file:
-    path: "{{ grafana_etc_path }}/grafana.env"
+    path: /etc/grafana.env
     section: ""
     option: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -76,15 +84,15 @@
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ grafana_etc_path }}/dashboards"
-    owner: nobody
-    group: nogroup
+    owner: grafana
+    group: root
     mode: 0644
   with_fileglob:
     - static_files/grafana/*.json
 
 - name: Define Docker container labels
   community.general.ini_file:
-    path: "{{ grafana_etc_path }}/grafana.label"
+    path: /etc/grafana.label
     section: ""
     option: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -136,6 +144,7 @@
     force_basic_auth: true
     status_code: 200
     return_content: true
+  no_log: true
   register: grafana_user_list
 
 - name: Add users
@@ -156,6 +165,7 @@
         "password":"{{ item.password }}"
       }
     status_code: 200
+  no_log: true
   loop: "{{ grafana_users }}"
   when: item.login not in (grafana_user_list.json | map(attribute='login') | list)
 

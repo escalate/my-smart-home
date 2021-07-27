@@ -52,7 +52,7 @@ roles:
   # https://galaxy.ansible.com/escalate/grafana
   - name: grafana
     src: escalate.grafana
-    version: v1.4.1
+    version: v1.7.0
 
   # https://galaxy.ansible.com/escalate/home_assistant
   - name: home_assistant
