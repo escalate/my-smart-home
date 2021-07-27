@@ -1,0 +1,47 @@
+[Unit]
+Description=Telegraf
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull telegraf:{{ telegraf_docker_image_version }}
+ExecStart=/usr/bin/docker run \
+--name %n \
+--init \
+--memory={{ telegraf_docker_memory }} \
+{% if telegraf_env_vars | dict2items | length > 0 %}
+--env-file=/etc/telegraf.env \
+{% endif %}
+--env=HOST_ETC=/hostfs/etc \
+--env=HOST_PROC=/hostfs/proc \
+--env=HOST_SYS=/hostfs/sys \
+--env=HOST_VAR=/hostfs/var \
+--env=HOST_RUN=/hostfs/run \
+--env=HOST_MOUNT_PREFIX=/hostfs \
+{% if telegraf_docker_labels | dict2items | length > 0 %}
+--label-file=/etc/telegraf.label \
+{% endif %}
+--mount=type=bind,source={{ telegraf_etc_path }},destination=/etc/telegraf,readonly=true \
+--mount=type=bind,source=/,destination=/hostfs,readonly=true \
+--network={{ telegraf_docker_network }} \
+--network-alias=telegraf \
+{% if telegraf_docker_publish_ports | length > 0 %}
+{% for port in telegraf_docker_publish_ports %}
+--publish={{ port }} \
+{% endfor %}
+{% endif %}
+--user=10400:0 \
+telegraf:{{ telegraf_docker_image_version }}
+ExecStop=/usr/bin/docker stop %n
+SyslogIdentifier=%n
+TimeoutStartSec=infinity
+StartLimitInterval=30
+StartLimitBurst=5
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

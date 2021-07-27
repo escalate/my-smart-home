@@ -46,6 +46,9 @@ influxdb_buckets:
   - name: Home Assistant
     description: Bucket for Home Assistant
     retention: 14d
+  - name: Telegraf
+    description: Bucket for Telegraf
+    retention: 5d
 
 # https://github.com/grafana/grafana/releases
 grafana_docker_image_version: 7.5.10
@@ -87,6 +90,67 @@ home_assistant_config:
   http:
     use_x_forwarded_for: true
     trusted_proxies: 172.18.0.0/16
+
+# https://github.com/influxdata/telegraf/releases
+telegraf_docker_image_version: 1.19.1
+telegraf_docker_network: internal
+telegraf_docker_publish_ports:
+  - 8081:8081
+  - 8094:8094
+telegraf_config: |
+  [agent]
+    interval = "20s"
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/cpu/README.md
+  [[inputs.cpu]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/disk/README.md
+  [[inputs.disk]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/diskio/README.md
+  [[inputs.diskio]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/http_listener_v2/README.md
+  [[inputs.http_listener_v2]]
+    service_address = ":8081"
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/kernel/README.md
+  [[inputs.kernel]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/mem/README.md
+  [[inputs.mem]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/net/NET_README.md
+  [[inputs.net]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/processes/README.md
+  [[inputs.processes]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/socket_listener/README.md
+  [[inputs.socket_listener]]
+    service_address = "udp4://:8094"
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/swap/README.md
+  [[inputs.swap]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/system/README.md
+  [[inputs.system]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/systemd_units/README.md
+  [[inputs.systemd_units]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/outputs/influxdb_v2/README.md
+  [[outputs.influxdb_v2]]
+    urls = ["influxdb:8086"]
+    organization = "{{ influxdb_primary_organization_name }}"
+    bucket = "Loxone MiniServer"
+    namepass = ["loxone_*"]
+
+  [[outputs.influxdb_v2]]
+    urls = ["influxdb:8086"]
+    organization = "{{ influxdb_primary_organization_name }}"
+    bucket = "Telegraf"
+    namedrop = ["loxone_*"]
 
 # https://github.com/traefik/traefik/releases
 traefik_docker_image_version: 2.4.12

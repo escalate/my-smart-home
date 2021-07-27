@@ -22,5 +22,7 @@
       tags: grafana
     - role: home_assistant
       tags: homeassistant
+    - role: telegraf
+      tags: telegraf
     - role: traefik
       tags: traefik

@@ -1,0 +1,71 @@
+- name: Create application user
+  ansible.builtin.user:
+    name: telegraf
+    uid: 10400
+    group: root
+    create_home: false
+    shell: /sbin/nologin
+
+- name: Create config directory
+  ansible.builtin.file:
+    path: "{{ telegraf_etc_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create service configuration
+  ansible.builtin.template:
+    src: telegraf.conf.j2
+    dest: "{{ telegraf_etc_path }}/telegraf.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart telegraf service
+
+- name: Define environment variables
+  community.general.ini_file:
+    path: "/etc/telegraf.env"
+    section: ""
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  loop: "{{ telegraf_env_vars | dict2items }}"
+  notify: Restart telegraf service
+
+- name: Define Docker container labels
+  community.general.ini_file:
+    path: "/etc/telegraf.label"
+    section: ""
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+    owner: root
+    group: root
+    mode: 0644
+  loop: "{{ telegraf_docker_labels | dict2items }}"
+  notify: Restart telegraf service
+
+- name: Pull Docker image
+  community.docker.docker_image:
+    name: "telegraf:{{ telegraf_docker_image_version }}"
+    source: pull
+
+- name: Create systemd service
+  ansible.builtin.template:
+    src: telegraf.service.j2
+    dest: /etc/systemd/system/telegraf.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart telegraf service
+
+- name: Start and enable service
+  ansible.builtin.systemd:
+    name: telegraf
+    state: started
+    enabled: true
+    daemon_reload: true
