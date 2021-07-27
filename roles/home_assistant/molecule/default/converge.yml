@@ -7,16 +7,14 @@
       maintainer: me@example.com
     home_assistant_docker_network: internal
     home_assistant_data_path: /var/lib/home-assistant
-    home_assistant_etc_path: /etc/home-assistant
-    home_assistant_bind_address: 127.0.0.1
     home_assistant_additional_user_groups:
       - tty
     home_assistant_env_vars:
-      PUID: 9000
-      PGID: 9000
+      PUID: 10200
+      PGID: 0
       PACKAGES: iputils
-    home_assistant_config_yaml:
+    home_assistant_config:
       default_config: {}
   roles:
     - role: ansible-raspberry-home-assistant-docker
-      tags: home-assistant
+      tags: homeassistant

@@ -82,7 +82,7 @@ home_assistant_docker_labels:
   traefik.http.routers.homeassistant.service: homeassistant-service
   traefik.http.services.homeassistant-service.loadbalancer.server.port: 8123
 home_assistant_docker_network: internal
-home_assistant_config_yaml:
+home_assistant_config:
   default_config: {}
   http:
     use_x_forwarded_for: true
