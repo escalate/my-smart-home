@@ -1,32 +1,38 @@
-- name: Create read-only directories
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: root
+- name: Create application user
+  ansible.builtin.user:
+    name: influxdb
+    uid: 10300
     group: root
-    mode: 0755
-  loop:
-    - "{{ influxdb_etc_path }}"
+    create_home: false
+    shell: /sbin/nologin
 
-- name: Create writeable data directories
+- name: Create config directory
+  ansible.builtin.file:
+    path: "{{ influxdb_etc_path }}"
+    state: directory
+    owner: influxdb
+    group: root
+    mode: 0775  # https://github.com/influxdata/influxdata-docker/blob/master/influxdb/2.0/entrypoint.sh#L74
+
+- name: Create data directory
   ansible.builtin.file:
     path: "{{ influxdb_data_path }}"
     state: directory
-    owner: nobody
-    group: nogroup
-    mode: 0700
+    owner: influxdb
+    group: root
+    mode: 0700  # https://github.com/influxdata/influxdata-docker/blob/master/influxdb/2.0/entrypoint.sh#L71
 
-- name: Create writeable backup directories
+- name: Create backup directory
   ansible.builtin.file:
     path: "{{ influxdb_backup_path }}"
     state: directory
-    owner: nobody
-    group: nogroup
-    mode: 0755
+    owner: influxdb
+    group: root
+    mode: 0775
 
 - name: Define environment variables
   community.general.ini_file:
-    path: "{{ influxdb_etc_path }}/influxdb.env"
+    path: /etc/influxdb.env
     section: ""
     option: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -39,7 +45,7 @@
 
 - name: Define Docker container labels
   community.general.ini_file:
-    path: "{{ influxdb_etc_path }}/influxdb.label"
+    path: /etc/influxdb.label
     section: ""
     option: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -93,7 +99,7 @@
     --retention '{{ influxdb_primary_bucket_name_retention_period }}' \
     --force
   args:
-    creates: "{{ influxdb_data_path }}/configs"
+    creates: "{{ influxdb_etc_path }}/influx-configs"
 
 - name: List users
   ansible.builtin.command: |
