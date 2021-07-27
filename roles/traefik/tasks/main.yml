@@ -1,20 +1,26 @@
-- name: Create read-only directories
+- name: Create application user
+  ansible.builtin.user:
+    name: traefik
+    uid: 20000
+    group: root
+    create_home: false
+    shell: /sbin/nologin
+
+- name: Create config directory
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ traefik_etc_path }}"
     state: directory
     owner: root
     group: root
     mode: 0755
-  loop:
-    - "{{ traefik_etc_path }}"
 
-- name: Create writeable data directory
+- name: Create data directory
   ansible.builtin.file:
     path: "{{ traefik_data_path }}"
     state: directory
-    owner: root
+    owner: traefik
     group: root
-    mode: 0700
+    mode: 0775
 
 - name: Create service configuration
   ansible.builtin.template:
@@ -27,7 +33,7 @@
 
 - name: Define environment variables
   community.general.ini_file:
-    path: "{{ traefik_etc_path }}/traefik.env"
+    path: /etc/traefik.env
     section: ""
     option: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -40,7 +46,7 @@
 
 - name: Define Docker container labels
   community.general.ini_file:
-    path: "{{ traefik_etc_path }}/traefik.label"
+    path: /etc/traefik.label
     section: ""
     option: "{{ item.key }}"
     value: "{{ item.value }}"

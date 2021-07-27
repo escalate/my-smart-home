@@ -1,8 +1,8 @@
 """Role testing files using testinfra"""
 
 
-def test_read_only_directories(host):
-    """Check read-only directories"""
+def test_config_directory(host):
+    """Check config directory"""
     f = host.file("/etc/traefik")
     assert f.is_directory
     assert f.user == "root"
@@ -10,13 +10,13 @@ def test_read_only_directories(host):
     assert f.mode == 0o755
 
 
-def test_writeable_directories(host):
-    """Check writeable directories"""
+def test_data_directory(host):
+    """Check data directory"""
     d = host.file("/var/lib/traefik")
     assert d.is_directory
-    assert d.user == "root"
+    assert d.user == "traefik"
     assert d.group == "root"
-    assert d.mode == 0o700
+    assert d.mode == 0o775
 
 
 def test_traefik_config(host):

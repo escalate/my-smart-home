@@ -62,7 +62,7 @@ roles:
   # https://galaxy.ansible.com/escalate/traefik
   - name: traefik
     src: escalate.traefik
-    version: v1.5.1
+    version: v1.7.0
 
 collections:
   # https://galaxy.ansible.com/ansible/posix

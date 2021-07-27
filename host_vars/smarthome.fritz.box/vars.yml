@@ -89,7 +89,7 @@ home_assistant_config:
     trusted_proxies: 172.18.0.0/16
 
 # https://github.com/traefik/traefik/releases
-traefik_docker_image_version: 2.4.8
+traefik_docker_image_version: 2.4.12
 traefik_docker_labels:
   traefik.enable: "true"
   traefik.http.routers.dashboard.rule: Host(`traefik.clubstr.de`)

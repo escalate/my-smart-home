@@ -6,6 +6,7 @@ traefik_docker_network: bridge
 traefik_data_path: /var/lib/traefik
 traefik_etc_path: /etc/traefik
 
+# https://doc.traefik.io/traefik/reference/static-configuration/file/
 traefik_config:
   global:
     checkNewVersion: false
@@ -40,4 +41,5 @@ traefik_config:
     docker:
       exposedByDefault: false
 
+# https://doc.traefik.io/traefik/reference/static-configuration/env/
 traefik_env_vars: {}
