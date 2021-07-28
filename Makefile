@@ -76,7 +76,6 @@ bootstrap:
 	ansible-playbook \
 		$(ANSIBLE_ARGS) \
 		--inventory="hosts" \
-		--vault-password-file="./.vault_pass.txt" \
 		--limit="$(ANSIBLE_LIMIT)" \
 		bootstrap.yml
 
@@ -85,7 +84,6 @@ update:
 	ansible-playbook \
 		$(ANSIBLE_ARGS) \
 		--inventory="hosts" \
-		--vault-password-file="./.vault_pass.txt" \
 		--limit="$(ANSIBLE_LIMIT)" \
 		update.yml
 
@@ -94,6 +92,5 @@ deploy:
 	ansible-playbook \
 		$(ANSIBLE_ARGS) \
 		--inventory="hosts" \
-		--vault-password-file="./.vault_pass.txt" \
 		--limit="$(ANSIBLE_LIMIT)" \
 		$(ANSIBLE_PLAYBOOK)
