@@ -5,6 +5,7 @@ import pytest
 
 
 @pytest.mark.parametrize("config", [
+    ("aliases \"/etc/aliases\""),
     ("auth \"on\""),
     ("syslog \"on\""),
     ("tls \"on\""),

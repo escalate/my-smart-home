@@ -21,6 +21,10 @@ msmtp_acounts:
     user: "{{ vault_msmtp_default_user_name }}"
     password: "{{ vault_msmtp_default_password }}"
 
+msmtp_aliases:
+  root: "{{ vault_email_address }}"
+  default: "{{ vault_email_address }}"
+
 docker_networks:
   - name: internal
     subnet: 172.18.0.0/16

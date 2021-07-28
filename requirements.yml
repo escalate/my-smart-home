@@ -37,7 +37,7 @@ roles:
   # https://galaxy.ansible.com/escalate/msmtp
   - name: msmtp
     src: escalate.msmtp
-    version: v1.0.0
+    version: v1.1.0
 
   # https://galaxy.ansible.com/escalate/docker
   - name: docker

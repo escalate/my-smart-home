@@ -22,3 +22,12 @@
     cmd: msmtp --serverinfo
   when: msmtp_acounts | length
   changed_when: false
+
+- name: Configure aliases
+  ansible.builtin.template:
+    src: aliases.j2
+    dest: /etc/aliases
+    owner: root
+    group: root
+    mode: 0644
+  notify: Update aliases database
