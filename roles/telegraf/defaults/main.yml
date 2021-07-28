@@ -14,7 +14,6 @@ telegraf_config: |
 
   # Configuration for telegraf agent
   [agent]
-    # Default data collection interval for all inputs
     interval = "20s"
 
   # Read metrics about cpu usage
@@ -29,14 +28,9 @@ telegraf_config: |
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/diskio/README.md
   [[inputs.diskio]]
 
-  # Read metrics about docker containers
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/docker/README.md
-  [[inputs.docker]]
-
   # Generic HTTP write listener
-  # https://github.com/influxdata/telegraf/tree/release-1.19/plugins/inputs/http_listener_v2
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/http_listener_v2/README.md
   [[inputs.http_listener_v2]]
-    ## Address and port to host HTTP listener on
     service_address = ":8080"
 
   # Get kernel statistics from /proc/stat
@@ -58,7 +52,6 @@ telegraf_config: |
   # Generic socket listener capable of handling multiple socket types.
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/socket_listener/README.md
   [[inputs.socket_listener]]
-    ## URL to listen on
     service_address = "udp://:8094"
 
   # Read metrics about swap memory usage
@@ -72,5 +65,11 @@ telegraf_config: |
   # Gather systemd units state
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/systemd_units/README.md
   [[inputs.systemd_units]]
+
+  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/outputs/influxdb_v2/README.md
+  [[outputs.influxdb_v2]]
+    urls = ["influxdb:8086"]
+    organization = "my-org"
+    bucket = "my-bucket"
 
 telegraf_env_vars: []
