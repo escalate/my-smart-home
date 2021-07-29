@@ -69,7 +69,9 @@ lint:
 	ec
 	yamllint --strict --config-file .yamllint .
 	ansible-lint .
+ifndef CI
 	find . -maxdepth 1 -name "*.yml" -not -name "requirements.yml" | xargs -n1 ansible-playbook --inventory="hosts" --syntax-check
+endif
 
 .PHONY: bootstrap
 bootstrap:
