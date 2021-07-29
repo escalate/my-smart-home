@@ -72,4 +72,4 @@ telegraf_config: |
     organization = "my-org"
     bucket = "my-bucket"
 
-telegraf_env_vars: []
+telegraf_env_vars: {}
