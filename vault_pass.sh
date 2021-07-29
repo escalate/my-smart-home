@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [ -f "/etc/ansible/.vault_pass.txt" ]; then
     cat "/etc/ansible/.vault_pass.txt"

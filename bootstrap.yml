@@ -115,7 +115,7 @@
         name: Ansible deployment
         minute: "*/10"
         user: root
-        job: "ansible-pull --url=https://github.com/escalate/my-smart-home.git --directory=/etc/gitops --inventory=/etc/ansible/hosts --vault-password-file=/etc/ansible/.vault_pass.txt site.yml 2>&1 | logger --tag ansible-deployment"
+        job: "ansible-pull --url=https://github.com/escalate/my-smart-home.git --directory=/etc/gitops --inventory=/etc/ansible/hosts site.yml 2>&1 | logger --tag ansible-deployment"
         cron_file: /mnt/usbdisk/etc/crontab
 
     - name: Regather facts
