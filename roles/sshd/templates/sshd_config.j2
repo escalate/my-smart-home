@@ -71,7 +71,7 @@ PrintMotd yes
 AcceptEnv LANG LC_*
 
 # Subsystems
-Subsystem sftp internal-sftp
+Subsystem sftp internal-sftp -l {{ sshd_loglevel }}
 
 # Permissions
 {% if sshd_allow_users | length %}

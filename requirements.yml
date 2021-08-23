@@ -27,7 +27,7 @@ roles:
   # https://galaxy.ansible.com/escalate/sshd
   - name: sshd
     src: escalate.sshd
-    version: v1.0.0
+    version: v1.1.0
 
   # https://galaxy.ansible.com/escalate/ssh_login
   - name: ssh_login
