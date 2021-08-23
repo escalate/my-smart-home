@@ -15,6 +15,24 @@
     group: root
     mode: 0775
 
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ home_assistant_backup_path }}"
+    state: directory
+    owner: home-assistant
+    group: root
+    mode: 0775
+
+- name: Create service configuration
+  ansible.builtin.template:
+    src: configuration.yaml.j2
+    dest: "{{ home_assistant_data_path }}/configuration.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  no_log: true
+  notify: Restart home-assistant service
+
 - name: Define environment variables
   community.general.ini_file:
     path: /etc/home-assistant.env
@@ -28,6 +46,22 @@
   loop: "{{ home_assistant_env_vars | dict2items }}"
   notify: Restart home-assistant service
 
+- name: Create Docker non-root start script
+  ansible.builtin.git:
+    repo: https://github.com/tribut/homeassistant-docker-venv.git
+    dest: "{{ home_assistant_data_path }}/docker"
+    version: master
+  notify: Restart home-assistant service
+
+- name: Create secrets configuration
+  ansible.builtin.template:
+    src: secrets.yaml.j2
+    dest: "{{ home_assistant_data_path }}/secrets.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart home-assistant service
+
 - name: Define Docker container labels
   community.general.ini_file:
     path: /etc/home-assistant.label
@@ -39,31 +73,6 @@
     group: root
     mode: 0644
   loop: "{{ home_assistant_docker_labels | dict2items }}"
-  notify: Restart home-assistant service
-
-- name: Create Docker non-root start script
-  ansible.builtin.git:
-    repo: https://github.com/tribut/homeassistant-docker-venv.git
-    dest: "{{ home_assistant_data_path }}/docker"
-    version: master
-  notify: Restart home-assistant service
-
-- name: Create configuration yaml
-  ansible.builtin.template:
-    src: configuration.yaml.j2
-    dest: "{{ home_assistant_data_path }}/configuration.yaml"
-    owner: root
-    group: root
-    mode: 0644
-  notify: Restart home-assistant service
-
-- name: Create secrets yaml
-  ansible.builtin.template:
-    src: secrets.yaml.j2
-    dest: "{{ home_assistant_data_path }}/secrets.yaml"
-    owner: root
-    group: root
-    mode: 0644
   notify: Restart home-assistant service
 
 - name: Pull Docker image
@@ -99,3 +108,18 @@
   until: result.status == 401
   retries: 60
   delay: 1
+
+- name: Create backup script
+  ansible.builtin.template:
+    src: backup-home-assistant.sh.j2
+    dest: /usr/local/bin/backup-home-assistant.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Add backup cron job
+  ansible.builtin.cron:
+    name: Backup Home Assistant
+    minute: "0"
+    job: "/usr/local/bin/backup-home-assistant.sh || echo \"ERROR: A problem occurred during backup of Home Assistant. Please check the logfiles. journalctl -t backup-home-assistant.sh\""  # noqa 204
+    user: root
