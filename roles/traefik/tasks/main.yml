@@ -29,6 +29,7 @@
     owner: root
     group: root
     mode: 0644
+  no_log: true
   notify: Restart traefik service
 
 - name: Define environment variables
@@ -83,7 +84,7 @@
 
 - name: Wait for service to become available
   ansible.builtin.uri:
-    url: http://localhost/
+    url: http://localhost:80/
     status_code:
       - 200
       - 301

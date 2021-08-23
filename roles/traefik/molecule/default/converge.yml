@@ -6,6 +6,7 @@
     traefik_docker_labels:
       maintainer: me@example.com
     traefik_docker_network: internal
+    traefik_data_path: /var/lib/traefik
     traefik_etc_path: /etc/traefik
     traefik_config:
       global:
@@ -30,7 +31,7 @@
         docker:
           exposedByDefault: false
     traefik_env_vars:
-      TRAEFIK_API_DEBUG: true
+      TRAEFIK_API_DEBUG: "true"
   roles:
-    - role: ansible-raspberry-traefik-proxy-docker
+    - role: ansible-raspberry-traefik-docker
       tags: traefik
