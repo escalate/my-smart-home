@@ -21,11 +21,12 @@
     owner: root
     group: root
     mode: 0644
+  no_log: true
   notify: Restart telegraf service
 
 - name: Define environment variables
   community.general.ini_file:
-    path: "/etc/telegraf.env"
+    path: /etc/telegraf.env
     section: ""
     option: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -38,7 +39,7 @@
 
 - name: Define Docker container labels
   community.general.ini_file:
-    path: "/etc/telegraf.label"
+    path: /etc/telegraf.label
     section: ""
     option: "{{ item.key }}"
     value: "{{ item.value }}"
