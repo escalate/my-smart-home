@@ -157,7 +157,7 @@ telegraf_config: |
     namedrop = ["loxone_*"]
 
 # https://github.com/traefik/traefik/releases
-traefik_docker_image_version: 2.4.12
+traefik_docker_image_version: 2.5.1
 traefik_docker_labels:
   traefik.enable: "true"
   traefik.http.routers.dashboard.rule: Host(`traefik.clubstr.de`)
