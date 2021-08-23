@@ -1,8 +1,13 @@
+- name: Get all groups
+  getent:
+    database: group
+    split: ':'
+
 - name: Create application user
   ansible.builtin.user:
     name: traefik
     uid: 20000
-    group: root
+    group: "{{ getent_group.docker[1] | default('root') }}"
     create_home: false
     shell: /sbin/nologin
 
