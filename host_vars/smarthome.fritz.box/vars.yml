@@ -96,7 +96,7 @@ home_assistant_config:
     trusted_proxies: 172.18.0.0/16
 
 # https://github.com/influxdata/telegraf/releases
-telegraf_docker_image_version: 1.19.1
+telegraf_docker_image_version: 1.19.3
 telegraf_docker_network: internal
 telegraf_docker_publish_ports:
   - 8081:8081
