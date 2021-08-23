@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright: (c) 2018, Juergen Wiebe <wiebe@e-spirit.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -84,7 +85,8 @@ def main():
     module = UTMModule(
         argument_spec=dict(
             name=dict(type='str', required=True)
-        )
+        ),
+        supports_check_mode=True,
     )
     try:
         UTM(module, endpoint, key_to_check_for_changes, info_only=True).execute()

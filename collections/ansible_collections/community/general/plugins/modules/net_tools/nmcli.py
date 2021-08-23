@@ -51,10 +51,11 @@ options:
     type:
         description:
             - This is the type of device or network connection that you wish to create or modify.
+            - Type C(dummy) is added in community.general 3.5.0.
             - Type C(generic) is added in Ansible 2.5.
             - Type C(infiniband) is added in community.general 2.0.0.
         type: str
-        choices: [ bond, bond-slave, bridge, bridge-slave, ethernet, generic, infiniband, ipip, sit, team, team-slave, vlan, vxlan, wifi ]
+        choices: [ bond, bond-slave, bridge, bridge-slave, dummy, ethernet, generic, infiniband, ipip, sit, team, team-slave, vlan, vxlan, wifi ]
     mode:
         description:
             - This is the type of device or network connection that you wish to create for a bond or bridge.
@@ -331,10 +332,10 @@ options:
        version_added: 2.0.0
     wifi_sec:
        description:
-            - 'The security configuration of the Wifi connection. The valid attributes are listed on:'
-            - 'U(https://developer.gnome.org/NetworkManager/stable/settings-802-11-wireless-security.html)'
-            - 'For instance to use common WPA-PSK auth with a password:'
-            - '- C({key-mgmt: wpa-psk, psk: my_password})'
+            - 'The security configuration of the WiFi connection. The valid attributes are listed on:
+              U(https://networkmanager.dev/docs/api/latest/settings-802-11-wireless-security.html).'
+            - 'For instance to use common WPA-PSK auth with a password:
+              C({key-mgmt: wpa-psk, psk: my_password}).'
        type: dict
        version_added: 3.0.0
     ssid:
@@ -342,6 +343,14 @@ options:
             - Name of the Wireless router or the access point.
        type: str
        version_added: 3.0.0
+    wifi:
+       description:
+            - 'The configuration of the WiFi connection. The valid attributes are listed on:
+              U(https://networkmanager.dev/docs/api/latest/settings-802-11-wireless.html).'
+            - 'For instance to create a hidden AP mode WiFi connection:
+              C({hidden: true, mode: ap}).'
+       type: dict
+       version_added: 3.5.0
 '''
 
 EXAMPLES = r'''
@@ -658,6 +667,18 @@ EXAMPLES = r'''
     autoconnect: true
     state: present
 
+- name: Create a hidden AP mode wifi connection
+  community.general.nmcli:
+    type: wifi
+    conn_name: ChocoMaster
+    ifname: wlo1
+    ssid: ChocoMaster
+    wifi:
+      hidden: true
+      mode: ap
+    autoconnect: true
+    state: present
+
 '''
 
 RETURN = r"""#
@@ -687,6 +708,15 @@ class Nmcli(object):
 
     platform = 'Generic'
     distribution = None
+
+    SECRET_OPTIONS = (
+        '802-11-wireless-security.leap-password',
+        '802-11-wireless-security.psk',
+        '802-11-wireless-security.wep-key0',
+        '802-11-wireless-security.wep-key1',
+        '802-11-wireless-security.wep-key2',
+        '802-11-wireless-security.wep-key3'
+    )
 
     def __init__(self, module):
         self.module = module
@@ -750,10 +780,13 @@ class Nmcli(object):
         self.dhcp_client_id = module.params['dhcp_client_id']
         self.zone = module.params['zone']
         self.ssid = module.params['ssid']
+        self.wifi = module.params['wifi']
         self.wifi_sec = module.params['wifi_sec']
 
         if self.method4:
             self.ipv4_method = self.method4
+        elif self.type == 'dummy' and not self.ip4:
+            self.ipv4_method = 'disabled'
         elif self.ip4:
             self.ipv4_method = 'manual'
         else:
@@ -761,10 +794,14 @@ class Nmcli(object):
 
         if self.method6:
             self.ipv6_method = self.method6
+        elif self.type == 'dummy' and not self.ip6:
+            self.ipv6_method = 'disabled'
         elif self.ip6:
             self.ipv6_method = 'manual'
         else:
             self.ipv6_method = None
+
+        self.edit_commands = []
 
     def execute_command(self, cmd, use_unsafe_shell=False, data=None):
         if isinstance(cmd, list):
@@ -878,8 +915,22 @@ class Nmcli(object):
             })
         elif self.type == 'wifi':
             options.update({
+                '802-11-wireless.ssid': self.ssid,
                 'connection.slave-type': 'bond' if self.master else None,
             })
+            if self.wifi:
+                for name, value in self.wifi.items():
+                    # Disregard 'ssid' via 'wifi.ssid'
+                    if name == 'ssid':
+                        continue
+                    options.update({
+                        '802-11-wireless.%s' % name: value
+                    })
+            if self.wifi_sec:
+                for name, value in self.wifi_sec.items():
+                    options.update({
+                        '802-11-wireless-security.%s' % name: value
+                    })
         # Convert settings values based on the situation.
         for setting, value in options.items():
             setting_type = self.settings_type(setting)
@@ -908,6 +959,7 @@ class Nmcli(object):
         return self.type in (
             'bond',
             'bridge',
+            'dummy',
             'ethernet',
             'generic',
             'infiniband',
@@ -926,6 +978,7 @@ class Nmcli(object):
     @property
     def mtu_conn_type(self):
         return self.type in (
+            'dummy',
             'ethernet',
             'team-slave',
         )
@@ -978,7 +1031,8 @@ class Nmcli(object):
                        'ipv4.ignore-auto-routes',
                        'ipv4.may-fail',
                        'ipv6.ignore-auto-dns',
-                       'ipv6.ignore-auto-routes'):
+                       'ipv6.ignore-auto-routes',
+                       '802-11-wireless.hidden'):
             return bool
         elif setting in ('ipv4.dns',
                          'ipv4.dns-search',
@@ -1027,13 +1081,6 @@ class Nmcli(object):
         else:
             ifname = self.ifname
 
-        if self.type == "wifi":
-            cmd.append('ssid')
-            cmd.append(self.ssid)
-            if self.wifi_sec:
-                for name, value in self.wifi_sec.items():
-                    cmd += ['wifi-sec.%s' % name, value]
-
         options = {
             'connection.interface-name': ifname,
         }
@@ -1043,19 +1090,24 @@ class Nmcli(object):
         # Constructing the command.
         for key, value in options.items():
             if value is not None:
+                if key in self.SECRET_OPTIONS:
+                    self.edit_commands += ['set %s %s' % (key, value)]
+                    continue
                 cmd.extend([key, value])
 
         return self.execute_command(cmd)
 
     def create_connection(self):
         status = self.connection_update('create')
+        if status[0] == 0 and self.edit_commands:
+            status = self.edit_connection()
         if self.create_connection_up:
             status = self.up_connection()
         return status
 
     @property
     def create_connection_up(self):
-        if self.type in ('bond', 'ethernet', 'infiniband', 'wifi'):
+        if self.type in ('bond', 'dummy', 'ethernet', 'infiniband', 'wifi'):
             if (self.mtu is not None) or (self.dns4 is not None) or (self.dns6 is not None):
                 return True
         elif self.type == 'team':
@@ -1069,10 +1121,18 @@ class Nmcli(object):
         return self.execute_command(cmd)
 
     def modify_connection(self):
-        return self.connection_update('modify')
+        status = self.connection_update('modify')
+        if status[0] == 0 and self.edit_commands:
+            status = self.edit_connection()
+        return status
+
+    def edit_connection(self):
+        data = "\n".join(self.edit_commands + ['save', 'quit'])
+        cmd = [self.nmcli_bin, 'con', 'edit', self.conn_name]
+        return self.execute_command(cmd, data=data)
 
     def show_connection(self):
-        cmd = [self.nmcli_bin, 'con', 'show', self.conn_name]
+        cmd = [self.nmcli_bin, '--show-secrets', 'con', 'show', self.conn_name]
 
         (rc, out, err) = self.execute_command(cmd)
 
@@ -1181,6 +1241,7 @@ def main():
                           'bond-slave',
                           'bridge',
                           'bridge-slave',
+                          'dummy',
                           'ethernet',
                           'generic',
                           'infiniband',
@@ -1255,6 +1316,7 @@ def main():
             ip_tunnel_local=dict(type='str'),
             ip_tunnel_remote=dict(type='str'),
             ssid=dict(type='str'),
+            wifi=dict(type='dict'),
             wifi_sec=dict(type='dict', no_log=True),
         ),
         mutually_exclusive=[['never_default4', 'gw4']],

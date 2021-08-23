@@ -66,6 +66,7 @@ options:
     description:
       - Command to execute when the container starts. A command may be either a string or a list.
       - Prior to version 2.4, strings were split on commas.
+      - See I(command_handling) for differences in how strings and lists are handled.
     type: raw
   comparisons:
     description:
@@ -103,6 +104,24 @@ options:
     choices:
       - compatibility
       - no_defaults
+  command_handling:
+    description:
+      - The default behavior for I(command) (when provided as a list) and I(entrypoint) is to
+        convert them to strings without considering shell quoting rules. (For comparing idempotency,
+        the resulting string is split considering shell quoting rules.)
+      - Also, setting I(command) to an empty list of string, and setting I(entrypoint) to an empty
+        list will be handled as if these options are not specified. This is different from idempotency
+        handling for other container-config related options.
+      - When this is set to C(compatiblity), which is the default until community.docker 3.0.0, the
+        current behavior will be kept.
+      - When this is set to C(correct), these options are kept as lists, and an empty value or empty
+        list will be handled correctly for idempotency checks.
+      - In community.docker 3.0.0, the default will change to C(correct).
+    type: str
+    choices:
+      - compatibility
+      - correct
+    version_added: 1.9.0
   cpu_period:
     description:
       - Limit CPU CFS (Completely Fair Scheduler) period.
@@ -296,6 +315,7 @@ options:
   entrypoint:
     description:
       - Command that overwrites the default C(ENTRYPOINT) of the image.
+      - See I(command_handling) for differences in how strings and lists are handled.
     type: list
     elements: str
   etc_hosts:
@@ -486,6 +506,7 @@ options:
       source:
         description:
           - Mount source (e.g. a volume name or a host path).
+          - If not supplied when I(type=volume) an anonymous volume will be created.
         type: str
       type:
         description:
@@ -981,7 +1002,7 @@ EXAMPLES = '''
     image: ubuntu:14.04
     networks:
       - name: TestingNet
-        ipv4_address: "172.1.1.100"
+        ipv4_address: "172.16.1.100"
         aliases:
           - sleepyzz
         links:
@@ -999,11 +1020,11 @@ EXAMPLES = '''
     name: sleepy
     networks:
       - name: TestingNet
-        ipv4_address: 172.1.1.18
+        ipv4_address: 172.16.1.18
         links:
           - sleeper
       - name: TestingNet2
-        ipv4_address: 172.1.10.20
+        ipv4_address: 172.16.10.20
 
 - name: Update network with aliases
   community.docker.docker_container:
@@ -1139,11 +1160,9 @@ RETURN = '''
 container:
     description:
       - Facts representing the current state of the container. Matches the docker inspection output.
-      - Before 2.3 this was C(ansible_docker_container) but was renamed in 2.3 to C(docker_container) due to
-        conflicts with the connection plugin.
-      - Empty if I(state) is C(absent)
-      - If I(detached) is C(false), will include C(Output) attribute containing any output from container run.
-    returned: always
+      - Empty if I(state) is C(absent).
+      - If I(detach=false), will include C(Output) attribute containing any output from container run.
+    returned: success; or when I(state=started) and I(detach=false), and when waiting for the container result did not fail
     type: dict
     sample: '{
         "AppArmorProfile": "",
@@ -1181,12 +1200,13 @@ status:
     description:
       - In case a container is started without detaching, this contains the exit code of the process in the container.
       - Before community.docker 1.1.0, this was only returned when non-zero.
-    returned: when I(state) is C(started) and I(detached) is C(false), and when waiting for the container result did not fail
+    returned: when I(state=started) and I(detach=false), and when waiting for the container result did not fail
     type: int
     sample: 0
 '''
 
 import os
+import pipes
 import re
 import shlex
 import traceback
@@ -1223,6 +1243,14 @@ try:
 except Exception:
     # missing Docker SDK for Python handled in ansible.module_utils.docker.common
     pass
+
+
+def shell_join(parts):
+    if getattr(shlex, 'quote', None):
+        quote = shlex.quote
+    else:
+        quote = pipes.quote
+    return ' '.join([quote(part) for part in parts])
 
 
 REQUIRES_CONVERSION_TO_BYTES = [
@@ -1481,14 +1509,47 @@ class TaskParameters(DockerBaseClass):
             # Ensure the MAC address uses colons instead of hyphens for later comparison
             self.mac_address = self.mac_address.replace('-', ':')
 
-        if self.entrypoint:
-            # convert from list to str.
-            self.entrypoint = ' '.join([to_text(x, errors='surrogate_or_strict') for x in self.entrypoint])
+        if client.module.params['command_handling'] == 'correct':
+            if self.entrypoint is not None:
+                self.entrypoint = [to_text(x, errors='surrogate_or_strict') for x in self.entrypoint]
 
-        if self.command:
-            # convert from list to str
-            if isinstance(self.command, list):
-                self.command = ' '.join([to_text(x, errors='surrogate_or_strict') for x in self.command])
+            if self.command is not None:
+                if not isinstance(self.command, list):
+                    # convert from str to list
+                    self.command = shlex.split(to_text(self.command, errors='surrogate_or_strict'))
+                self.command = [to_text(x, errors='surrogate_or_strict') for x in self.command]
+        else:
+            will_change = False
+            if self.entrypoint:
+                # convert from list to str.
+                correct_entrypoint = [to_text(x, errors='surrogate_or_strict') for x in self.entrypoint]
+                self.entrypoint = shlex.split(' '.join([to_text(x, errors='surrogate_or_strict') for x in self.entrypoint]))
+                self.entrypoint = [to_text(x, errors='surrogate_or_strict') for x in self.entrypoint]
+                if correct_entrypoint != self.entrypoint:
+                    will_change = True
+            elif self.entrypoint is not None:
+                will_change = True
+
+            if self.command:
+                # convert from list to str
+                if isinstance(self.command, list):
+                    correct_command = [to_text(x, errors='surrogate_or_strict') for x in self.command]
+                    self.command = shlex.split(' '.join([to_text(x, errors='surrogate_or_strict') for x in self.command]))
+                    self.command = [to_text(x, errors='surrogate_or_strict') for x in self.command]
+                    if correct_command != self.command:
+                        will_change = True
+                else:
+                    self.command = shlex.split(to_text(self.command, errors='surrogate_or_strict'))
+                    self.command = [to_text(x, errors='surrogate_or_strict') for x in self.command]
+            elif self.command is not None:
+                will_change = True
+
+            if will_change and client.module.params['command_handling'] is None:
+                client.module.deprecate(
+                    'The command_handling option will change its default value from "compatibility" to '
+                    '"correct" in community.docker 3.0.0. To remove this warning, please specify an explicit value for it now',
+                    version='3.0.0', collection_name='community.docker'
+                )
 
         self.mounts_opt, self.expected_mounts = self._process_mounts()
 
@@ -2006,7 +2067,7 @@ class TaskParameters(DockerBaseClass):
             datatype = mount['type']
             mount_dict = dict(mount)
             # Sanity checks (so we don't wait for docker-py to barf on input)
-            if mount_dict.get('source') is None and datatype != 'tmpfs':
+            if mount_dict.get('source') is None and datatype not in ('tmpfs', 'volume'):
                 self.client.fail('source must be specified for mount "{0}" of type "{1}"'.format(target, datatype))
             mount_option_types = dict(
                 volume_driver='volume',
@@ -2546,9 +2607,9 @@ class Container(DockerBaseClass):
         return expected_devices
 
     def _get_expected_entrypoint(self):
-        if not self.parameters.entrypoint:
+        if self.parameters.client.module.params['command_handling'] != 'correct' and not self.parameters.entrypoint:
             return None
-        return shlex.split(self.parameters.entrypoint)
+        return self.parameters.entrypoint
 
     def _get_expected_ports(self):
         if self.parameters.published_ports is None:
@@ -2720,9 +2781,9 @@ class Container(DockerBaseClass):
 
     def _get_expected_cmd(self):
         self.log('_get_expected_cmd')
-        if not self.parameters.command:
+        if self.parameters.client.module.params['command_handling'] != 'correct' and not self.parameters.command:
             return None
-        return shlex.split(self.parameters.command)
+        return self.parameters.command
 
     def _convert_simple_dict_to_list(self, param_name, join_with=':'):
         if getattr(self.parameters, param_name, None) is None:
@@ -3104,8 +3165,6 @@ class ContainerManager(DockerBaseClass):
                     else:
                         output = "Result logged using `%s` driver" % logging_driver
 
-                if status != 0:
-                    self.fail(output)
                 if self.parameters.cleanup:
                     self.container_remove(container_id, force=True)
                 insp = self._get_container(container_id)
@@ -3113,6 +3172,10 @@ class ContainerManager(DockerBaseClass):
                     insp.raw['Output'] = output
                 else:
                     insp.raw = dict(Output=output)
+                if status != 0:
+                    # Set `failed` to True and return output as msg
+                    self.results['failed'] = True
+                    self.results['msg'] = output
                 return insp
         return self._get_container(container_id)
 
@@ -3246,7 +3309,7 @@ class AnsibleDockerClientContainer(AnsibleDockerClient):
     __NON_CONTAINER_PROPERTY_OPTIONS = tuple([
         'env_file', 'force_kill', 'keep_volumes', 'ignore_image', 'name', 'pull', 'purge_networks',
         'recreate', 'restart', 'state', 'networks', 'cleanup', 'kill_signal',
-        'output_logs', 'paused', 'removal_wait_timeout', 'default_host_ip',
+        'output_logs', 'paused', 'removal_wait_timeout', 'default_host_ip', 'command_handling',
     ] + list(DOCKER_COMMON_ARGS.keys()))
 
     def _parse_comparisons(self):
@@ -3467,6 +3530,7 @@ def main():
         command=dict(type='raw'),
         comparisons=dict(type='dict'),
         container_default_behavior=dict(type='str', choices=['compatibility', 'no_defaults']),
+        command_handling=dict(type='str', choices=['compatibility', 'correct']),
         cpu_period=dict(type='int'),
         cpu_quota=dict(type='int'),
         cpus=dict(type='float'),

@@ -36,6 +36,16 @@ options:
       - Provide a project name. If not provided, the project name is taken from the basename of I(project_src).
       - Required when I(definition) is provided.
     type: str
+  env_file:
+    description:
+      - By default environment files are loaded from a C(.env) file located directly under the I(project_src) directory.
+      - I(env_file) can be used to specify the path of a custom environment file instead.
+      - The path is relative to the I(project_src) directory.
+      - Requires C(docker-compose) version 1.25.0 or greater.
+      - "Note: C(docker-compose) versions C(<=1.28) load the env file from the current working directory of the
+          C(docker-compose) command rather than I(project_src)."
+    type: path
+    version_added: 1.9.0
   files:
     description:
       - List of Compose file names relative to I(project_src). Overrides C(docker-compose.yml) or C(docker-compose.yaml).
@@ -136,6 +146,8 @@ options:
     description:
       - Use with I(state) C(present) to stop all containers defined in the Compose file.
       - If I(services) is defined, only the containers listed there will be stopped.
+      - Requires C(docker-compose) version 1.17.0 or greater for full support. For older versions, the services will
+        first be started and then stopped when the service is supposed to be created as stopped.
     type: bool
     default: no
   restarted:
@@ -637,6 +649,9 @@ class ContainerManager(DockerBaseClass):
         if self.project_name:
             self.options[u'--project-name'] = self.project_name
 
+        if self.env_file:
+            self.options[u'--env-file'] = self.env_file
+
         if self.files:
             self.options[u'--file'] = self.files
 
@@ -794,15 +809,25 @@ class ContainerManager(DockerBaseClass):
                     with stderr_redirector(err_redir_name):
                         do_build = build_action_from_opts(up_options)
                         self.log('Setting do_build to %s' % do_build)
-                        self.project.up(
-                            service_names=service_names,
-                            start_deps=start_deps,
-                            strategy=converge,
-                            do_build=do_build,
-                            detached=detached,
-                            remove_orphans=self.remove_orphans,
-                            timeout=self.timeout,
-                            start=not self.stopped)
+                        up_kwargs = {
+                            'service_names': service_names,
+                            'start_deps': start_deps,
+                            'strategy': converge,
+                            'do_build': do_build,
+                            'detached': detached,
+                            'remove_orphans': self.remove_orphans,
+                            'timeout': self.timeout,
+                        }
+
+                        if LooseVersion(compose_version) >= LooseVersion('1.17.0'):
+                            up_kwargs['start'] = not self.stopped
+                        elif self.stopped:
+                            self.client.module.warn(
+                                "The 'stopped' option requires docker-compose version >= 1.17.0. " +
+                                "This task was run with docker-compose version %s." % compose_version
+                            )
+
+                        self.project.up(**up_kwargs)
             except Exception as exc:
                 fail_reason = get_failure_info(exc, out_redir_name, err_redir_name,
                                                msg_format="Error starting project %s")
@@ -1124,6 +1149,7 @@ def main():
     argument_spec = dict(
         project_src=dict(type='path'),
         project_name=dict(type='str',),
+        env_file=dict(type='path'),
         files=dict(type='list', elements='path'),
         profiles=dict(type='list', elements='str'),
         state=dict(type='str', default='present', choices=['absent', 'present']),

@@ -389,13 +389,28 @@ def parsekey(module, raw_key, rank=None):
 
     VALID_SSH2_KEY_TYPES = [
         'sk-ecdsa-sha2-nistp256@openssh.com',
+        'sk-ecdsa-sha2-nistp256-cert-v01@openssh.com',
+        'webauthn-sk-ecdsa-sha2-nistp256@openssh.com',
         'ecdsa-sha2-nistp256',
+        'ecdsa-sha2-nistp256-cert-v01@openssh.com',
         'ecdsa-sha2-nistp384',
+        'ecdsa-sha2-nistp384-cert-v01@openssh.com',
         'ecdsa-sha2-nistp521',
+        'ecdsa-sha2-nistp521-cert-v01@openssh.com',
         'sk-ssh-ed25519@openssh.com',
+        'sk-ssh-ed25519-cert-v01@openssh.com',
         'ssh-ed25519',
+        'ssh-ed25519-cert-v01@openssh.com',
         'ssh-dss',
         'ssh-rsa',
+        'ssh-xmss@openssh.com',
+        'ssh-xmss-cert-v01@openssh.com',
+        'rsa-sha2-256',
+        'rsa-sha2-512',
+        'ssh-rsa-cert-v01@openssh.com',
+        'rsa-sha2-256-cert-v01@openssh.com',
+        'rsa-sha2-512-cert-v01@openssh.com',
+        'ssh-dss-cert-v01@openssh.com',
     ]
 
     options = None   # connection options
@@ -648,11 +663,11 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             user=dict(type='str', required=True),
-            key=dict(type='str', required=True),
+            key=dict(type='str', required=True, no_log=False),
             path=dict(type='path'),
             manage_dir=dict(type='bool', default=True),
             state=dict(type='str', default='present', choices=['absent', 'present']),
-            key_options=dict(type='str'),
+            key_options=dict(type='str', no_log=False),
             exclusive=dict(type='bool', default=False),
             comment=dict(type='str'),
             validate_certs=dict(type='bool', default=True),

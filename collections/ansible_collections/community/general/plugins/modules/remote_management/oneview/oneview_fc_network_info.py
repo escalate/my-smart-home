@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # Copyright (c) 2016-2017 Hewlett Packard Enterprise Development LP
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -83,7 +84,10 @@ class FcNetworkInfoModule(OneViewModuleBase):
             params=dict(required=False, type='dict')
         )
 
-        super(FcNetworkInfoModule, self).__init__(additional_arg_spec=argument_spec)
+        super(FcNetworkInfoModule, self).__init__(
+            additional_arg_spec=argument_spec,
+            supports_check_mode=True,
+        )
 
     def execute_module(self):
 

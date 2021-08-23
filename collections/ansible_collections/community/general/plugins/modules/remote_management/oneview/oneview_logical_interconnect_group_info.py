@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright: (c) 2016-2017, Hewlett Packard Enterprise Development LP
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -96,7 +97,10 @@ class LogicalInterconnectGroupInfoModule(OneViewModuleBase):
             params=dict(type='dict'),
         )
 
-        super(LogicalInterconnectGroupInfoModule, self).__init__(additional_arg_spec=argument_spec)
+        super(LogicalInterconnectGroupInfoModule, self).__init__(
+            additional_arg_spec=argument_spec,
+            supports_check_mode=True,
+        )
 
     def execute_module(self):
         if self.module.params.get('name'):

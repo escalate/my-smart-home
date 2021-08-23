@@ -74,6 +74,12 @@ TESTCASE_CONNECTION = [
         'state': 'absent',
         '_ansible_check_mode': True,
     },
+    {
+        'type': 'dummy',
+        'conn_name': 'non_existent_nw_device',
+        'state': 'absent',
+        '_ansible_check_mode': True,
+    },
 ]
 
 TESTCASE_GENERIC = [
@@ -469,6 +475,72 @@ ipv6.ignore-auto-dns:                   no
 ipv6.ignore-auto-routes:                no
 """
 
+TESTCASE_WIRELESS = [
+    {
+        'type': 'wifi',
+        'conn_name': 'non_existent_nw_device',
+        'ifname': 'wireless_non_existant',
+        'ip4': '10.10.10.10/24',
+        'ssid': 'Brittany',
+        'wifi': {
+            'hidden': True,
+            'mode': 'ap',
+        },
+        'state': 'present',
+        '_ansible_check_mode': False,
+    }
+]
+
+TESTCASE_SECURE_WIRELESS = [
+    {
+        'type': 'wifi',
+        'conn_name': 'non_existent_nw_device',
+        'ifname': 'wireless_non_existant',
+        'ip4': '10.10.10.10/24',
+        'ssid': 'Brittany',
+        'wifi_sec': {
+            'key-mgmt': 'wpa-psk',
+            'psk': 'VERY_SECURE_PASSWORD',
+        },
+        'state': 'present',
+        '_ansible_check_mode': False,
+    }
+]
+
+TESTCASE_DUMMY_STATIC = [
+    {
+        'type': 'dummy',
+        'conn_name': 'non_existent_nw_device',
+        'ifname': 'dummy_non_existant',
+        'ip4': '10.10.10.10/24',
+        'gw4': '10.10.10.1',
+        'dns4': ['1.1.1.1', '8.8.8.8'],
+        'ip6': '2001:db8::1/128',
+        'state': 'present',
+        '_ansible_check_mode': False,
+    }
+]
+
+TESTCASE_DUMMY_STATIC_SHOW_OUTPUT = """\
+connection.id:                          non_existent_nw_device
+connection.interface-name:              dummy_non_existant
+connection.autoconnect:                 yes
+802-3-ethernet.mtu:                     auto
+ipv4.method:                            manual
+ipv4.addresses:                         10.10.10.10/24
+ipv4.gateway:                           10.10.10.1
+ipv4.ignore-auto-dns:                   no
+ipv4.ignore-auto-routes:                no
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+ipv4.dns:                               1.1.1.1,8.8.8.8
+ipv6.method:                            auto
+ipv6.ignore-auto-dns:                   no
+ipv6.ignore-auto-routes:                no
+ipv6.method:                            manual
+ipv6.addresses:                         2001:db8::1/128
+"""
+
 
 def mocker_set(mocker,
                connection_exists=False,
@@ -623,6 +695,30 @@ def mocked_ethernet_connection_dhcp_to_static(mocker):
                    (0, TESTCASE_ETHERNET_DHCP_SHOW_OUTPUT, ""),
                    (0, "", ""),
                ))
+
+
+@pytest.fixture
+def mocked_secure_wireless_create_failure(mocker):
+    mocker_set(mocker,
+               execute_return=(1, "", ""))
+
+
+@pytest.fixture
+def mocked_secure_wireless_modify_failure(mocker):
+    mocker_set(mocker,
+               connection_exists=True,
+               execute_return=None,
+               execute_side_effect=(
+                   (0, "", ""),
+                   (1, "", ""),
+               ))
+
+
+@pytest.fixture
+def mocked_dummy_connection_static_unchanged(mocker):
+    mocker_set(mocker,
+               connection_exists=True,
+               execute_return=(0, TESTCASE_DUMMY_STATIC_SHOW_OUTPUT, ""))
 
 
 @pytest.mark.parametrize('patch_ansible_module', TESTCASE_BOND, indirect=['patch_ansible_module'])
@@ -1522,6 +1618,249 @@ def test_create_ethernet_static(mocked_generic_connection_create, capfd):
 def test_ethernet_connection_static_unchanged(mocked_ethernet_connection_static_unchanged, capfd):
     """
     Test : Ethernet connection with static IP configuration unchanged
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert not results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_WIRELESS, indirect=['patch_ansible_module'])
+def test_create_wireless(mocked_generic_connection_create, capfd):
+    """
+    Test : Create wireless connection
+    """
+
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 1
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    add_args, add_kw = arg_list[0]
+
+    assert add_args[0][0] == '/usr/bin/nmcli'
+    assert add_args[0][1] == 'con'
+    assert add_args[0][2] == 'add'
+    assert add_args[0][3] == 'type'
+    assert add_args[0][4] == 'wifi'
+    assert add_args[0][5] == 'con-name'
+    assert add_args[0][6] == 'non_existent_nw_device'
+
+    add_args_text = list(map(to_text, add_args[0]))
+    for param in ['connection.interface-name', 'wireless_non_existant',
+                  'ipv4.addresses', '10.10.10.10/24',
+                  '802-11-wireless.ssid', 'Brittany',
+                  '802-11-wireless.mode', 'ap',
+                  '802-11-wireless.hidden', 'yes']:
+        assert param in add_args_text
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_SECURE_WIRELESS, indirect=['patch_ansible_module'])
+def test_create_secure_wireless(mocked_generic_connection_create, capfd):
+    """
+    Test : Create secure wireless connection
+    """
+
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 2
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    add_args, add_kw = arg_list[0]
+
+    assert add_args[0][0] == '/usr/bin/nmcli'
+    assert add_args[0][1] == 'con'
+    assert add_args[0][2] == 'add'
+    assert add_args[0][3] == 'type'
+    assert add_args[0][4] == 'wifi'
+    assert add_args[0][5] == 'con-name'
+    assert add_args[0][6] == 'non_existent_nw_device'
+
+    add_args_text = list(map(to_text, add_args[0]))
+    for param in ['connection.interface-name', 'wireless_non_existant',
+                  'ipv4.addresses', '10.10.10.10/24',
+                  '802-11-wireless.ssid', 'Brittany',
+                  '802-11-wireless-security.key-mgmt', 'wpa-psk']:
+        assert param in add_args_text
+
+    edit_args, edit_kw = arg_list[1]
+    assert edit_args[0][0] == '/usr/bin/nmcli'
+    assert edit_args[0][1] == 'con'
+    assert edit_args[0][2] == 'edit'
+    assert edit_args[0][3] == 'non_existent_nw_device'
+
+    edit_kw_data = edit_kw['data'].split()
+    for param in ['802-11-wireless-security.psk', 'VERY_SECURE_PASSWORD',
+                  'save',
+                  'quit']:
+        assert param in edit_kw_data
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_SECURE_WIRELESS, indirect=['patch_ansible_module'])
+def test_create_secure_wireless_failure(mocked_secure_wireless_create_failure, capfd):
+    """
+    Test : Create secure wireless connection w/failure
+    """
+
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 1
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    add_args, add_kw = arg_list[0]
+
+    assert add_args[0][0] == '/usr/bin/nmcli'
+    assert add_args[0][1] == 'con'
+    assert add_args[0][2] == 'add'
+    assert add_args[0][3] == 'type'
+    assert add_args[0][4] == 'wifi'
+    assert add_args[0][5] == 'con-name'
+    assert add_args[0][6] == 'non_existent_nw_device'
+
+    add_args_text = list(map(to_text, add_args[0]))
+    for param in ['connection.interface-name', 'wireless_non_existant',
+                  'ipv4.addresses', '10.10.10.10/24',
+                  '802-11-wireless.ssid', 'Brittany',
+                  '802-11-wireless-security.key-mgmt', 'wpa-psk']:
+        assert param in add_args_text
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert results.get('failed')
+    assert 'changed' not in results
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_SECURE_WIRELESS, indirect=['patch_ansible_module'])
+def test_modify_secure_wireless(mocked_generic_connection_modify, capfd):
+    """
+    Test : Modify secure wireless connection
+    """
+
+    with pytest.raises(SystemExit):
+        nmcli.main()
+    assert nmcli.Nmcli.execute_command.call_count == 2
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    add_args, add_kw = arg_list[0]
+
+    assert add_args[0][0] == '/usr/bin/nmcli'
+    assert add_args[0][1] == 'con'
+    assert add_args[0][2] == 'modify'
+    assert add_args[0][3] == 'non_existent_nw_device'
+
+    add_args_text = list(map(to_text, add_args[0]))
+    for param in ['connection.interface-name', 'wireless_non_existant',
+                  'ipv4.addresses', '10.10.10.10/24',
+                  '802-11-wireless.ssid', 'Brittany',
+                  '802-11-wireless-security.key-mgmt', 'wpa-psk']:
+        assert param in add_args_text
+
+    edit_args, edit_kw = arg_list[1]
+    assert edit_args[0][0] == '/usr/bin/nmcli'
+    assert edit_args[0][1] == 'con'
+    assert edit_args[0][2] == 'edit'
+    assert edit_args[0][3] == 'non_existent_nw_device'
+
+    edit_kw_data = edit_kw['data'].split()
+    for param in ['802-11-wireless-security.psk', 'VERY_SECURE_PASSWORD',
+                  'save',
+                  'quit']:
+        assert param in edit_kw_data
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_SECURE_WIRELESS, indirect=['patch_ansible_module'])
+def test_modify_secure_wireless_failure(mocked_secure_wireless_modify_failure, capfd):
+    """
+    Test : Modify secure wireless connection w/failure
+    """
+
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 2
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    add_args, add_kw = arg_list[1]
+
+    assert add_args[0][0] == '/usr/bin/nmcli'
+    assert add_args[0][1] == 'con'
+    assert add_args[0][2] == 'modify'
+    assert add_args[0][3] == 'non_existent_nw_device'
+
+    add_args_text = list(map(to_text, add_args[0]))
+    for param in ['connection.interface-name', 'wireless_non_existant',
+                  'ipv4.addresses', '10.10.10.10/24',
+                  '802-11-wireless.ssid', 'Brittany',
+                  '802-11-wireless-security.key-mgmt', 'wpa-psk']:
+        assert param in add_args_text
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert results.get('failed')
+    assert 'changed' not in results
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_DUMMY_STATIC, indirect=['patch_ansible_module'])
+def test_create_dummy_static(mocked_generic_connection_create, capfd):
+    """
+    Test : Create dummy connection with static IP configuration
+    """
+
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 2
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    add_args, add_kw = arg_list[0]
+
+    assert add_args[0][0] == '/usr/bin/nmcli'
+    assert add_args[0][1] == 'con'
+    assert add_args[0][2] == 'add'
+    assert add_args[0][3] == 'type'
+    assert add_args[0][4] == 'dummy'
+    assert add_args[0][5] == 'con-name'
+    assert add_args[0][6] == 'non_existent_nw_device'
+
+    add_args_text = list(map(to_text, add_args[0]))
+    for param in ['connection.interface-name', 'dummy_non_existant',
+                  'ipv4.addresses', '10.10.10.10/24',
+                  'ipv4.gateway', '10.10.10.1',
+                  'ipv4.dns', '1.1.1.1,8.8.8.8',
+                  'ipv6.addresses', '2001:db8::1/128']:
+        assert param in add_args_text
+
+    up_args, up_kw = arg_list[1]
+    assert up_args[0][0] == '/usr/bin/nmcli'
+    assert up_args[0][1] == 'con'
+    assert up_args[0][2] == 'up'
+    assert up_args[0][3] == 'non_existent_nw_device'
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_DUMMY_STATIC, indirect=['patch_ansible_module'])
+def test_dummy_connection_static_unchanged(mocked_dummy_connection_static_unchanged, capfd):
+    """
+    Test : Dummy connection with static IP configuration unchanged
     """
     with pytest.raises(SystemExit):
         nmcli.main()

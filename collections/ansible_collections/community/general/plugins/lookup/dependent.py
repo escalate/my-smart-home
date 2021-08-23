@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # (c) 2015-2021, Felix Fontein <felix@fontein.de>
 # (c) 2018 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -7,6 +8,7 @@ __metaclass__ = type
 DOCUMENTATION = """
 name: dependent
 short_description: Composes a list with nested elements of other lists or dicts which can depend on previous loop variables
+author: Felix Fontein (@felixfontein)
 version_added: 3.1.0
 description:
   - "Takes the input lists and returns a list with elements that are lists, dictionaries,

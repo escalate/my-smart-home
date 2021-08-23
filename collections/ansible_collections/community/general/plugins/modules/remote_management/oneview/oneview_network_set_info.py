@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # Copyright (c) 2016-2017 Hewlett Packard Enterprise Development LP
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -135,7 +136,10 @@ class NetworkSetInfoModule(OneViewModuleBase):
     )
 
     def __init__(self):
-        super(NetworkSetInfoModule, self).__init__(additional_arg_spec=self.argument_spec)
+        super(NetworkSetInfoModule, self).__init__(
+            additional_arg_spec=self.argument_spec,
+            supports_check_mode=True,
+        )
 
     def execute_module(self):
 

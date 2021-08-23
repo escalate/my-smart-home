@@ -1,20 +1,6 @@
 # Test playbook for the firewalld module
 # (c) 2017, Adam Miller <admiller@redhat.com>
-
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 - name: Run firewalld tests
   block:
@@ -28,6 +14,13 @@
       shell: "{{ansible_python.executable}} -c 'import firewall'"
       register: check_output
       ignore_errors: true
+
+    - name: Enable dbus-broker daemon
+      service:
+        name: dbus-broker
+        enabled: true
+        state: started
+      when: (ansible_distribution == 'Fedora' and ansible_distribution_major_version is version('34', '=='))
 
     - name: Test Online Operations
       block:
@@ -54,3 +47,4 @@
   - not (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('14.04', '=='))
   # Firewalld package on OpenSUSE (15+) require Python 3, so we skip on OpenSUSE running py2 on these newer distros
   - not (ansible_os_family == "Suse" and ansible_distribution_major_version|int != 42 and ansible_python.version.major != 3)
+  - not (ansible_facts.distribution == "CentOS" and ansible_distribution_major_version is version('7', '==')) # FIXME

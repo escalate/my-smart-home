@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # Copyright: (c) 2017-18, Abhijeet Kasurde <akasurde@redhat.com>
 #
@@ -41,7 +42,7 @@ author:
 '''
 
 RETURN = '''
-get_status:
+issue_status:
     description: State of the GitHub issue
     type: str
     returned: success

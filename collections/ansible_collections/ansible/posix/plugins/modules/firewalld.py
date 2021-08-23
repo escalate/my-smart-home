@@ -81,7 +81,7 @@ options:
   permanent:
     description:
       - Should this configuration be in the running firewalld configuration or persist across reboots.
-      - As of Ansible 2.3, permanent operations can operate on firewalld configs when it is not running (requires firewalld >= 3.0.9).
+      - As of Ansible 2.3, permanent operations can operate on firewalld configs when it is not running (requires firewalld >= 0.3.9).
       - Note that if this is C(no), immediate is assumed C(yes).
     type: bool
   immediate:
@@ -99,7 +99,7 @@ options:
     choices: [ absent, disabled, enabled, present ]
   timeout:
     description:
-      - The amount of time the rule should be in effect for when non-permanent.
+      - The amount of time in seconds the rule should be in effect for when non-permanent.
     type: int
     default: 0
   masquerade:
@@ -114,7 +114,7 @@ options:
     description:
       - firewalld Zone target
       - If state is set to C(absent), this will reset the target to default
-    choices: [ default, ACCEPT, DROP, REJECT ]
+    choices: [ default, ACCEPT, DROP, "%%REJECT%%" ]
     type: str
     version_added: 1.2.0
 notes:
@@ -393,26 +393,14 @@ class PortTransaction(FirewallTransaction):
         )
 
     def get_enabled_immediate(self, port, protocol, timeout):
-        port_proto = [port, protocol]
         if self.fw_offline:
-            fw_zone, fw_settings = self.get_fw_zone_settings()
-            ports_list = fw_settings.getPorts()
-        else:
-            ports_list = self.fw.getPorts(self.zone)
-
-        if port_proto in ports_list:
-            return True
-        else:
-            return False
+            dummy, fw_settings = self.get_fw_zone_settings()
+            return fw_settings.queryPort(port=port, protocol=protocol)
+        return self.fw.queryPort(zone=self.zone, port=port, protocol=protocol)
 
     def get_enabled_permanent(self, port, protocol, timeout):
-        port_proto = (port, protocol)
-        fw_zone, fw_settings = self.get_fw_zone_settings()
-
-        if port_proto in fw_settings.getPorts():
-            return True
-        else:
-            return False
+        dummy, fw_settings = self.get_fw_zone_settings()
+        return fw_settings.queryPort(port=port, protocol=protocol)
 
     def set_enabled_immediate(self, port, protocol, timeout):
         self.fw.addPort(self.zone, port, protocol, timeout)
@@ -715,26 +703,14 @@ class ForwardPortTransaction(FirewallTransaction):
         )
 
     def get_enabled_immediate(self, port, proto, toport, toaddr, timeout):
-        forward_port = [port, proto, toport, toaddr]
         if self.fw_offline:
-            fw_zone, fw_settings = self.get_fw_zone_settings()
-            forward_list = fw_settings.getForwardPorts()
-        else:
-            forward_list = self.fw.getForwardPorts(self.zone)
-
-        if forward_port in forward_list:
-            return True
-        else:
-            return False
+            dummy, fw_settings = self.get_fw_zone_settings()
+            return fw_settings.queryForwardPort(port=port, protocol=proto, to_port=toport, to_addr=toaddr)
+        return self.fw.queryForwardPort(port=port, protocol=proto, to_port=toport, to_addr=toaddr)
 
     def get_enabled_permanent(self, port, proto, toport, toaddr, timeout):
-        forward_port = (port, proto, toport, toaddr)
-        fw_zone, fw_settings = self.get_fw_zone_settings()
-
-        if forward_port in fw_settings.getForwardPorts():
-            return True
-        else:
-            return False
+        dummy, fw_settings = self.get_fw_zone_settings()
+        return fw_settings.queryForwardPort(port=port, protocol=proto, to_port=toport, to_addr=toaddr)
 
     def set_enabled_immediate(self, port, proto, toport, toaddr, timeout):
         self.fw.addForwardPort(self.zone, port, proto, toport, toaddr, timeout)
@@ -772,7 +748,7 @@ def main():
             interface=dict(type='str'),
             masquerade=dict(type='str'),
             offline=dict(type='bool'),
-            target=dict(type='str', choices=['default', 'ACCEPT', 'DROP', 'REJECT']),
+            target=dict(type='str', choices=['default', 'ACCEPT', 'DROP', '%%REJECT%%']),
         ),
         supports_check_mode=True,
         required_by=dict(

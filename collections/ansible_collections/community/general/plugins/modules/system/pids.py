@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # Copyright: (c) 2019, Saranya Sridharan
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
@@ -78,11 +79,20 @@ def compare_lower(a, b):
 def get_pid(name):
     pids = []
 
-    for proc in psutil.process_iter(attrs=['name', 'cmdline']):
-        if compare_lower(proc.info['name'], name) or \
-                proc.info['cmdline'] and compare_lower(proc.info['cmdline'][0], name):
-            pids.append(proc.pid)
-
+    try:
+        for proc in psutil.process_iter(attrs=['name', 'cmdline']):
+            if compare_lower(proc.info['name'], name) or \
+                    proc.info['cmdline'] and compare_lower(proc.info['cmdline'][0], name):
+                pids.append(proc.pid)
+    except TypeError:  # EL6, EL7: process_iter() takes no arguments (1 given)
+        for proc in psutil.process_iter():
+            try:  # EL7
+                proc_name, proc_cmdline = proc.name(), proc.cmdline()
+            except TypeError:  # EL6: 'str' object is not callable
+                proc_name, proc_cmdline = proc.name, proc.cmdline
+            if compare_lower(proc_name, name) or \
+                    proc_cmdline and compare_lower(proc_cmdline[0], name):
+                pids.append(proc.pid)
     return pids
 
 

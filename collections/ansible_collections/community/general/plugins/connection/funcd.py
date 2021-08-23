@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Based on local.py (c) 2012, Michael DeHaan <michael.dehaan@gmail.com>
 # Based on chroot.py (c) 2013, Maykel Moya <mmoya@speedyrails.com>
 # Copyright (c) 2013, Michael Scherer <misc@zarb.org>
@@ -8,7 +9,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = '''
-    author: Michael Scherer (@msherer) <misc@zarb.org>
+    author: Michael Scherer (@mscherer) <misc@zarb.org>
     name: funcd
     short_description: Use funcd to connect to target
     description:

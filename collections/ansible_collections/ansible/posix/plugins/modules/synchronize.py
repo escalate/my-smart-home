@@ -38,9 +38,8 @@ options:
     description:
       - Port number for ssh on the destination host.
       - Prior to Ansible 2.0, the ansible_ssh_port inventory var took precedence over this value.
-      - This parameter defaults to the value of C(ansible_ssh_port) or C(ansible_port),
-        the C(remote_port) config setting or the value from ssh client configuration
-        if none of the former have been set.
+      - This parameter defaults to the value of C(ansible_port), the C(remote_port) config setting
+        or the value from ssh client configuration if none of the former have been set.
     type: int
   mode:
     description:
@@ -74,9 +73,9 @@ options:
     default: no
   delete:
     description:
-      - Delete files in C(dest) that don't exist (after transfer, not before) in the C(src) path.
-      - This option requires C(recursive=yes).
-      - This option ignores excluded files and behaves like the rsync opt --delete-excluded.
+      - Delete files in I(dest) that do not exist (after transfer, not before) in the I(src) path.
+      - This option requires I(recursive=yes).
+      - This option ignores excluded files and behaves like the rsync opt C(--delete-after).
     type: bool
     default: no
   dirs:
@@ -138,7 +137,9 @@ options:
     default: yes
   use_ssh_args:
     description:
-      - Use the ssh_args specified in ansible.cfg. Setting this to `yes` will also make `synchronize` use `ansible_ssh_common_args`.
+      - In Ansible 2.10 and lower, it uses the ssh_args specified in C(ansible.cfg).
+      - In Ansible 2.11 and onwards, when set to C(true), it uses all SSH connection configurations like
+        C(ansible_ssh_args), C(ansible_ssh_common_args), and C(ansible_ssh_extra_args).
     type: bool
     default: no
   ssh_connection_multiplexing:
@@ -178,6 +179,13 @@ options:
     type: list
     default:
     elements: str
+  delay_updates:
+    description:
+      - This option puts the temporary file from each updated file into a holding directory until the end of the transfer,
+        at which time all the files are renamed into place in rapid succession.
+    type: bool
+    default: yes
+    version_added: '1.3.0'
 
 notes:
    - rsync must be installed on both the local and remote host.
@@ -199,8 +207,8 @@ notes:
    - Inspect the verbose output to validate the destination user/host/path are what was expected.
    - To exclude files and directories from being synchronized, you may add C(.rsync-filter) files to the source directory.
    - rsync daemon must be up and running with correct permission when using rsync protocol in source or destination path.
-   - The C(synchronize) module forces `--delay-updates` to avoid leaving a destination in a broken in-between state if the underlying rsync process
-     encounters an error. Those synchronizing large numbers of files that are willing to trade safety for performance should call rsync directly.
+   - The C(synchronize) module enables `--delay-updates` by default to avoid leaving a destination in a broken in-between state if the underlying rsync process
+     encounters an error. Those synchronizing large numbers of files that are willing to trade safety for performance should disable this option.
    - link_destination is subject to the same limitations as the underlying rsync daemon. Hard links are only preserved if the relative subtrees
      of the source and destination are the same. Attempts to hardlink into a directory that is a subdirectory of the source will be prevented.
 seealso:
@@ -408,6 +416,7 @@ def main():
             ssh_connection_multiplexing=dict(type='bool', default=False),
             partial=dict(type='bool', default=False),
             verify_host=dict(type='bool', default=False),
+            delay_updates=dict(type='bool', default=True),
             mode=dict(type='str', default='push', choices=['pull', 'push']),
             link_dest=dict(type='list', elements='str'),
         ),
@@ -449,11 +458,12 @@ def main():
     ssh_connection_multiplexing = module.params['ssh_connection_multiplexing']
     verify_host = module.params['verify_host']
     link_dest = module.params['link_dest']
+    delay_updates = module.params['delay_updates']
 
     if '/' not in rsync:
         rsync = module.get_bin_path(rsync, required=True)
 
-    cmd = [rsync, '--delay-updates', '-F']
+    cmd = [rsync]
     _sshpass_pipe = None
     if rsync_password:
         try:
@@ -464,6 +474,9 @@ def main():
             )
         _sshpass_pipe = os.pipe()
         cmd = ['sshpass', '-d' + to_native(_sshpass_pipe[0], errors='surrogate_or_strict')] + cmd
+    if delay_updates:
+        cmd.append('--delay-updates')
+        cmd.append('-F')
     if compress:
         cmd.append('--compress')
     if rsync_timeout:
@@ -537,10 +550,10 @@ def main():
             ssh_cmd_str = ' '.join(shlex_quote(arg) for arg in ssh_cmd)
             if ssh_args:
                 ssh_cmd_str += ' %s' % ssh_args
-            cmd.append('--rsh=%s' % ssh_cmd_str)
+            cmd.append('--rsh=%s' % shlex_quote(ssh_cmd_str))
 
     if rsync_path:
-        cmd.append('--rsync-path=%s' % rsync_path)
+        cmd.append('--rsync-path=%s' % shlex_quote(rsync_path))
 
     if rsync_opts:
         if '' in rsync_opts:
@@ -566,7 +579,7 @@ def main():
             cmd.append('--link-dest=%s' % link_path)
 
     changed_marker = '<<CHANGED>>'
-    cmd.append('--out-format=' + changed_marker + '%i %n%L')
+    cmd.append('--out-format=%s' % shlex_quote(changed_marker + '%i %n%L'))
 
     # expand the paths
     if '@' not in source:
@@ -590,10 +603,10 @@ def main():
                     raise
 
         (rc, out, err) = module.run_command(
-            cmd, pass_fds=_sshpass_pipe,
+            cmdstr, pass_fds=_sshpass_pipe,
             before_communicate_callback=_write_password_to_pipe)
     else:
-        (rc, out, err) = module.run_command(cmd)
+        (rc, out, err) = module.run_command(cmdstr)
 
     if rc:
         return module.fail_json(msg=err, rc=rc, cmd=cmdstr)
