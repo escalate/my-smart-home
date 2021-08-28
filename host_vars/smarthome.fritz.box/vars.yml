@@ -43,6 +43,9 @@ influxdb_primary_user_password: "{{ vault_influxdb_primary_user_password }}"
 influxdb_primary_organization_name: ClubStr
 influxdb_primary_bucket_name: General
 influxdb_primary_bucket_name_retention_period: 1h
+influxdb_users:
+  - name: telegraf
+    password: "{{ vault_influxdb_users_telegraf_password }}"
 influxdb_buckets:
   - name: Loxone MiniServer
     description: Bucket for Loxone MiniServer
