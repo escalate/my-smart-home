@@ -62,10 +62,6 @@ telegraf_config: |
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/system/README.md
   [[inputs.system]]
 
-  # Gather systemd units state
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/systemd_units/README.md
-  [[inputs.systemd_units]]
-
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/outputs/influxdb_v2/README.md
   [[outputs.influxdb_v2]]
     urls = ["http://influxdb:8086"]
