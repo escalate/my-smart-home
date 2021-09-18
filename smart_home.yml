@@ -4,6 +4,8 @@
       tags: common
     - role: dhcpcd
       tags: dhcpcd
+    - role: swap
+      tags: swap
     - role: cron
       tags: cron
     - role: locale
