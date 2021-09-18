@@ -61,6 +61,11 @@ influxdb_buckets:
   - name: Telegraf
     description: Bucket for Telegraf
     retention: 5d
+influxdb_authorizations:
+  - user: telegraf
+    permissions:
+      - read-buckets
+      - write-buckets
 
 # https://github.com/grafana/grafana/releases
 grafana_docker_image_version: 8.1.2
@@ -151,12 +156,14 @@ telegraf_config: |
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/outputs/influxdb_v2/README.md
   [[outputs.influxdb_v2]]
     urls = ["http://influxdb:8086"]
+    token = ""
     organization = "{{ influxdb_primary_organization_name }}"
     bucket = "Loxone MiniServer"
     namepass = ["loxone_*"]
 
   [[outputs.influxdb_v2]]
     urls = ["http://influxdb:8086"]
+    token = ""
     organization = "{{ influxdb_primary_organization_name }}"
     bucket = "Telegraf"
     namedrop = ["loxone_*"]

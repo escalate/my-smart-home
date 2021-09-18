@@ -29,14 +29,14 @@ def test_backup_directory(host):
 
 
 def test_influxdb_service(host):
-    """Check influxdb service"""
+    """Check InfluxDB service"""
     s = host.service("influxdb")
     assert s.is_running
     assert s.is_enabled
 
 
 def test_influxdb_docker_container(host):
-    """Check influxdb docker container"""
+    """Check InfluxDB docker container"""
     d = host.docker("influxdb.service").inspect()
     assert d["HostConfig"]["Memory"] == 1073741824
     assert d["Config"]["Image"] == "influxdb:latest"
@@ -49,6 +49,6 @@ def test_influxdb_docker_container(host):
 
 def test_backup_cron_job(host):
     """Check backup cron job"""
-    cmd = "/usr/local/bin/backup_influxdb.sh"
+    cmd = "/usr/local/bin/backup-influxdb.sh"
     f = host.file("/var/spool/cron/crontabs/root").content_string
     assert cmd in f
