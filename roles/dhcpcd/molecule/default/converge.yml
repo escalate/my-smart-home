@@ -1,0 +1,10 @@
+- name: Converge
+  hosts: all
+  vars:
+    dhcpcd_static_ipv4_configuration_enabled: true
+    dhcpcd_static_ipv4_address: "{{ ansible_default_ipv4.address }}/16"
+    dhcpcd_static_ipv4_gateway: "{{ ansible_default_ipv4.gateway }}"
+    dhcpcd_static_ipv4_domain_name_server: "{{ ansible_dns.nameservers[0] }}"
+  roles:
+    - role: ansible-raspberry-dhcpcd
+      tags: dhcpcd

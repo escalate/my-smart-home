@@ -1,0 +1,4 @@
+dhcpcd_static_ipv4_configuration_enabled: false
+dhcpcd_static_ipv4_address: 192.168.0.10/24
+dhcpcd_static_ipv4_gateway: 192.168.0.1
+dhcpcd_static_ipv4_domain_name_server: 192.168.0.1
