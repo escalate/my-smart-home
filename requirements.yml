@@ -81,8 +81,8 @@ collections:
 
   # https://galaxy.ansible.com/community/docker
   - name: community.docker
-    verion: 1.9.0
+    verion: 1.9.1
 
   # https://galaxy.ansible.com/community/general
   - name: community.general
-    version: 3.5.0
+    version: 3.6.0
