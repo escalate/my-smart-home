@@ -49,6 +49,7 @@ def test_access_token_lookup(inventory):
 def test_validate_option(inventory):
     assert ['eu-west'] == inventory._validate_option('regions', list, 'eu-west')
     assert ['eu-west'] == inventory._validate_option('regions', list, ['eu-west'])
+    assert 'api' == inventory._validate_option('ip_style', str, 'api')
 
 
 def test_validation_option_bad_option(inventory):
@@ -62,7 +63,7 @@ def test_empty_config_query_options(inventory):
     assert regions == types == tags == []
 
 
-def test_conig_query_options(inventory):
+def test_config_query_options(inventory):
     regions, types, tags = inventory._get_query_options({
         'regions': ['eu-west', 'us-east'],
         'types': ['g5-standard-2', 'g6-standard-2'],
