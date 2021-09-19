@@ -1,0 +1,41 @@
+[Unit]
+Description=CoreDNS
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull coredns/coredns:{{ coredns_docker_image_version }}
+ExecStart=/usr/bin/docker run \
+--name %n \
+--init \
+--memory={{ coredns_docker_memory }} \
+{% if coredns_env_vars | dict2items | length > 0 %}
+--env-file=/etc/coredns.env \
+{% endif %}
+{% if coredns_docker_labels | dict2items | length > 0 %}
+--label-file=/etc/coredns.label \
+{% endif %}
+--mount=type=bind,source={{ coredns_etc_path }},destination=/etc \
+--network={{ coredns_docker_network }} \
+--network-alias=coredns \
+{% if coredns_docker_publish_ports | length > 0 %}
+{% for port in coredns_docker_publish_ports %}
+--publish={{ port }} \
+{% endfor %}
+{% endif %}
+--user=20100:0 \
+coredns/coredns:{{ coredns_docker_image_version }} \
+-conf /etc/Corefile
+ExecStop=/usr/bin/docker stop %n
+SyslogIdentifier=%n
+TimeoutStartSec=infinity
+StartLimitInterval=30
+StartLimitBurst=5
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

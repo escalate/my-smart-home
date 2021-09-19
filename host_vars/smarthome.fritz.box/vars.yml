@@ -214,3 +214,22 @@ traefik_config:
 traefik_env_vars:
   CF_DNS_API_TOKEN: "{{ vault_traefik_env_cf_dns_api_token }}"
   CF_ZONE_API_TOKEN: "{{ vault_traefik_env_cf_zone_api_token }}"
+
+# https://github.com/coredns/coredns/releases
+coredns_docker_image_version: 1.8.4
+coredns_config: |
+  clubstr.de {
+      hosts {
+        {{ vault_coredns_config_influxdb }}
+        {{ vault_coredns_config_grafana }}
+        {{ vault_coredns_config_homeassistant }}
+        {{ vault_coredns_config_traefik }}
+      }
+      errors
+  }
+
+  . {
+    forward . {{ vault_dhcpcd_static_ipv4_gateway }}
+    health :5380
+    errors
+  }

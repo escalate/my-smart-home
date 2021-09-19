@@ -74,6 +74,11 @@ roles:
     src: escalate.traefik
     version: v1.8.1
 
+  # https://galaxy.ansible.com/escalate/coredns
+  - name: coredns
+    src: escalate.coredns
+    version: v1.0.0
+
 collections:
   # https://galaxy.ansible.com/ansible/posix
   - name: ansible.posix

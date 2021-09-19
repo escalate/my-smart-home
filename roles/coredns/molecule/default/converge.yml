@@ -1,0 +1,25 @@
+- name: Converge
+  hosts: all
+  vars:
+    coredns_docker_image_version: latest
+    coredns_docker_memory: 1G
+    coredns_docker_labels:
+      maintainer: me@example.com
+    coredns_docker_network: internal
+    coredns_docker_publish_ports:
+      - 1053:1053/tcp
+      - 1053:1053/udp
+      - 127.0.0.1:5380:5380
+    coredns_etc_path: /etc/coredns
+    coredns_config: |
+      .:1053 {
+          whoami
+          health :5380
+          errors
+          log
+      }
+    coredns_env_vars:
+      APP_TEST_ENV: "true"
+  roles:
+    - role: ansible-raspberry-coredns-docker
+      tags: coredns

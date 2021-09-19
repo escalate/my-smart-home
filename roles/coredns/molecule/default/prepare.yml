@@ -1,0 +1,25 @@
+- name: Prepare
+  hosts: all
+  vars:
+    docker_daemon_json:
+      live-restore: true
+      log-driver: local
+      log-opts:
+        max-size: 100m
+      storage-driver: vfs
+    docker_networks:
+      - name: internal
+        subnet: 172.25.0.0/16
+  roles:
+    - role: common
+      tags: common
+    - role: cron
+      tags: cron
+    - role: docker
+      tags: docker
+  tasks:
+    - name: Install dig
+      ansible.builtin.apt:
+        name: dnsutils
+        state: present
+        update_cache: true

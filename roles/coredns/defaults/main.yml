@@ -1,0 +1,24 @@
+coredns_docker_image_version: latest
+coredns_docker_memory: 1G
+coredns_docker_labels: {}
+coredns_docker_network: bridge
+coredns_docker_publish_ports:
+  # dns endpoint
+  - 53:53/tcp
+  - 53:53/udp
+  # health check endpoint
+  - 127.0.0.1:5380:5380
+
+coredns_etc_path: /etc/coredns
+
+# https://coredns.io/manual/toc/#configuration
+coredns_config: |
+  .:53 {
+      whoami
+      health :5380
+      errors
+      log
+  }
+
+# https://coredns.io/manual/toc/#environment-variables
+coredns_env_vars: {}

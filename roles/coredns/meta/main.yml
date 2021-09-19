@@ -1,0 +1,22 @@
+galaxy_info:
+  role_name: coredns
+  namespace: escalate
+  author: Felix Boerner
+  description: Manage CoreDNS Docker container with systemd on Raspberry Pi OS
+  license: MIT
+  min_ansible_version: 2.10
+  github_branch: master
+  platforms:
+    - name: Debian
+      versions:
+        - buster
+  galaxy_tags:
+    - raspberry
+    - pi
+    - raspberrypi
+    - systemd
+    - docker
+    - container
+    - coredns
+    - dns
+dependencies: []
