@@ -68,7 +68,7 @@ influxdb_authorizations:
       - write-buckets
 
 # https://github.com/grafana/grafana/releases
-grafana_docker_image_version: 8.1.2
+grafana_docker_image_version: 8.1.4
 grafana_docker_labels:
   traefik.enable: "true"
   traefik.http.routers.grafana.rule: Host(`grafana.clubstr.de`)
