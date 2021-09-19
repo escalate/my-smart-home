@@ -156,14 +156,14 @@ telegraf_config: |
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/outputs/influxdb_v2/README.md
   [[outputs.influxdb_v2]]
     urls = ["http://influxdb:8086"]
-    token = ""
+    token = "{{ vault_influxdb_users_telegraf_token }}"
     organization = "{{ influxdb_primary_organization_name }}"
     bucket = "Loxone MiniServer"
     namepass = ["loxone_*"]
 
   [[outputs.influxdb_v2]]
     urls = ["http://influxdb:8086"]
-    token = ""
+    token = "{{ vault_influxdb_users_telegraf_token }}"
     organization = "{{ influxdb_primary_organization_name }}"
     bucket = "Telegraf"
     namedrop = ["loxone_*"]
