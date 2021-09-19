@@ -217,6 +217,7 @@ traefik_env_vars:
 
 # https://github.com/coredns/coredns/releases
 coredns_docker_image_version: 1.8.4
+coredns_docker_network: internal
 coredns_config: |
   clubstr.de {
       hosts {
