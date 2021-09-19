@@ -63,6 +63,7 @@ influxdb_buckets:
     retention: 5d
 influxdb_authorizations:
   - user: telegraf
+    description: telegraf token with read- and write-buckets permission
     permissions:
       - read-buckets
       - write-buckets
