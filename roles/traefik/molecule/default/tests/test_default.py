@@ -47,7 +47,7 @@ def test_traefik_config(host):
         "  level: INFO\n"
         "providers:\n"
         "  docker:\n"
-        "    exposedByDefault: false\n"
+        "    exposedByDefault: false"
     )
     assert config in f.content_string
 

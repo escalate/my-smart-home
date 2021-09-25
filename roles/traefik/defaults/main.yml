@@ -2,6 +2,11 @@ traefik_docker_image_version: latest
 traefik_docker_memory: 1G
 traefik_docker_labels: {}
 traefik_docker_network: bridge
+traefik_docker_publish_ports:
+  # http
+  - 80:80
+  # https
+  - 443:443
 
 traefik_data_path: /var/lib/traefik
 traefik_etc_path: /etc/traefik
