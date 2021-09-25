@@ -111,10 +111,18 @@ home_assistant_config:
 
 # https://github.com/influxdata/telegraf/releases
 telegraf_docker_image_version: 1.19.3
+telegraf_docker_labels:
+  traefik.enable: "true"
+  # http
+  traefik.http.routers.telegraf.rule: Host(`telegraf.clubstr.de`)
+  traefik.http.routers.telegraf.entrypoints: websecure
+  traefik.http.routers.telegraf.service: telegraf-service
+  traefik.http.services.telegraf-service.loadbalancer.server.port: 8081
+  # udp
+  traefik.http.routers.telegraf-udp.entrypoints: telegraf-udp
+  traefik.http.routers.telegraf-udp.service: telegraf-udp-service
+  traefik.http.services.telegraf-udp-service.loadbalancer.server.port: 8094
 telegraf_docker_network: internal
-telegraf_docker_publish_ports:
-  - 8081:8081
-  - 8094:8094
 telegraf_config: |
   [agent]
     interval = "20s"
@@ -179,6 +187,13 @@ traefik_docker_labels:
   traefik.http.routers.dashboard.middlewares: auth
   traefik.http.middlewares.auth.basicauth.users: "{{ vault_traefik_api_basic_auth_credentials }}"
 traefik_docker_network: internal
+traefik_docker_publish_ports:
+  # web
+  - 80:80
+  # websecure
+  - 443:443
+  # telegraf-udp
+  - 8094:8094/udp
 traefik_config:
   global:
     checkNewVersion: false
@@ -201,6 +216,8 @@ traefik_config:
       http:
         tls:
           certResolver: letsencryptresolver
+    telegraf-udp:
+      address: ":8094/udp"
   certificatesResolvers:
     letsencryptresolver:
       acme:
