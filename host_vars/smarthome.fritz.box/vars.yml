@@ -119,9 +119,9 @@ telegraf_docker_labels:
   traefik.http.routers.telegraf.service: telegraf-service
   traefik.http.services.telegraf-service.loadbalancer.server.port: 8081
   # udp
-  traefik.http.routers.telegraf-udp.entrypoints: telegraf-udp
-  traefik.http.routers.telegraf-udp.service: telegraf-udp-service
-  traefik.http.services.telegraf-udp-service.loadbalancer.server.port: 8094
+  traefik.udp.routers.telegraf-udp-socket.entrypoints: telegraf-udp-socket
+  traefik.udp.routers.telegraf-udp-socket.service: telegraf-udp-socket-service
+  traefik.udp.services.telegraf-udp-socket-service.loadbalancer.server.port: 8094
 telegraf_docker_network: internal
 telegraf_config: |
   [agent]
@@ -192,7 +192,7 @@ traefik_docker_publish_ports:
   - 80:80
   # websecure
   - 443:443
-  # telegraf-udp
+  # telegraf-udp-socket
   - 8094:8094/udp
 traefik_config:
   global:
@@ -216,7 +216,7 @@ traefik_config:
       http:
         tls:
           certResolver: letsencryptresolver
-    telegraf-udp:
+    telegraf-udp-socket:
       address: ":8094/udp"
   certificatesResolvers:
     letsencryptresolver:
