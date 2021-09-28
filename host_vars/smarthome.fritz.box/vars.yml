@@ -171,14 +171,16 @@ telegraf_config: |
     token = "{{ vault_influxdb_users_telegraf_token }}"
     organization = "{{ influxdb_primary_organization_name }}"
     bucket = "Loxone MiniServer"
-    namepass = ["loxone_*"]
+    [outputs.influxdb_v2.tagpass]
+      origin = ["loxone"]
 
   [[outputs.influxdb_v2]]
     urls = ["http://influxdb:8086"]
     token = "{{ vault_influxdb_users_telegraf_token }}"
     organization = "{{ influxdb_primary_organization_name }}"
     bucket = "Telegraf"
-    namedrop = ["loxone_*"]
+    [outputs.influxdb_v2.tagdrop]
+      origin = ["loxone"]
 
 # https://github.com/traefik/traefik/releases
 traefik_docker_image_version: 2.5.3
