@@ -15,7 +15,7 @@ def test_daemon_config(host):
         "  \"log-opts\": {\n"
         "    \"max-size\": \"100m\"\n"
         "  }\n"
-        "}\n"
+        "}"
     )
     assert config in f.content_string
 
