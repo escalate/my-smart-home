@@ -77,7 +77,7 @@ roles:
   # https://galaxy.ansible.com/escalate/coredns
   - name: coredns
     src: escalate.coredns
-    version: v1.0.0
+    version: v1.1.0
 
 collections:
   # https://galaxy.ansible.com/ansible/posix

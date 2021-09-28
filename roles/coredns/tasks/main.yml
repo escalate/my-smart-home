@@ -25,29 +25,21 @@
   notify: Restart coredns service
 
 - name: Define environment variables
-  community.general.ini_file:
-    path: /etc/coredns.env
-    section: ""
-    option: "{{ item.key }}"
-    value: "{{ item.value }}"
-    no_extra_spaces: true
+  ansible.builtin.template:
+    src: coredns.env.j2
+    dest: /etc/coredns.env
     owner: root
     group: root
     mode: 0644
-  loop: "{{ coredns_env_vars | dict2items }}"
   notify: Restart coredns service
 
 - name: Define Docker container labels
-  community.general.ini_file:
-    path: /etc/coredns.label
-    section: ""
-    option: "{{ item.key }}"
-    value: "{{ item.value }}"
-    no_extra_spaces: true
+  ansible.builtin.template:
+    src: coredns.label.j2
+    dest: /etc/coredns.label
     owner: root
     group: root
     mode: 0644
-  loop: "{{ coredns_docker_labels | dict2items }}"
   notify: Restart coredns service
 
 - name: Pull Docker image
