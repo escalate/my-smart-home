@@ -68,4 +68,5 @@ telegraf_config: |
     organization = "my-org"
     bucket = "my-bucket"
 
+# https://docs.influxdata.com/telegraf/latest/administration/configuration/#set-environment-variables
 telegraf_env_vars: {}

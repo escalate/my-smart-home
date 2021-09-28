@@ -25,29 +25,21 @@
   notify: Restart telegraf service
 
 - name: Define environment variables
-  community.general.ini_file:
-    path: /etc/telegraf.env
-    section: ""
-    option: "{{ item.key }}"
-    value: "{{ item.value }}"
-    no_extra_spaces: true
+  ansible.builtin.template:
+    src: telegraf.env.j2
+    dest: /etc/telegraf.env
     owner: root
     group: root
     mode: 0644
-  loop: "{{ telegraf_env_vars | dict2items }}"
   notify: Restart telegraf service
 
 - name: Define Docker container labels
-  community.general.ini_file:
-    path: /etc/telegraf.label
-    section: ""
-    option: "{{ item.key }}"
-    value: "{{ item.value }}"
-    no_extra_spaces: true
+  ansible.builtin.template:
+    src: telegraf.label.j2
+    dest: /etc/telegraf.label
     owner: root
     group: root
     mode: 0644
-  loop: "{{ telegraf_docker_labels | dict2items }}"
   notify: Restart telegraf service
 
 - name: Pull Docker image

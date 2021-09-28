@@ -27,7 +27,7 @@ def test_telegraf_config(host):
         "  metric_version = 2\n"
         "  flush_interval = \"10ms\"\n"
         "  flush_jitter = \"10ms\"\n"
-        "  metric_batch_size = 1\n"
+        "  metric_batch_size = 1"
     )
     assert config in f.content_string
 
