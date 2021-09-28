@@ -246,6 +246,7 @@ coredns_docker_image_version: 1.8.5
 coredns_docker_labels:
   traefik.enable: "true"
   # tcp
+  traefik.tcp.routers.coredns-tcp-socket.rule: Host(`coredns.clubstr.de`)
   traefik.tcp.routers.coredns-tcp-socket.entrypoints: coredns-tcp-socket
   traefik.tcp.routers.coredns-tcp-socket.service: coredns-tcp-socket-service
   traefik.tcp.services.coredns-tcp-socket-service.loadbalancer.server.port: 53
