@@ -192,10 +192,6 @@ traefik_docker_publish_ports:
   - 80:80
   # websecure
   - 443:443
-  # coredns-tcp-socket
-  - 53:53
-  # coredns-udp-socket
-  - 53:53/udp
   # telegraf-udp-socket
   - 8094:8094/udp
 traefik_config:
@@ -220,10 +216,6 @@ traefik_config:
       http:
         tls:
           certResolver: letsencryptresolver
-    coredns-tcp-socket:
-      address: ":53/tcp"
-    coredns-udp-socket:
-      address: ":53/udp"
     telegraf-udp-socket:
       address: ":8094/udp"
   certificatesResolvers:
@@ -243,17 +235,6 @@ traefik_env_vars:
 
 # https://github.com/coredns/coredns/releases
 coredns_docker_image_version: 1.8.5
-coredns_docker_labels:
-  traefik.enable: "true"
-  # tcp
-  traefik.tcp.routers.coredns-tcp-socket.rule: Host(`coredns.clubstr.de`)
-  traefik.tcp.routers.coredns-tcp-socket.entrypoints: coredns-tcp-socket
-  traefik.tcp.routers.coredns-tcp-socket.service: coredns-tcp-socket-service
-  traefik.tcp.services.coredns-tcp-socket-service.loadbalancer.server.port: 53
-  # udp
-  traefik.udp.routers.coredns-udp-socket.entrypoints: coredns-udp-socket
-  traefik.udp.routers.coredns-udp-socket.service: coredns-udp-socket-service
-  traefik.udp.services.coredns-udp-socket-service.loadbalancer.server.port: 53
 coredns_docker_network: internal
 coredns_config: |
   clubstr.de {
