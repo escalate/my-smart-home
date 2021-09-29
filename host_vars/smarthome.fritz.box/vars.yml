@@ -254,8 +254,7 @@ coredns_config: |
   }
 
   . {
-    # Cloudflare / Google / Quad9
-    forward . 1.1.1.1 1.0.0.1 8.8.8.8 8.8.4.4 9.9.9.9
+    forward . {{ vault_dhcpcd_static_ipv4_gateway }}
     health :5380
     errors
   }
