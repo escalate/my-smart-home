@@ -30,6 +30,8 @@ msmtp_aliases:
   root: "{{ vault_email_address }}"
   default: "{{ vault_email_address }}"
 
+smb_mount_list: "{{ vault_smb_mount_list }}"
+
 docker_version: 5:20.10.8~3-0~debian-buster
 docker_containerd_version: 1.4.9-1
 docker_python_version: 5.0.2

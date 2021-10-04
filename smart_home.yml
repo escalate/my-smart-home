@@ -18,6 +18,8 @@
       tags: sshlogin
     - role: msmtp
       tags: msmtp
+    - role: smb_mount
+      tags: smbmount
     - role: docker
       tags: docker
     - role: influxdb

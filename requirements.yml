@@ -44,6 +44,11 @@ roles:
     src: escalate.msmtp
     version: v1.1.0
 
+  # https://galaxy.ansible.com/escalate/smb_mount
+  - name: smb_mount
+    src: escalate.smb_mount
+    version: v1.0.0
+
   # https://galaxy.ansible.com/escalate/docker
   - name: docker
     src: escalate.docker

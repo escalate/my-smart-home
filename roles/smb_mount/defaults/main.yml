@@ -1,0 +1,8 @@
+smb_mount_path: /mnt
+smb_mount_list: []
+  # - name: nas
+  #   server: 192.168.1.5
+  #   share: nas_smb_share
+  #   username: raspberry
+  #   password: Secr3t
+  #   options: uid=1000,gid=1000,file_mode=0644,dir_mode=0755,iocharset=utf8

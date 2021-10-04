@@ -1,0 +1,22 @@
+- name: Install package
+  ansible.builtin.apt:
+    name: cifs-utils
+    state: present
+    update_cache: true
+
+- name: Create mount path
+  ansible.builtin.file:
+    path: "{{ smb_mount_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Mount SMB shares
+  ansible.posix.mount:
+    src: "//{{ item.server }}/{{ item.share }}"
+    path: "{{ smb_mount_path }}/{{ item.name }}"
+    fstype: cifs
+    opts: "defaults,username={{ item.username }},passwd={{ item.password }},{{ item.options | default('uid=0,gid=0,file_mode=0644,dir_mode=0755,iocharset=utf8') }}"
+    state: mounted
+  loop: "{{ smb_mount_list }}"
