@@ -24,6 +24,7 @@
               labels:
                 job: varlogs
                 __path__: /var/log/*log
+    promtail_config_type: static
     promtail_env_vars:
       APP_TEST_ENV: "true"
   roles:

@@ -25,7 +25,7 @@ ExecStart=/usr/bin/docker run \
 --network={{ promtail_docker_network }} \
 --network-alias=promtail \
 --publish=127.0.0.1:9080:9080 \
---user=10600:0 \
+--user=10600:{{ promtail_group_gid | default('0') }} \
 grafana/promtail:{{ promtail_docker_image_version }}
 ExecStop=/usr/bin/docker stop %n
 SyslogIdentifier=%n

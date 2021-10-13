@@ -24,5 +24,8 @@ promtail_config:
             job: varlogs
             __path__: /hostfs/var/log/*log
 
+# Options: static or journal
+promtail_config_type: static
+
 # https://grafana.com/docs/loki/latest/clients/promtail/configuration/#use-environment-variables-in-the-configuration
 promtail_env_vars: {}
