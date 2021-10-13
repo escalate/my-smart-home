@@ -20,7 +20,8 @@ ExecStart=/usr/bin/docker run \
 {% endif %}
 --mount=type=bind,source={{ promtail_data_path }},destination=/var/lib/promtail \
 --mount=type=bind,source={{ promtail_etc_path }},destination=/etc/promtail \
---mount=type=bind,source=/var,destination=/hostfs/var,readonly=true \
+--mount=type=bind,source=/run/log,destination=/hostfs/run/log,readonly=true \
+--mount=type=bind,source=/var/log,destination=/hostfs/var/log,readonly=true \
 --network={{ promtail_docker_network }} \
 --network-alias=promtail \
 --publish=127.0.0.1:9080:9080 \

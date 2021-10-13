@@ -82,7 +82,7 @@ roles:
   # https://galaxy.ansible.com/escalate/promtail
   - name: promtail
     src: escalate.promtail
-    version: v1.0.0
+    version: v1.1.0
 
   # https://galaxy.ansible.com/escalate/traefik
   - name: traefik
