@@ -191,7 +191,7 @@ loki_docker_image_version: 2.3.0
 loki_docker_network: internal
 
 # https://github.com/grafana/loki/releases
-promtail_docker_image_version:  2.3.0
+promtail_docker_image_version: 2.3.0
 promtail_docker_network: internal
 promtail_docker_labels:
   traefik.enable: "true"
