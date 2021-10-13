@@ -1,0 +1,30 @@
+promtail_docker_image_version: latest
+promtail_docker_memory: 1G
+promtail_docker_labels: {}
+promtail_docker_network: bridge
+
+promtail_data_path: /var/lib/promtail
+promtail_etc_path: /etc/promtail
+
+# https://grafana.com/docs/loki/latest/clients/promtail/configuration/
+promtail_config:
+  server:
+    http_listen_port: 9080
+    grpc_listen_port: 0
+  positions:
+    filename: /var/lib/promtail/positions.yaml
+  clients:
+    - url: http://loki:3100/loki/api/v1/push
+  scrape_configs:
+    - job_name: system
+      journal:
+        max_age: 1h
+        path: /hostfs/var/log/journal/
+        labels:
+          job: systemd-journal
+      relabel_configs:
+        - source_labels: ['__journal__systemd_unit']
+          target_label: 'unit'
+
+# https://grafana.com/docs/loki/latest/clients/promtail/configuration/#use-environment-variables-in-the-configuration
+promtail_env_vars: {}

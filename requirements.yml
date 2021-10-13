@@ -79,6 +79,11 @@ roles:
     src: escalate.loki
     version: v1.0.1
 
+  # https://galaxy.ansible.com/escalate/promtail
+  - name: promtail
+    src: escalate.promtail
+    version: v1.0.0
+
   # https://galaxy.ansible.com/escalate/traefik
   - name: traefik
     src: escalate.traefik

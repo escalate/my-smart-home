@@ -1,0 +1,38 @@
+[Unit]
+Description=Promtail
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull grafana/promtail:{{ promtail_docker_image_version }}
+ExecStart=/usr/bin/docker run \
+--name %n \
+--init \
+--memory={{ promtail_docker_memory }} \
+{% if promtail_env_vars | dict2items | length > 0 %}
+--env-file=/etc/promtail.env \
+{% endif %}
+{% if promtail_docker_labels | dict2items | length > 0 %}
+--label-file=/etc/promtail.label \
+{% endif %}
+--mount=type=bind,source={{ promtail_data_path }},destination=/var/lib/promtail \
+--mount=type=bind,source={{ promtail_etc_path }},destination=/etc/promtail \
+--mount=type=bind,source=/var,destination=/hostfs/var,readonly=true \
+--network={{ promtail_docker_network }} \
+--network-alias=promtail \
+--publish=127.0.0.1:9080:9080 \
+--user=10600:0 \
+grafana/promtail:{{ promtail_docker_image_version }}
+ExecStop=/usr/bin/docker stop %n
+SyslogIdentifier=%n
+TimeoutStartSec=infinity
+StartLimitInterval=30
+StartLimitBurst=5
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
