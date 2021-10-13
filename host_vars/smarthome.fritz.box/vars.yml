@@ -198,8 +198,8 @@ promtail_docker_labels:
   traefik.http.routers.promtail.rule: Host(`promtail.clubstr.de`)
   traefik.http.routers.promtail.entrypoints: websecure
   traefik.http.routers.promtail.service: promtail-service
-  traefik.http.routers.promtail.middlewares: auth
-  traefik.http.middlewares.auth.basicauth.users: "{{ vault_traefik_promtail_basic_auth_credentials }}"
+  traefik.http.routers.promtail.middlewares: promtail-auth
+  traefik.http.middlewares.promtail-auth.basicauth.users: "{{ vault_traefik_promtail_basic_auth_credentials }}"
   traefik.http.services.promtail-service.loadbalancer.server.port: 9080
 
 # https://github.com/traefik/traefik/releases
@@ -209,8 +209,8 @@ traefik_docker_labels:
   traefik.http.routers.dashboard.rule: Host(`traefik.clubstr.de`)
   traefik.http.routers.dashboard.entrypoints: websecure
   traefik.http.routers.dashboard.service: api@internal
-  traefik.http.routers.dashboard.middlewares: auth
-  traefik.http.middlewares.auth.basicauth.users: "{{ vault_traefik_api_basic_auth_credentials }}"
+  traefik.http.routers.dashboard.middlewares: traefik-auth
+  traefik.http.middlewares.traefik-auth.basicauth.users: "{{ vault_traefik_api_basic_auth_credentials }}"
 traefik_docker_network: internal
 traefik_docker_publish_ports:
   # web
