@@ -1,0 +1,39 @@
+[Unit]
+Description=Loki
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull grafana/loki:{{ loki_docker_image_version }}
+ExecStart=/usr/bin/docker run \
+--name %n \
+--init \
+--memory={{ loki_docker_memory }} \
+{% if loki_env_vars | dict2items | length > 0 %}
+--env-file=/etc/loki.env \
+{% endif %}
+{% if loki_docker_labels | dict2items | length > 0 %}
+--label-file=/etc/loki.label \
+{% endif %}
+--mount=type=bind,source={{ loki_data_path }},destination=/loki \
+{% if loki_config | dict2items | length > 0 %}
+--mount=type=bind,source={{ loki_etc_path }},destination=/etc/loki \
+{% endif %}
+--network={{ loki_docker_network }} \
+--network-alias=loki \
+--publish=127.0.0.1:3100:3100 \
+--user=10500:0 \
+grafana/loki:{{ loki_docker_image_version }}
+ExecStop=/usr/bin/docker stop %n
+SyslogIdentifier=%n
+TimeoutStartSec=infinity
+StartLimitInterval=30
+StartLimitBurst=5
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

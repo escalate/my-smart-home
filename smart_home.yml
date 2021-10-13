@@ -30,6 +30,8 @@
       tags: homeassistant
     - role: telegraf
       tags: telegraf
+    - role: loki
+      tags: loki
     - role: traefik
       tags: traefik
     - role: coredns

@@ -74,6 +74,11 @@ roles:
     src: escalate.telegraf
     version: v1.4.0
 
+  # https://galaxy.ansible.com/escalate/loki
+  - name: loki
+    src: escalate.loki
+    version: v1.0.1
+
   # https://galaxy.ansible.com/escalate/traefik
   - name: traefik
     src: escalate.traefik
