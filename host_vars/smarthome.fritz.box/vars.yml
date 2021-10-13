@@ -193,6 +193,12 @@ loki_docker_network: internal
 # https://github.com/grafana/loki/releases
 promtail_docker_image_version:  2.3.0
 promtail_docker_network: internal
+promtail_docker_labels:
+  traefik.enable: "true"
+  traefik.http.routers.promtail.rule: Host(`promtail.clubstr.de`)
+  traefik.http.routers.promtail.entrypoints: websecure
+  traefik.http.routers.promtail.service: promtail-service
+  traefik.http.services.promtail-service.loadbalancer.server.port: 9080
 
 # https://github.com/traefik/traefik/releases
 traefik_docker_image_version: 2.5.3
@@ -259,6 +265,7 @@ coredns_config: |
         {{ vault_coredns_config_grafana }}
         {{ vault_coredns_config_homeassistant }}
         {{ vault_coredns_config_influxdb }}
+        {{ vault_coredns_config_promtail }}
         {{ vault_coredns_config_telegraf }}
         {{ vault_coredns_config_traefik }}
       }
