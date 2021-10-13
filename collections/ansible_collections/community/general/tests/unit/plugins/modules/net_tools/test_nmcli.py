@@ -86,6 +86,12 @@ TESTCASE_CONNECTION = [
         'state': 'absent',
         '_ansible_check_mode': True,
     },
+    {
+        'type': 'gsm',
+        'conn_name': 'non_existent_nw_device',
+        'state': 'absent',
+        '_ansible_check_mode': True,
+    },
 ]
 
 TESTCASE_GENERIC = [
@@ -115,6 +121,37 @@ ipv6.method:                            auto
 ipv6.ignore-auto-dns:                   no
 ipv6.ignore-auto-routes:                no
 """
+
+TESTCASE_GENERIC_MODIFY_ROUTING_RULES = [
+    {
+        'type': 'generic',
+        'conn_name': 'non_existent_nw_device',
+        'ifname': 'generic_non_existant',
+        'ip4': '10.10.10.10/24',
+        'gw4': '10.10.10.1',
+        'routing_rules4': ['priority 5 from 10.0.0.0/24 table 5000', 'priority 10 from 10.0.1.0/24 table 5001'],
+        'state': 'present',
+        '_ansible_check_mode': False,
+    },
+]
+
+TESTCASE_GENERIC_MODIFY_ROUTING_RULES_SHOW_OUTPUT = """\
+connection.id:                          non_existent_nw_device
+connection.interface-name:              generic_non_existant
+connection.autoconnect:                 yes
+ipv4.method:                            manual
+ipv4.addresses:                         10.10.10.10/24
+ipv4.gateway:                           10.10.10.1
+ipv4.routing-rules:                     priority 5 from 10.0.0.0/24 table 5000, priority 10 from 10.0.1.0/24 table 5001
+ipv4.ignore-auto-dns:                   no
+ipv4.ignore-auto-routes:                no
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+ipv6.method:                            auto
+ipv6.ignore-auto-dns:                   no
+ipv6.ignore-auto-routes:                no
+"""
+
 
 TESTCASE_GENERIC_DNS4_SEARCH = [
     {
@@ -603,6 +640,7 @@ TESTCASE_DEFAULT_SECURE_WIRELESS_SHOW_OUTPUT = \
 802-11-wireless-security.fils:          0 (default)
 """
 
+
 TESTCASE_DUMMY_STATIC = [
     {
         'type': 'dummy',
@@ -635,6 +673,53 @@ ipv6.ignore-auto-dns:                   no
 ipv6.ignore-auto-routes:                no
 ipv6.method:                            manual
 ipv6.addresses:                         2001:db8::1/128
+"""
+
+
+TESTCASE_GSM = [
+    {
+        'type': 'gsm',
+        'conn_name': 'non_existent_nw_device',
+        'ifname': 'gsm_non_existant',
+        'gsm': {
+            'apn': 'internet.telekom',
+            'username': 't-mobile',
+            'password': 'tm',
+            'pin': '1234',
+        },
+        'method4': 'auto',
+        'state': 'present',
+        '_ansible_check_mode': False,
+    }
+]
+
+TESTCASE_GSM_SHOW_OUTPUT = """\
+connection.id:                          non_existent_nw_device
+connection.type:                        gsm
+connection.interface-name:              gsm_non_existant
+connection.autoconnect:                 yes
+ipv4.method:                            auto
+ipv4.ignore-auto-dns:                   no
+ipv4.ignore-auto-routes:                no
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+ipv6.method:                            auto
+ipv6.ignore-auto-dns:                   no
+ipv6.ignore-auto-routes:                no
+gsm.auto-config:                        no
+gsm.number:                             --
+gsm.username:                           t-mobile
+gsm.password:                           tm
+gsm.password-flags:                     0 (none)
+gsm.apn:                                "internet.telekom"
+gsm.network-id:                         --
+gsm.pin:                                1234
+gsm.pin-flags:                          0 (none)
+gsm.home-only:                          no
+gsm.device-id:                          --
+gsm.sim-id:                             --
+gsm.sim-operator-id:                    --
+gsm.mtu:                                auto
 """
 
 
@@ -682,6 +767,13 @@ def mocked_generic_connection_unchanged(mocker):
     mocker_set(mocker,
                connection_exists=True,
                execute_return=(0, TESTCASE_GENERIC_SHOW_OUTPUT, ""))
+
+
+@pytest.fixture
+def mocked_generic_connection_unchanged(mocker):
+    mocker_set(mocker,
+               connection_exists=True,
+               execute_return=(0, TESTCASE_GENERIC_MODIFY_ROUTING_RULES_SHOW_OUTPUT, ""))
 
 
 @pytest.fixture
@@ -863,6 +955,13 @@ def mocked_dummy_connection_static_unchanged(mocker):
                execute_return=(0, TESTCASE_DUMMY_STATIC_SHOW_OUTPUT, ""))
 
 
+@pytest.fixture
+def mocked_gsm_connection_unchanged(mocker):
+    mocker_set(mocker,
+               connection_exists=True,
+               execute_return=(0, TESTCASE_GSM_SHOW_OUTPUT, ""))
+
+
 @pytest.mark.parametrize('patch_ansible_module', TESTCASE_BOND, indirect=['patch_ansible_module'])
 def test_bond_connection_create(mocked_generic_connection_create, capfd):
     """
@@ -975,6 +1074,26 @@ def test_generic_connection_unchanged(mocked_generic_connection_unchanged, capfd
     results = json.loads(out)
     assert not results.get('failed')
     assert not results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_GENERIC_MODIFY_ROUTING_RULES, indirect=['patch_ansible_module'])
+def test_generic_connection_modify_routing_rules4(mocked_generic_connection_create, capfd):
+    """
+    Test : Generic connection modified with routing-rules4
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 1
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    args, kwargs = arg_list[0]
+
+    assert 'ipv4.routing-rules' in args[0]
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
 
 
 @pytest.mark.parametrize('patch_ansible_module', TESTCASE_GENERIC_DNS4_SEARCH, indirect=['patch_ansible_module'])
@@ -2154,6 +2273,82 @@ def test_create_dummy_static(mocked_generic_connection_create, capfd):
 def test_dummy_connection_static_unchanged(mocked_dummy_connection_static_unchanged, capfd):
     """
     Test : Dummy connection with static IP configuration unchanged
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert not results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_GSM, indirect=['patch_ansible_module'])
+def test_create_gsm(mocked_generic_connection_create, capfd):
+    """
+    Test if gsm created
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 1
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    args, kwargs = arg_list[0]
+
+    assert args[0][0] == '/usr/bin/nmcli'
+    assert args[0][1] == 'con'
+    assert args[0][2] == 'add'
+    assert args[0][3] == 'type'
+    assert args[0][4] == 'gsm'
+    assert args[0][5] == 'con-name'
+    assert args[0][6] == 'non_existent_nw_device'
+
+    args_text = list(map(to_text, args[0]))
+    for param in ['connection.interface-name', 'gsm_non_existant',
+                  'gsm.apn', 'internet.telekom',
+                  'gsm.username', 't-mobile',
+                  'gsm.password', 'tm',
+                  'gsm.pin', '1234']:
+        assert param in args_text
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_GSM, indirect=['patch_ansible_module'])
+def test_gsm_mod(mocked_generic_connection_modify, capfd):
+    """
+    Test if gsm modified
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 1
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    args, kwargs = arg_list[0]
+
+    assert args[0][0] == '/usr/bin/nmcli'
+    assert args[0][1] == 'con'
+    assert args[0][2] == 'modify'
+    assert args[0][3] == 'non_existent_nw_device'
+
+    args_text = list(map(to_text, args[0]))
+    for param in ['gsm.username', 't-mobile',
+                  'gsm.password', 'tm']:
+        assert param in args_text
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_GSM, indirect=['patch_ansible_module'])
+def test_gsm_connection_unchanged(mocked_gsm_connection_unchanged, capfd):
+    """
+    Test if gsm connection unchanged
     """
     with pytest.raises(SystemExit):
         nmcli.main()

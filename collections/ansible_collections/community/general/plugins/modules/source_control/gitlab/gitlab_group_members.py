@@ -74,7 +74,7 @@ options:
         type: str
     purge_users:
         description:
-            - Adds/remove users of the given access_level to match the given gitlab_user/gitlab_users_access list.
+            - Adds/remove users of the given access_level to match the given I(gitlab_user)/I(gitlab_users_access) list.
               If omitted do not purge orphaned members.
             - Is only used when I(state=present).
         type: list
@@ -104,7 +104,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Add a list of Users to A GitLab Group
-  gitlab_group_members:
+  community.general.gitlab_group_members:
     api_url: 'https://gitlab.example.com'
     api_token: 'Your-Private-Token'
     gitlab_group: groupname
@@ -115,7 +115,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Add a list of Users with Dedicated Access Levels to A GitLab Group
-  gitlab_group_members:
+  community.general.gitlab_group_members:
     api_url: 'https://gitlab.example.com'
     api_token: 'Your-Private-Token'
     gitlab_group: groupname
@@ -127,7 +127,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Add a user, remove all others which might be on this access level
-  gitlab_group_members:
+  community.general.gitlab_group_members:
     api_url: 'https://gitlab.example.com'
     api_token: 'Your-Private-Token'
     gitlab_group: groupname
@@ -137,7 +137,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Remove a list of Users with Dedicated Access Levels to A GitLab Group
-  gitlab_group_members:
+  community.general.gitlab_group_members:
     api_url: 'https://gitlab.example.com'
     api_token: 'Your-Private-Token'
     gitlab_group: groupname
@@ -179,9 +179,13 @@ class GitLabGroup(object):
 
     # get group id if group exists
     def get_group_id(self, gitlab_group):
-        group_exists = self._gitlab.groups.list(search=gitlab_group)
-        if group_exists:
-            return group_exists[0].id
+        groups = self._gitlab.groups.list(search=gitlab_group)
+        for group in groups:
+            if group.full_path == gitlab_group:
+                return group.id
+        for group in groups:
+            if group.path == gitlab_group or group.name == gitlab_group:
+                return group.id
 
     # get all members in a group
     def get_members_in_a_group(self, gitlab_group_id):

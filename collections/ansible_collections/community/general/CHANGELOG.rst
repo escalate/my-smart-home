@@ -6,6 +6,156 @@ Community General Release Notes
 
 This changelog describes changes after version 2.0.0.
 
+v3.8.0
+======
+
+Release Summary
+---------------
+
+Regular feature and bugfix release. Please note that this is the last minor 3.x.0 release; afterwards there will only be bugfix releases 3.8.y.
+
+Minor Changes
+-------------
+
+- mail - added the ``ehlohost`` parameter which allows for manual override of the host used in SMTP EHLO (https://github.com/ansible-collections/community.general/pull/3425).
+- nmcli - the option ``routing_rules4`` can now be specified as a list of strings, instead of as a single string (https://github.com/ansible-collections/community.general/issues/3401).
+- open-iscsi - adding support for mutual authentication between target and initiator (https://github.com/ansible-collections/community.general/pull/3422).
+- opentelemetry callback plugin - added option ``enable_from_environment`` to support enabling the plugin only if the given environment variable exists and it is set to true (https://github.com/ansible-collections/community.general/pull/3498).
+- opentelemetry callback plugin - enriched the stacktrace information with the ``message``, ``exception`` and ``stderr`` fields from the failed task (https://github.com/ansible-collections/community.general/pull/3496).
+- pkgng - packages being installed (or upgraded) are acted on in one command (per action) (https://github.com/ansible-collections/community.general/issues/2265).
+- pkgng - status message specifies number of packages installed and/or upgraded separately. Previously, all changes were reported as one count of packages "added" (https://github.com/ansible-collections/community.general/pull/3393).
+- terraform - add ``parallelism`` parameter (https://github.com/ansible-collections/community.general/pull/3540).
+- ufw - if ``delete=true`` and ``insert`` option is present, then ``insert`` is now ignored rather than failing with a syntax error (https://github.com/ansible-collections/community.general/pull/3514).
+
+Bugfixes
+--------
+
+- gitlab_deploy_key - fix idempotency on projects with multiple deploy keys (https://github.com/ansible-collections/community.general/pull/3473).
+- gitlab_group - avoid passing wrong value for ``require_two_factor_authentication`` on creation when the option has not been specified (https://github.com/ansible-collections/community.general/pull/3453).
+- gitlab_group_members - ``get_group_id`` return the group ID by matching ``full_path``, ``path`` or ``name`` (https://github.com/ansible-collections/community.general/pull/3400).
+- jboss - fix the deployment file permission issue when Jboss server is running under non-root user. The deployment file is copied with file content only. The file permission is set to ``440`` and belongs to root user. When the JBoss ``WildFly`` server is running under non-root user, it is unable to read the deployment file (https://github.com/ansible-collections/community.general/pull/3426).
+- keycloak_authentication - fix bug, the requirement was always on ``DISABLED`` when creating a new authentication flow (https://github.com/ansible-collections/community.general/pull/3330).
+- keycloak_identity_provider - fix change detection when updating identity provider mappers (https://github.com/ansible-collections/community.general/pull/3538, https://github.com/ansible-collections/community.general/issues/3537).
+- keycloak_role - quote role name when used in URL path to avoid errors when role names contain special characters (https://github.com/ansible-collections/community.general/issues/3535, https://github.com/ansible-collections/community.general/pull/3536).
+- logstash callback plugin - replace ``_option`` with ``context.CLIARGS`` to fix the plugin on ansible-base and ansible-core (https://github.com/ansible-collections/community.general/issues/2692).
+- macports - add ``stdout`` and ``stderr`` to return values (https://github.com/ansible-collections/community.general/issues/3499).
+- opentelemetry callback plugin - validated the task result exception without crashing. Also simplifying code a bit (https://github.com/ansible-collections/community.general/pull/3450, https://github.com/ansible/ansible/issues/75726).
+- yaml callback plugin - avoid modifying PyYAML so that other plugins using it on the controller, like the ``to_yaml`` filter, do not produce different output (https://github.com/ansible-collections/community.general/issues/3471, https://github.com/ansible-collections/community.general/pull/3478).
+- zypper_repository - when an URL to a .repo file was provided in option ``repo=`` and ``state=present`` only the first run was successful, future runs failed due to missing checks prior starting zypper. Usage of ``state=absent`` in combination with a .repo file was not working either (https://github.com/ansible-collections/community.general/issues/1791, https://github.com/ansible-collections/community.general/issues/3466).
+
+New Plugins
+-----------
+
+Callback
+~~~~~~~~
+
+- elastic - Create distributed traces for each Ansible task in Elastic APM
+
+Inventory
+~~~~~~~~~
+
+- opennebula - OpenNebula inventory source
+
+New Modules
+-----------
+
+Cloud
+~~~~~
+
+misc
+^^^^
+
+- proxmox_tasks_info - Retrieve information about one or more Proxmox VE tasks
+
+Packaging
+~~~~~~~~~
+
+language
+^^^^^^^^
+
+- pipx - Manages applications installed with pipx
+
+Web Infrastructure
+~~~~~~~~~~~~~~~~~~
+
+- rundeck_job_executions_info - Query executions for a Rundeck job
+- rundeck_job_run - Run a Rundeck job
+
+v3.7.0
+======
+
+Release Summary
+---------------
+
+Regular feature and bugfix release.
+
+Minor Changes
+-------------
+
+- gitlab_group - add new options ``project_creation_level``, ``auto_devops_enabled``, ``subgroup_creation_level`` (https://github.com/ansible-collections/community.general/pull/3248).
+- gitlab_group - add new property ``require_two_factor_authentication`` (https://github.com/ansible-collections/community.general/pull/3367).
+- gitlab_project - add new properties ``ci_config_path`` and ``shared_runners_enabled`` (https://github.com/ansible-collections/community.general/pull/3379).
+- gitlab_project_members - ``gitlab_user`` can now also be a list of users (https://github.com/ansible-collections/community.general/pull/3319).
+- gitlab_project_members - added functionality to set all members exactly as given (https://github.com/ansible-collections/community.general/pull/3319).
+- gitlab_runner - support project-scoped gitlab.com runners registration (https://github.com/ansible-collections/community.general/pull/634).
+- interfaces_file - minor refactor (https://github.com/ansible-collections/community.general/pull/3328).
+- ipa_config - add ``ipaselinuxusermaporder`` option to set the SELinux user map order (https://github.com/ansible-collections/community.general/pull/3178).
+- kernel_blacklist - revamped the module using ``ModuleHelper`` (https://github.com/ansible-collections/community.general/pull/3329).
+- lxd_container - add ``ignore_volatile_options`` option which allows to disable the behavior that the module ignores options starting with ``volatile.`` (https://github.com/ansible-collections/community.general/pull/3331).
+- nmcli - add ``gsm`` support (https://github.com/ansible-collections/community.general/pull/3313).
+- pids - refactor to add support for older ``psutil`` versions to the ``pattern`` option (https://github.com/ansible-collections/community.general/pull/3315).
+- redfish_command and redfish_config and redfish_utils module utils - add parameter to strip etag of quotes before patch, since some vendors do not properly ``If-Match`` etag with quotes (https://github.com/ansible-collections/community.general/pull/3296).
+- tss lookup plugin - added ``token`` parameter for token authorization; ``username`` and ``password`` are optional when ``token`` is provided (https://github.com/ansible-collections/community.general/pull/3327).
+- zpool_facts - minor refactoring (https://github.com/ansible-collections/community.general/pull/3332).
+
+Bugfixes
+--------
+
+- copr - fix chroot naming issues, ``centos-stream`` changed naming to ``centos-stream-<number>`` (for exmaple ``centos-stream-8``) (https://github.com/ansible-collections/community.general/issues/2084, https://github.com/ansible-collections/community.general/pull/3237).
+- django_manage - parameters ``apps`` and ``fixtures`` are now splitted instead of being used as a single argument (https://github.com/ansible-collections/community.general/issues/3333).
+- interfaces_file - no longer reporting change when none happened (https://github.com/ansible-collections/community.general/pull/3328).
+- linode inventory plugin - fix default value of new option ``ip_style`` (https://github.com/ansible-collections/community.general/issues/3337).
+- openbsd_pkg - fix crash from ``KeyError`` exception when package installs, but ``pkg_add`` returns with a non-zero exit code (https://github.com/ansible-collections/community.general/pull/3336).
+- redfish_utils module utils - if given, add account ID of user that should be created to HTTP request (https://github.com/ansible-collections/community.general/pull/3343/).
+
+New Plugins
+-----------
+
+Callback
+~~~~~~~~
+
+- opentelemetry - Create distributed traces with OpenTelemetry
+
+Filter
+~~~~~~
+
+- unicode_normalize - Normalizes unicode strings to facilitate comparison of characters with normalized forms
+
+Inventory
+~~~~~~~~~
+
+- icinga2 - Icinga2 inventory source
+
+New Modules
+-----------
+
+Database
+~~~~~~~~
+
+misc
+^^^^
+
+- redis_data - Set key value pairs in Redis
+- redis_data_info - Get value of key in Redis database
+
+Identity
+~~~~~~~~
+
+keycloak
+^^^^^^^^
+
+- keycloak_user_federation - Allows administration of Keycloak user federations via Keycloak API
+
 v3.6.0
 ======
 

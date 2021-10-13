@@ -1747,3 +1747,196 @@ releases:
       name: keycloak_identity_provider
       namespace: identity.keycloak
     release_date: '2021-08-31'
+  3.7.0:
+    changes:
+      bugfixes:
+      - copr - fix chroot naming issues, ``centos-stream`` changed naming to ``centos-stream-<number>``
+        (for exmaple ``centos-stream-8``) (https://github.com/ansible-collections/community.general/issues/2084,
+        https://github.com/ansible-collections/community.general/pull/3237).
+      - django_manage - parameters ``apps`` and ``fixtures`` are now splitted instead
+        of being used as a single argument (https://github.com/ansible-collections/community.general/issues/3333).
+      - interfaces_file - no longer reporting change when none happened (https://github.com/ansible-collections/community.general/pull/3328).
+      - linode inventory plugin - fix default value of new option ``ip_style`` (https://github.com/ansible-collections/community.general/issues/3337).
+      - openbsd_pkg - fix crash from ``KeyError`` exception when package installs,
+        but ``pkg_add`` returns with a non-zero exit code (https://github.com/ansible-collections/community.general/pull/3336).
+      - redfish_utils module utils - if given, add account ID of user that should
+        be created to HTTP request (https://github.com/ansible-collections/community.general/pull/3343/).
+      minor_changes:
+      - gitlab_group - add new options ``project_creation_level``, ``auto_devops_enabled``,
+        ``subgroup_creation_level`` (https://github.com/ansible-collections/community.general/pull/3248).
+      - gitlab_group - add new property ``require_two_factor_authentication`` (https://github.com/ansible-collections/community.general/pull/3367).
+      - gitlab_project - add new properties ``ci_config_path`` and ``shared_runners_enabled``
+        (https://github.com/ansible-collections/community.general/pull/3379).
+      - gitlab_project_members - ``gitlab_user`` can now also be a list of users (https://github.com/ansible-collections/community.general/pull/3319).
+      - gitlab_project_members - added functionality to set all members exactly as
+        given (https://github.com/ansible-collections/community.general/pull/3319).
+      - gitlab_runner - support project-scoped gitlab.com runners registration (https://github.com/ansible-collections/community.general/pull/634).
+      - interfaces_file - minor refactor (https://github.com/ansible-collections/community.general/pull/3328).
+      - ipa_config - add ``ipaselinuxusermaporder`` option to set the SELinux user
+        map order (https://github.com/ansible-collections/community.general/pull/3178).
+      - kernel_blacklist - revamped the module using ``ModuleHelper`` (https://github.com/ansible-collections/community.general/pull/3329).
+      - lxd_container - add ``ignore_volatile_options`` option which allows to disable
+        the behavior that the module ignores options starting with ``volatile.`` (https://github.com/ansible-collections/community.general/pull/3331).
+      - nmcli - add ``gsm`` support (https://github.com/ansible-collections/community.general/pull/3313).
+      - pids - refactor to add support for older ``psutil`` versions to the ``pattern``
+        option (https://github.com/ansible-collections/community.general/pull/3315).
+      - redfish_command and redfish_config and redfish_utils module utils - add parameter
+        to strip etag of quotes before patch, since some vendors do not properly ``If-Match``
+        etag with quotes (https://github.com/ansible-collections/community.general/pull/3296).
+      - tss lookup plugin - added ``token`` parameter for token authorization; ``username``
+        and ``password`` are optional when ``token`` is provided (https://github.com/ansible-collections/community.general/pull/3327).
+      - zpool_facts - minor refactoring (https://github.com/ansible-collections/community.general/pull/3332).
+      release_summary: Regular feature and bugfix release.
+    fragments:
+    - 3.7.0.yml
+    - 3178-add-ipaselinuxusermaporder-to-ipa-config-module.yml
+    - 3237-copr-fix_chroot_naming.yml
+    - 3248-adds-few-more-gitlab-group-options.yml
+    - 3296-clean-etag.yaml
+    - 3313-nmcli-add_gsm_support.yml
+    - 3315-pids-refactor.yml
+    - 3319-gitlab_project_members_enhancement.yml
+    - 3327-tss-token-authorization.yml
+    - 3328-interfaces_file-improvements.yaml
+    - 3329-kernel_blacklist-improvements.yaml
+    - 3331-do_not_ignore_volatile_configs_by_option.yml
+    - 3332-zpool_facts-pythonify.yaml
+    - 3334-django_manage-split-params.yaml
+    - 3336-openbsd_pkg-fix-KeyError.yml
+    - 3337-linode-fix.yml
+    - 3343-redfish_utils-addUser-userId.yml
+    - 3359-add-unicode_normalize-filter.yml
+    - 3367-add-require_two_factor_authentication-property-to-gitlab-group.yml
+    - 3379-gitlab_project-ci_cd_properties.yml
+    - 634-gitlab_project_runners.yaml
+    modules:
+    - description: Allows administration of Keycloak user federations via Keycloak
+        API
+      name: keycloak_user_federation
+      namespace: identity.keycloak
+    - description: Set key value pairs in Redis
+      name: redis_data
+      namespace: database.misc
+    - description: Get value of key in Redis database
+      name: redis_data_info
+      namespace: database.misc
+    plugins:
+      callback:
+      - description: Create distributed traces with OpenTelemetry
+        name: opentelemetry
+        namespace: null
+      filter:
+      - description: Normalizes unicode strings to facilitate comparison of characters
+          with normalized forms
+        name: unicode_normalize
+        namespace: null
+      inventory:
+      - description: Icinga2 inventory source
+        name: icinga2
+        namespace: null
+    release_date: '2021-09-21'
+  3.8.0:
+    changes:
+      bugfixes:
+      - gitlab_deploy_key - fix idempotency on projects with multiple deploy keys
+        (https://github.com/ansible-collections/community.general/pull/3473).
+      - gitlab_group - avoid passing wrong value for ``require_two_factor_authentication``
+        on creation when the option has not been specified (https://github.com/ansible-collections/community.general/pull/3453).
+      - gitlab_group_members - ``get_group_id`` return the group ID by matching ``full_path``,
+        ``path`` or ``name`` (https://github.com/ansible-collections/community.general/pull/3400).
+      - jboss - fix the deployment file permission issue when Jboss server is running
+        under non-root user. The deployment file is copied with file content only.
+        The file permission is set to ``440`` and belongs to root user. When the JBoss
+        ``WildFly`` server is running under non-root user, it is unable to read the
+        deployment file (https://github.com/ansible-collections/community.general/pull/3426).
+      - keycloak_authentication - fix bug, the requirement was always on ``DISABLED``
+        when creating a new authentication flow (https://github.com/ansible-collections/community.general/pull/3330).
+      - keycloak_identity_provider - fix change detection when updating identity provider
+        mappers (https://github.com/ansible-collections/community.general/pull/3538,
+        https://github.com/ansible-collections/community.general/issues/3537).
+      - keycloak_role - quote role name when used in URL path to avoid errors when
+        role names contain special characters (https://github.com/ansible-collections/community.general/issues/3535,
+        https://github.com/ansible-collections/community.general/pull/3536).
+      - logstash callback plugin - replace ``_option`` with ``context.CLIARGS`` to
+        fix the plugin on ansible-base and ansible-core (https://github.com/ansible-collections/community.general/issues/2692).
+      - macports - add ``stdout`` and ``stderr`` to return values (https://github.com/ansible-collections/community.general/issues/3499).
+      - opentelemetry callback plugin - validated the task result exception without
+        crashing. Also simplifying code a bit (https://github.com/ansible-collections/community.general/pull/3450,
+        https://github.com/ansible/ansible/issues/75726).
+      - yaml callback plugin - avoid modifying PyYAML so that other plugins using
+        it on the controller, like the ``to_yaml`` filter, do not produce different
+        output (https://github.com/ansible-collections/community.general/issues/3471,
+        https://github.com/ansible-collections/community.general/pull/3478).
+      - zypper_repository - when an URL to a .repo file was provided in option ``repo=``
+        and ``state=present`` only the first run was successful, future runs failed
+        due to missing checks prior starting zypper. Usage of ``state=absent`` in
+        combination with a .repo file was not working either (https://github.com/ansible-collections/community.general/issues/1791,
+        https://github.com/ansible-collections/community.general/issues/3466).
+      minor_changes:
+      - mail - added the ``ehlohost`` parameter which allows for manual override of
+        the host used in SMTP EHLO (https://github.com/ansible-collections/community.general/pull/3425).
+      - nmcli - the option ``routing_rules4`` can now be specified as a list of strings,
+        instead of as a single string (https://github.com/ansible-collections/community.general/issues/3401).
+      - open-iscsi - adding support for mutual authentication between target and initiator
+        (https://github.com/ansible-collections/community.general/pull/3422).
+      - opentelemetry callback plugin - added option ``enable_from_environment`` to
+        support enabling the plugin only if the given environment variable exists
+        and it is set to true (https://github.com/ansible-collections/community.general/pull/3498).
+      - opentelemetry callback plugin - enriched the stacktrace information with the
+        ``message``, ``exception`` and ``stderr`` fields from the failed task (https://github.com/ansible-collections/community.general/pull/3496).
+      - pkgng - packages being installed (or upgraded) are acted on in one command
+        (per action) (https://github.com/ansible-collections/community.general/issues/2265).
+      - pkgng - status message specifies number of packages installed and/or upgraded
+        separately. Previously, all changes were reported as one count of packages
+        "added" (https://github.com/ansible-collections/community.general/pull/3393).
+      - terraform - add ``parallelism`` parameter (https://github.com/ansible-collections/community.general/pull/3540).
+      - ufw - if ``delete=true`` and ``insert`` option is present, then ``insert``
+        is now ignored rather than failing with a syntax error (https://github.com/ansible-collections/community.general/pull/3514).
+      release_summary: Regular feature and bugfix release. Please note that this is
+        the last minor 3.x.0 release; afterwards there will only be bugfix releases
+        3.8.y.
+    fragments:
+    - 2692-logstash-callback-plugin-replacing_options.yml
+    - 3.8.0.yml
+    - 3330-bugfix-keycloak-authentication-flow-requirements-not-set-correctly.yml.yml
+    - 3393-pkgng-many_packages_one_command.yml
+    - 3400-fix-gitLab-api-searches-always-return-first-found-match-3386.yml
+    - 3401-nmcli-needs-type.yml
+    - 3422-open-iscsi-mutual-authentication-support.yaml
+    - 3425-mail_add_configurable_ehlo_hostname.yml
+    - 3426-copy-permissions-along-with-file-for-jboss-module.yml
+    - 3450-callback_opentelemetry-exception_handling.yml
+    - 3453-fix-gitlab_group-require_two_factor_authentication-cant_be_null.yml
+    - 3473-gitlab_deploy_key-fix_idempotency.yml
+    - 3474-zypper_repository_improve_repo_file_idempotency.yml
+    - 3478-yaml-callback.yml
+    - 3496-callback_opentelemetry-enrich_stacktraces.yml
+    - 3498-callback_opentelemetry-only_in_ci.yml
+    - 3500-macports-add-stdout-and-stderr-to-status.yaml
+    - 3514-ufw_insert_or_delete_biased_when_deletion_enabled.yml
+    - 3536-quote-role-name-in-url.yml
+    - 3538-fix-keycloak-idp-mappers-change-detection.yml
+    - 3540-terraform_add_parallelism_parameter.yml
+    modules:
+    - description: Manages applications installed with pipx
+      name: pipx
+      namespace: packaging.language
+    - description: Retrieve information about one or more Proxmox VE tasks
+      name: proxmox_tasks_info
+      namespace: cloud.misc
+    - description: Query executions for a Rundeck job
+      name: rundeck_job_executions_info
+      namespace: web_infrastructure
+    - description: Run a Rundeck job
+      name: rundeck_job_run
+      namespace: web_infrastructure
+    plugins:
+      callback:
+      - description: Create distributed traces for each Ansible task in Elastic APM
+        name: elastic
+        namespace: null
+      inventory:
+      - description: OpenNebula inventory source
+        name: opennebula
+        namespace: null
+    release_date: '2021-10-12'
