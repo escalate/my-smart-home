@@ -5,4 +5,5 @@ smb_mount_list: []
   #   share: nas_smb_share
   #   username: raspberry
   #   password: Secr3t
-  #   options: uid=1000,gid=1000,file_mode=0644,dir_mode=0755,iocharset=utf8
+  #   options: uid=0,gid=0,file_mode=0644,dir_mode=0755,iocharset=utf8
+  #   state: mounted
