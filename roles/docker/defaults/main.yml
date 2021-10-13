@@ -1,6 +1,8 @@
-docker_version: 5:20.10.8~3-0~debian-buster
+# https://download.docker.com/linux/debian/dists/buster/pool/stable/arm64/
+docker_version: 5:20.10.9~3-0~debian-buster
 docker_containerd_version: 1.4.9-1
-docker_python_version: 5.0.2
+# https://pypi.org/project/docker/
+docker_python_version: 5.0.3
 
 # https://docs.docker.com/engine/reference/commandline/system_prune/
 docker_system_prune_cron: true
