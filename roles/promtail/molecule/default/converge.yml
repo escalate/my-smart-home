@@ -23,6 +23,7 @@
                 - localhost
               labels:
                 job: varlogs
+                host: "{{ inventory_hostname }}"
                 __path__: /var/log/*log
     promtail_config_type: static
     promtail_env_vars:

@@ -1,4 +1,4 @@
 promtail_group_map:
-  static: 4
-  journal: 101
+  static: 4  # adm
+  journal: 101  # systemd-journal
 promtail_group_gid: "{{ promtail_group_map[promtail_config_type] }}"

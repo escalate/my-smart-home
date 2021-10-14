@@ -36,6 +36,7 @@ def test_promtail_config(host):
         "  static_configs:\n"
         "  - labels:\n"
         "      __path__: /var/log/*log\n"
+        "      host: instance\n"
         "      job: varlogs\n"
         "    targets:\n"
         "    - localhost\n"

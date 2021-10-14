@@ -5,9 +5,6 @@
     group: root
     create_home: false
     shell: /sbin/nologin
-    groups:
-      - adm
-      - systemd-journal
 
 - name: Create config directory
   ansible.builtin.file:
