@@ -193,6 +193,14 @@ telegraf_config: |
 # https://github.com/grafana/loki/releases
 loki_docker_image_version: 2.3.0
 loki_docker_network: internal
+loki_docker_labels:
+  traefik.enable: "true"
+  traefik.http.routers.loki.rule: Host(`loki.clubstr.de`)
+  traefik.http.routers.loki.entrypoints: websecure
+  traefik.http.routers.loki.service: loki-service
+  traefik.http.routers.loki.middlewares: loki-auth
+  traefik.http.middlewares.loki-auth.basicauth.users: "{{ vault_traefik_loki_basic_auth_credentials }}"
+  traefik.http.services.loki-service.loadbalancer.server.port: 3100
 
 # https://github.com/grafana/loki/releases
 promtail_docker_image_version: 2.3.0
