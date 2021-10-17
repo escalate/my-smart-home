@@ -56,6 +56,8 @@ influxdb_primary_organization_name: ClubStr
 influxdb_primary_bucket_name: General
 influxdb_primary_bucket_name_retention_period: 1h
 influxdb_users:
+  - name: grafana
+    password: "{{ vault_influxdb_users_grafana_password }}"
   - name: telegraf
     password: "{{ vault_influxdb_users_telegraf_password }}"
 influxdb_buckets:
@@ -103,7 +105,7 @@ grafana_datasources:
         organization: ClubStr
         defaultBucket: General
       secureJsonData:
-        token: "{{ grafana_datasources_influxdb_token }}"
+        token: "{{ vault_influxdb_users_grafana_token }}"
     - name: Loki
       type: loki
       access: proxy
