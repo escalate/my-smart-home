@@ -69,6 +69,10 @@ influxdb_buckets:
     description: Bucket for Telegraf
     retention: 5d
 influxdb_authorizations:
+  - user: grafana
+    description: grafana token with read-buckets permission
+    permissions:
+      - read-buckets
   - user: telegraf
     description: telegraf token with read- and write-buckets permission
     permissions:
