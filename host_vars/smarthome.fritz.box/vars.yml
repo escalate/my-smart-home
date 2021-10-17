@@ -279,6 +279,7 @@ coredns_config: |
         {{ vault_coredns_config_grafana }}
         {{ vault_coredns_config_homeassistant }}
         {{ vault_coredns_config_influxdb }}
+        {{ vault_coredns_config_loki }}
         {{ vault_coredns_config_promtail }}
         {{ vault_coredns_config_telegraf }}
         {{ vault_coredns_config_traefik }}
