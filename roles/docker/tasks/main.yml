@@ -1,13 +1,8 @@
-- name: Install SDK prerequisites
-  ansible.builtin.apt:
-    name: python-backports.ssl-match-hostname
-    state: present
-    update_cache: true
-
 - name: Install SDK for Python
   ansible.builtin.pip:
     name: "docker=={{ docker_python_version }}"
     state: present
+    executable: pip3
 
 - name: Add GPG key fo apt repository
   ansible.builtin.apt_key:

@@ -1,5 +1,6 @@
+# https://download.docker.com/linux/debian/dists/bullseye/pool/stable/arm64/
 # https://download.docker.com/linux/debian/dists/buster/pool/stable/arm64/
-docker_version: 5:20.10.9~3-0~debian-buster
+docker_version: 5:20.10.9~3-0~debian-{{ ansible_distribution_release }}
 docker_containerd_version: 1.4.9-1
 # https://pypi.org/project/docker/
 docker_python_version: 5.0.3
