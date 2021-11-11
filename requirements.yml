@@ -7,7 +7,7 @@ roles:
   # https://galaxy.ansible.com/escalate/common
   - name: common
     src: escalate.common
-    version: v1.7.0
+    version: v1.10.0
 
   # https://galaxy.ansible.com/escalate/dhcpcd
   - name: dhcpcd

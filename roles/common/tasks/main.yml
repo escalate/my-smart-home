@@ -6,13 +6,43 @@
   community.general.timezone:
     name: "{{ common_timezone }}"
 
-- name: Install packages
+- name: Install basic packages
+  ansible.builtin.apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
+  vars:
+    packages:
+      # package manager utilities
+      - apt-transport-https
+      - software-properties-common
+      # TERM screen-256color-bce
+      - ncurses-term
+      # enhanced editor
+      - vim
+      # process observation tools
+      - htop
+      # web tools
+      - curl
+      - wget
+      # shell completion
+      - bash-completion
+      # pip
+      - python3-pip
+      # logger, wall. etc.
+      - bsdutils
+      # dig, nslookup, etc.
+      - dnsutils
+      # GNU Privacy Guard
+      - gpg
+
+- name: Install additional packages
   ansible.builtin.apt:
     name: "{{ common_install_packages }}"
     state: present
     update_cache: true
 
-- name: Remove packages
+- name: Remove unused packages
   ansible.builtin.apt:
     name: "{{ common_remove_packages }}"
     state: absent

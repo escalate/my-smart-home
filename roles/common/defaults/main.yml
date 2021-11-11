@@ -1,28 +1,6 @@
 common_hostname: "{{ inventory_hostname }}"
 common_timezone: Europe/Berlin
-
-common_install_packages:
-  # package manager utilities
-  - apt-transport-https
-  - software-properties-common
-  # TERM screen-256color-bce
-  - ncurses-term
-  # enhanced editor
-  - vim
-  # process observation tools
-  - htop
-  # web tools
-  - curl
-  - wget
-  # shell completion
-  - bash-completion
-  # Python pip
-  - python-pip
-  - python3-pip
-  # BSD commandline tools
-  - bsdutils
-  - bsdmainutils
-
+common_install_packages: []
 common_remove_packages:
   # unused editors
   - nano

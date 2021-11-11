@@ -1,5 +1,4 @@
 [![Molecule](https://github.com/escalate/ansible-raspberry-common/actions/workflows/molecule.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/ansible-raspberry-common/actions/workflows/molecule.yml)
-[![Ansible Quality Score](https://img.shields.io/ansible/quality/54162?label=Quality%20Score)](https://galaxy.ansible.com/escalate/common)
 
 # Ansible Role: Raspberry - Common
 
