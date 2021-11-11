@@ -1,5 +1,7 @@
 - hosts: gitops
   roles:
+    - role: cmdline
+      tags: cmdline
     - role: common
       tags: common
     - role: dhcpcd

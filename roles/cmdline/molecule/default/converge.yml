@@ -1,0 +1,14 @@
+- name: Converge
+  hosts: all
+  vars:
+    cmdline_parameters:
+      - console=serial0,115200
+      - console=tty1
+      - root=PARTUUID=51821e2e-02
+      - rootfstype=ext4
+      - elevator=deadline
+      - fsck.repair=yes
+      - rootwait
+  roles:
+    - role: ansible-raspberry-cmdline
+      tags: cmdline

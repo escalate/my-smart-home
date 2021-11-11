@@ -1,0 +1,20 @@
+galaxy_info:
+  role_name: cmdline
+  namespace: escalate
+  author: Felix Boerner
+  description: Manage Linux kernel command line on Raspberry Pi OS
+  license: MIT
+  min_ansible_version: 2.10
+  github_branch: master
+  platforms:
+    - name: Debian
+      versions:
+        - buster
+  galaxy_tags:
+    - raspberry
+    - pi
+    - raspberrypi
+    - cmdline
+    - linux
+    - kernel
+dependencies: []
