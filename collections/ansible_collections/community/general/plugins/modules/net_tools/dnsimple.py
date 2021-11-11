@@ -82,6 +82,8 @@ options:
     version_added: 3.5.0
 requirements:
   - "dnsimple >= 1.0.0"
+notes:
+  - "Support for C(dnsimple < 2) is deprecated and will be removed in community.general 5.0.0."
 author: "Alex Coomans (@drcapulet)"
 '''
 
@@ -91,13 +93,6 @@ EXAMPLES = '''
     account_email: test@example.com
     account_api_token: dummyapitoken
   delegate_to: localhost
-
-- name: Fetch my.com domain records
-  community.general.dnsimple:
-    domain: my.com
-    state: present
-  delegate_to: localhost
-  register: records
 
 - name: Delete a domain
   community.general.dnsimple:
@@ -402,6 +397,11 @@ def main():
         if DNSIMPLE_MAJOR_VERSION > 1:
             ds = DNSimpleV2(account_email, account_api_token, sandbox, module)
         else:
+            module.deprecate(
+                'Support for python-dnsimple < 2 is deprecated. '
+                'Update python-dnsimple to version >= 2.0.0',
+                version='5.0.0', collection_name='community.general'
+            )
             ds = DNSimpleV1(account_email, account_api_token, sandbox, module)
         # Let's figure out what operation we want to do
         # No domain, return a list
