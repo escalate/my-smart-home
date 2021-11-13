@@ -33,8 +33,8 @@ msmtp_aliases:
 smb_mount_list: "{{ vault_smb_mount_list }}"
 
 # https://download.docker.com/linux/debian/dists/buster/pool/stable/arm64/
-docker_version: 5:20.10.9~3-0~debian-buster
-docker_containerd_version: 1.4.9-1
+docker_version: 5:20.10.10~3-0~debian-{{ ansible_distribution_release }}
+docker_containerd_version: 1.4.11-1
 # https://pypi.org/project/docker/
 docker_python_version: 5.0.3
 docker_networks:
