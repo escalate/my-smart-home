@@ -2,7 +2,7 @@ roles:
   # https://galaxy.ansible.com/escalate/cmdline
   - name: cmdline
     src: escalate.cmdline
-    version: v1.0.1
+    version: v1.0.2
 
   # https://galaxy.ansible.com/escalate/common
   - name: common

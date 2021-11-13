@@ -1,3 +1,4 @@
 - name: Restart system
-  ansible.builtin.reboot:
+  ansible.builtin.command:
+    cmd: reboot
   when: ansible_virtualization_role != "guest"
