@@ -12,3 +12,6 @@
     group: root
     mode: 0755
   notify: Restart system
+
+- name: Force all notified handlers to run at this point
+  meta: flush_handlers
