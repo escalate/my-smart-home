@@ -1,3 +1,3 @@
 - name: Restart system
   ansible.builtin.reboot:
-  when: ansible_env["container"] != "docker"
+  when: ansible_virtualization_role != "guest"
