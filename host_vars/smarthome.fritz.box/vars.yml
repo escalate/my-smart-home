@@ -95,7 +95,7 @@ grafana_admin_password: "{{ vault_grafana_admin_password }}"
 grafana_datasources:
   apiVersion: 1
   datasources:
-    - name: InfluxDB
+    - name: InfluxDB - Loxone MiniServer
       type: influxdb
       access: proxy
       url: http://influxdb:8086
@@ -103,7 +103,29 @@ grafana_datasources:
         version: Flux
         httpMode: POST
         organization: ClubStr
-        defaultBucket: General
+        defaultBucket: Loxone MiniServer
+      secureJsonData:
+        token: "{{ vault_influxdb_users_grafana_token }}"
+    - name: InfluxDB - Home Assistant
+      type: influxdb
+      access: proxy
+      url: http://influxdb:8086
+      jsonData:
+        version: Flux
+        httpMode: POST
+        organization: ClubStr
+        defaultBucket: Home Assistant
+      secureJsonData:
+        token: "{{ vault_influxdb_users_grafana_token }}"
+    - name: InfluxDB - Telegraf
+      type: influxdb
+      access: proxy
+      url: http://influxdb:8086
+      jsonData:
+        version: Flux
+        httpMode: POST
+        organization: ClubStr
+        defaultBucket: Telegraf
       secureJsonData:
         token: "{{ vault_influxdb_users_grafana_token }}"
     - name: Loki
