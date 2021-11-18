@@ -63,13 +63,13 @@ influxdb_users:
 influxdb_buckets:
   - name: Loxone MiniServer
     description: Bucket for Loxone MiniServer
-    retention: 0
+    retention: 30d
   - name: Home Assistant
     description: Bucket for Home Assistant
-    retention: 14d
+    retention: 30d
   - name: Telegraf
     description: Bucket for Telegraf
-    retention: 5d
+    retention: 30d
 influxdb_authorizations:
   - user: grafana
     description: grafana token with read-buckets permission
