@@ -106,6 +106,8 @@ grafana_datasources:
         defaultBucket: Loxone MiniServer
       secureJsonData:
         token: "{{ vault_influxdb_users_grafana_token }}"
+      secureJsonFields:
+        token: true
     - name: InfluxDB - Home Assistant
       type: influxdb
       access: proxy
@@ -117,6 +119,8 @@ grafana_datasources:
         defaultBucket: Home Assistant
       secureJsonData:
         token: "{{ vault_influxdb_users_grafana_token }}"
+      secureJsonFields:
+        token: true
     - name: InfluxDB - Telegraf
       type: influxdb
       access: proxy
@@ -128,6 +132,8 @@ grafana_datasources:
         defaultBucket: Telegraf
       secureJsonData:
         token: "{{ vault_influxdb_users_grafana_token }}"
+      secureJsonFields:
+        token: true
     - name: Loki
       type: loki
       access: proxy
