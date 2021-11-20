@@ -35,6 +35,8 @@
       - dnsutils
       # GNU Privacy Guard
       - gpg
+      # file transfer
+      - rsync
 
 - name: Install additional packages
   ansible.builtin.apt:
