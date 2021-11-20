@@ -155,7 +155,7 @@ home_assistant_config:
     trusted_proxies: 172.18.0.0/16
 
 # https://github.com/influxdata/telegraf/releases
-telegraf_docker_image_version: 1.20.2
+telegraf_docker_image_version: 1.20.4
 telegraf_docker_labels:
   traefik.enable: "true"
   # http
