@@ -42,7 +42,7 @@ docker_networks:
     subnet: 172.18.0.0/16
 
 # https://github.com/influxdata/influxdb/releases
-influxdb_docker_image_version: 2.0.8
+influxdb_docker_image_version: 2.1.1
 influxdb_docker_labels:
   traefik.enable: "true"
   traefik.http.routers.influxdb.rule: Host(`influxdb.clubstr.de`)
