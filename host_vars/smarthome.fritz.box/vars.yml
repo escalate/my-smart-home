@@ -140,7 +140,7 @@ grafana_datasources:
       url: http://loki:3100
 
 # https://github.com/home-assistant/core/releases
-home_assistant_docker_image_version: 2021.10.4
+home_assistant_docker_image_version: 2021.11.5
 home_assistant_docker_labels:
   traefik.enable: "true"
   traefik.http.routers.homeassistant.rule: Host(`homeassistant.clubstr.de`)
