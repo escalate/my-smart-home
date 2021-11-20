@@ -1,0 +1,8 @@
+- name: Converge
+  hosts: all
+  vars:
+    remote_backup_local_backups_path: /etc
+    remote_backup_external_backups_path: /tmp
+  roles:
+    - role: ansible-raspberry-remote-backup
+      tags: remotebackup

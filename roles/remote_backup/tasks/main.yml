@@ -1,0 +1,15 @@
+- name: Create remote backup script
+  ansible.builtin.template:
+    src: remote-backup.sh.j2
+    dest: /usr/local/bin/remote-backup.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Add remote backup cron job
+  ansible.builtin.cron:
+    name: Remote Backup
+    minute: "0"
+    hour: "8"
+    job: "/usr/local/bin/remote-backup.sh || echo \"ERROR: A problem occurred during remote backup. Please check the logfiles. journalctl -t remote-backup.sh\""  # noqa 204
+    user: root

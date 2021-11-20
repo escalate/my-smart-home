@@ -54,6 +54,11 @@ roles:
     src: escalate.smb_mount
     version: v1.2.0
 
+  # https://galaxy.ansible.com/escalate/remote_backup
+  - name: remote_backup
+    src: escalate.remote_backup
+    version: v1.0.0
+
   # https://galaxy.ansible.com/escalate/docker
   - name: docker
     src: escalate.docker

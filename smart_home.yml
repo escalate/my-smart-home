@@ -22,6 +22,8 @@
       tags: msmtp
     - role: smb_mount
       tags: smbmount
+    - role: remote_backup
+      tags: remotebackup
     - role: docker
       tags: docker
     - role: influxdb

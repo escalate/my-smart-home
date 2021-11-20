@@ -1,0 +1,39 @@
+#!/bin/bash
+set -e -E -u -C -o pipefail
+
+exec 1> >(logger --tag $(basename $0)) 2>&1
+
+if [[ "$EUID" -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
+
+echo "Start remote backup"
+
+DATE="$(date +%Y-%m-%d)"
+HOST="$(hostname --fqdn)"
+LOCAL_BACKUPS_DIR="{{ remote_backup_local_backups_path }}"
+EXTERNAL_BACKUPS_DIR="{{ remote_backup_external_backups_path }}"
+
+if [ ! -d "${LOCAL_BACKUPS_DIR}" ]; then
+    echo "ERROR: Directory \"${LOCAL_BACKUPS_DIR}\" does not exist"
+    exit 1
+fi
+
+if [ ! -d "${EXTERNAL_BACKUPS_DIR}" ]; then
+    echo "ERROR: Directory \"${EXTERNAL_BACKUPS_DIR}\" does not exist"
+    exit 1
+fi
+
+if ! mountpoint --quiet "${EXTERNAL_BACKUPS_DIR}"; then
+    echo "ERROR: Directory \"${EXTERNAL_BACKUPS_DIR}\" is not a mountpoint"
+    exit 1
+fi
+
+echo "Backup directory \"${LOCAL_BACKUPS_DIR}\" to \"${EXTERNAL_BACKUPS_DIR}/${HOST}/${DATE}\""
+mkdir --parents "${EXTERNAL_BACKUPS_DIR}/${HOST}/${DATE}"
+rsync --archive --verbose "${LOCAL_BACKUPS_DIR}/" "${EXTERNAL_BACKUPS_DIR}/${HOST}/${DATE}"
+
+if [ -d "${EXTERNAL_BACKUPS_DIR}/@Recycle" ]; then
+    echo "Delete QNAP NAS Recycle bin"
+    find "${EXTERNAL_BACKUPS_DIR}/@Recycle" -mindepth 1 -maxdepth 1 -exec rm --recursive --force {} \;
+fi
+
+echo "Finish remote backup"

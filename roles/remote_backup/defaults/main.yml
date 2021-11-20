@@ -1,0 +1,2 @@
+remote_backup_local_backups_path: /var/backups
+remote_backup_external_backups_path: /mnt/nas
