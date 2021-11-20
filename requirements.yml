@@ -57,7 +57,7 @@ roles:
   # https://galaxy.ansible.com/escalate/remote_backup
   - name: remote_backup
     src: escalate.remote_backup
-    version: v1.0.0
+    version: v1.1.0
 
   # https://galaxy.ansible.com/escalate/docker
   - name: docker

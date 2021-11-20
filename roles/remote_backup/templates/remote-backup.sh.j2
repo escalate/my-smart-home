@@ -7,7 +7,6 @@ if [[ "$EUID" -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
 
 echo "Start remote backup"
 
-DATE="$(date +%Y-%m-%d)"
 HOST="$(hostname --fqdn)"
 LOCAL_BACKUPS_DIR="{{ remote_backup_local_backups_path }}"
 EXTERNAL_BACKUPS_DIR="{{ remote_backup_external_backups_path }}"
@@ -27,13 +26,13 @@ if ! mountpoint --quiet "${EXTERNAL_BACKUPS_DIR}"; then
     exit 1
 fi
 
-echo "Backup directory \"${LOCAL_BACKUPS_DIR}\" to \"${EXTERNAL_BACKUPS_DIR}/${HOST}/${DATE}\""
-mkdir --parents "${EXTERNAL_BACKUPS_DIR}/${HOST}/${DATE}"
-rsync --archive --verbose "${LOCAL_BACKUPS_DIR}/" "${EXTERNAL_BACKUPS_DIR}/${HOST}/${DATE}"
+echo "Backup directory \"${LOCAL_BACKUPS_DIR}\" to \"${EXTERNAL_BACKUPS_DIR}/${HOST}\""
+mkdir --parents "${EXTERNAL_BACKUPS_DIR}/${HOST}"
+rsync --archive --verbose "${LOCAL_BACKUPS_DIR}/" "${EXTERNAL_BACKUPS_DIR}/${HOST}"
 
 if [ -d "${EXTERNAL_BACKUPS_DIR}/@Recycle" ]; then
     echo "Delete QNAP NAS Recycle bin"
-    find "${EXTERNAL_BACKUPS_DIR}/@Recycle" -mindepth 1 -maxdepth 1 -exec rm --recursive --force {} \;
+    find "${EXTERNAL_BACKUPS_DIR}/@Recycle" -mindepth 1 -maxdepth 1 -exec rm --recursive --force --verbose {} \;
 fi
 
 echo "Finish remote backup"
