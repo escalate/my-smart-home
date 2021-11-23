@@ -6,7 +6,7 @@ ansible_group = "gitops"
 ansible_host = "smart-home.fritz.box"
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "debian/buster64"
+  config.vm.box = "debian/bullseye64"
 
   config.vm.define ansible_host do |test|
     test.vm.network "private_network", type: "dhcp"
