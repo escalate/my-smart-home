@@ -70,6 +70,9 @@ influxdb_buckets:
   - name: Telegraf
     description: Bucket for Telegraf
     retention: 30d
+  - name: WeatherFlow Tempest
+    description: Bucket for WeatherFlow Tempest
+    retention: 30d
 influxdb_authorizations:
   - user: grafana
     description: grafana token with read-buckets permission
@@ -184,6 +187,7 @@ telegraf_config: |
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/http_listener_v2/README.md
   [[inputs.http_listener_v2]]
     service_address = ":8081"
+    data_format = "influx"
 
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/kernel/README.md
   [[inputs.kernel]]
@@ -200,6 +204,11 @@ telegraf_config: |
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/socket_listener/README.md
   [[inputs.socket_listener]]
     service_address = "udp4://:8094"
+    data_format = "influx"
+
+  [[inputs.socket_listener]]
+    service_address = "udp4://:50222"
+    data_format = "json"
 
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/swap/README.md
   [[inputs.swap]]
