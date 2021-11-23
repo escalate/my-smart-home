@@ -209,6 +209,7 @@ telegraf_config: |
   [[inputs.socket_listener]]
     service_address = "udp4://:50222"
     data_format = "json"
+    json_name_key = "type"
 
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/swap/README.md
   [[inputs.swap]]
