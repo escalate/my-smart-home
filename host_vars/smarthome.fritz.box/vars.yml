@@ -210,6 +210,7 @@ telegraf_config: |
     service_address = "udp4://:50222"
     data_format = "json"
     json_name_key = "type"
+    tag_keys = ["serial_number", "hub_sn"]
 
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/swap/README.md
   [[inputs.swap]]
