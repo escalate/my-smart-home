@@ -170,6 +170,10 @@ telegraf_docker_labels:
   traefik.udp.routers.telegraf-udp-socket.entrypoints: telegraf-udp-socket
   traefik.udp.routers.telegraf-udp-socket.service: telegraf-udp-socket-service
   traefik.udp.services.telegraf-udp-socket-service.loadbalancer.server.port: 8094
+  # udp - WeatherFlow Tempest
+  traefik.udp.routers.telegraf-udp-socket-tempest.entrypoints: telegraf-udp-socket-tempest
+  traefik.udp.routers.telegraf-udp-socket-tempest.service: telegraf-udp-socket-tempest-service
+  traefik.udp.services.telegraf-udp-socket-tempest-service.loadbalancer.server.port: 50222
 telegraf_docker_network: internal
 telegraf_config: |
   [agent]
@@ -276,6 +280,8 @@ traefik_docker_publish_ports:
   - 443:443
   # telegraf-udp-socket
   - 8094:8094/udp
+  # telegraf-udp-socket-tempest
+  - 50222:50222/udp
 traefik_config:
   global:
     checkNewVersion: false
