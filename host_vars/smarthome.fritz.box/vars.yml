@@ -305,8 +305,10 @@ traefik_config:
       http:
         tls:
           certResolver: letsencryptresolver
-    telegraf-udp-socket:
+    telegraf-udp-influx-loxone:
       address: ":8094/udp"
+    telegraf-udp-json-weatherflow:
+      address: ":50222/udp"
   certificatesResolvers:
     letsencryptresolver:
       acme:
