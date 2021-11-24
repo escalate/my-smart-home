@@ -216,6 +216,7 @@ telegraf_config: |
     data_format = "json"
     json_name_key = "type"
     tag_keys = ["serial_number", "hub_sn"]
+    json_string_fields = ["reset_flags"]
 
   # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/swap/README.md
   [[inputs.swap]]
