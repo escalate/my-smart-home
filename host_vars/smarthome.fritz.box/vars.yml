@@ -166,14 +166,14 @@ telegraf_docker_labels:
   traefik.http.routers.telegraf.entrypoints: websecure
   traefik.http.routers.telegraf.service: telegraf-service
   traefik.http.services.telegraf-service.loadbalancer.server.port: 8081
-  # udp
-  traefik.udp.routers.telegraf-udp-socket.entrypoints: telegraf-udp-socket
-  traefik.udp.routers.telegraf-udp-socket.service: telegraf-udp-socket-service
-  traefik.udp.services.telegraf-udp-socket-service.loadbalancer.server.port: 8094
+  # udp - Loxone MiniServer
+  traefik.udp.routers.telegraf-udp-influx-loxone.entrypoints: telegraf-udp-influx-loxone
+  traefik.udp.routers.telegraf-udp-influx-loxone.service: telegraf-udp-influx-loxone-service
+  traefik.udp.services.telegraf-udp-influx-loxone-service.loadbalancer.server.port: 8094
   # udp - WeatherFlow Tempest
-  traefik.udp.routers.telegraf-udp-socket-tempest.entrypoints: telegraf-udp-socket-tempest
-  traefik.udp.routers.telegraf-udp-socket-tempest.service: telegraf-udp-socket-tempest-service
-  traefik.udp.services.telegraf-udp-socket-tempest-service.loadbalancer.server.port: 50222
+  traefik.udp.routers.telegraf-udp-json-weatherflow.entrypoints: telegraf-udp-json-weatherflow
+  traefik.udp.routers.telegraf-udp-json-weatherflow.service: telegraf-udp-json-weatherflow-service
+  traefik.udp.services.telegraf-udp-json-weatherflow-service.loadbalancer.server.port: 50222
 telegraf_docker_network: internal
 telegraf_config: |
   [agent]
@@ -210,6 +210,7 @@ telegraf_config: |
     service_address = "udp4://:8094"
     data_format = "influx"
 
+  # https://weatherflow.github.io/Tempest/api/udp
   [[inputs.socket_listener]]
     service_address = "udp4://:50222"
     data_format = "json"
@@ -278,9 +279,9 @@ traefik_docker_publish_ports:
   - 80:80
   # websecure
   - 443:443
-  # telegraf-udp-socket
+  # telegraf-udp-influx-loxone
   - 8094:8094/udp
-  # telegraf-udp-socket-tempest
+  # telegraf-udp-json-weatherflow
   - 50222:50222/udp
 traefik_config:
   global:
