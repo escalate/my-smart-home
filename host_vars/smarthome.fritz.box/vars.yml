@@ -237,9 +237,18 @@ telegraf_config: |
     urls = ["http://influxdb:8086"]
     token = "{{ vault_influxdb_users_telegraf_token }}"
     organization = "{{ influxdb_primary_organization_name }}"
+    bucket = "WeatherFlow Tempest"
+    [outputs.influxdb_v2.tagpass]
+      hub_sn = ["*"]
+
+  [[outputs.influxdb_v2]]
+    urls = ["http://influxdb:8086"]
+    token = "{{ vault_influxdb_users_telegraf_token }}"
+    organization = "{{ influxdb_primary_organization_name }}"
     bucket = "Telegraf"
     [outputs.influxdb_v2.tagdrop]
       origin = ["loxone"]
+      hub_sn = ["*"]
 
 # https://github.com/grafana/loki/releases
 loki_docker_image_version: 2.4.1
