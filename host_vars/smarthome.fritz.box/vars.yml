@@ -137,6 +137,19 @@ grafana_datasources:
         token: "{{ vault_influxdb_users_grafana_token }}"
       secureJsonFields:
         token: true
+    - name: InfluxDB - WeatherFlow Tempest
+      type: influxdb
+      access: proxy
+      url: http://influxdb:8086
+      jsonData:
+        version: Flux
+        httpMode: POST
+        organization: ClubStr
+        defaultBucket: WeatherFlow Tempest
+      secureJsonData:
+        token: "{{ vault_influxdb_users_grafana_token }}"
+      secureJsonFields:
+        token: true
     - name: Loki
       type: loki
       access: proxy
