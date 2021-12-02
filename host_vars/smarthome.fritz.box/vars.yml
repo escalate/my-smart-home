@@ -167,6 +167,7 @@ home_assistant_docker_network: internal
 home_assistant_config:
   default_config: {}
   http:
+    server_host: 0.0.0.0
     use_x_forwarded_for: true
     trusted_proxies: 172.18.0.0/16
 
