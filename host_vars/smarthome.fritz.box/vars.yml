@@ -165,6 +165,16 @@ home_assistant_docker_labels:
   traefik.http.services.homeassistant-service.loadbalancer.server.port: 8123
 home_assistant_docker_network: internal
 home_assistant_config:
+  homeassistant:
+    name: Clubstr.
+    latitude: 52.517225
+    longitude: 13.675855
+    elevation: 54
+    unit_system: metric
+    temperature_unit: C
+    time_zone: Europe/Berlin
+    currency: EUR
+    external_url: https://homeassistant.clubstr.de
   default_config: {}
   http:
     server_host: 0.0.0.0
