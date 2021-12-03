@@ -83,6 +83,11 @@ influxdb_authorizations:
     permissions:
       - read-buckets
       - write-buckets
+  - user: homeassistant
+    description: homeassistant token with read- and write-buckets permission
+    permissions:
+      - read-buckets
+      - write-buckets
 
 # https://github.com/grafana/grafana/releases
 grafana_docker_image_version: 8.2.5
@@ -183,6 +188,13 @@ home_assistant_config:
     server_host: 0.0.0.0
     use_x_forwarded_for: true
     trusted_proxies: 172.18.0.0/16
+  influxdb:
+    api_version: 2
+    host: influxdb
+    port: 8086
+    token:
+    organization: ClubStr
+    bucket: Home Assistant
 
 # https://github.com/influxdata/telegraf/releases
 telegraf_docker_image_version: 1.20.4
