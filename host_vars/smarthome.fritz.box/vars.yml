@@ -60,6 +60,8 @@ influxdb_users:
     password: "{{ vault_influxdb_users_grafana_password }}"
   - name: telegraf
     password: "{{ vault_influxdb_users_telegraf_password }}"
+  - name: homeassistant
+    password: "{{ vault_influxdb_users_homeassistant_password }}"
 influxdb_buckets:
   - name: Loxone MiniServer
     description: Bucket for Loxone MiniServer
