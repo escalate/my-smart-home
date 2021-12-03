@@ -192,6 +192,7 @@ home_assistant_config:
     trusted_proxies: 172.18.0.0/16
   influxdb:
     api_version: 2
+    ssl: false
     host: influxdb
     port: 8086
     token: "{{ vault_influxdb_users_homeassistant_token }}"
