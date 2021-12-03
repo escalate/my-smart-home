@@ -194,7 +194,7 @@ home_assistant_config:
     api_version: 2
     host: influxdb
     port: 8086
-    token:
+    token: "{{ vault_influxdb_users_homeassistant_token }}"
     organization: ClubStr
     bucket: Home Assistant
 
