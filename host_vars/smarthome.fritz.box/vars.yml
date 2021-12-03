@@ -168,7 +168,7 @@ home_assistant_docker_labels:
   traefik.enable: "true"
   traefik.http.routers.homeassistantapi.rule: PathPrefix(`/api/states`) && Method(`POST`) && ClientIP(`{{ vault_traefik_loxone_miniserver_ip }}/32`)
   traefik.http.routers.homeassistantapi.entrypoints: webunsecure
-  traefik.http.routers.homeassistant.service: homeassistant-service
+  traefik.http.routers.homeassistantapi.service: homeassistant-service
   traefik.http.routers.homeassistant.rule: Host(`homeassistant.clubstr.de`)
   traefik.http.routers.homeassistant.entrypoints: websecure
   traefik.http.routers.homeassistant.service: homeassistant-service
