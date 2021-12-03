@@ -198,6 +198,9 @@ home_assistant_config:
     token: "{{ vault_influxdb_users_homeassistant_token }}"
     organization: ClubStr
     bucket: Home Assistant
+  neato:
+    client_id: "{{ vault_home_assistant_neato_client_id }}"
+    client_secret: "{{ vault_home_assistant_neato_client_secret }}"
 
 # https://github.com/influxdata/telegraf/releases
 telegraf_docker_image_version: 1.20.4
