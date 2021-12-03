@@ -203,6 +203,9 @@ home_assistant_config:
     client_secret: "{{ vault_home_assistant_neato_client_secret }}"
   hydrawise:
     access_token: "{{ vault_home_assistant_hydrawise_access_token }}"
+  somfy:
+    client_id: "{{ vault_home_assistant_somfy_client_id }}"
+    client_secret: "{{ vault_home_assistant_somfy_client_secret }}"
   binary_sensor:
     - platform: hydrawise
   sensor:
