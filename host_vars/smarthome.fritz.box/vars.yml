@@ -201,6 +201,8 @@ home_assistant_config:
   neato:
     client_id: "{{ vault_home_assistant_neato_client_id }}"
     client_secret: "{{ vault_home_assistant_neato_client_secret }}"
+  hydrawise:
+    access_token: "{{ vault_home_assistant_hydrawise_access_token }}"
 
 # https://github.com/influxdata/telegraf/releases
 telegraf_docker_image_version: 1.20.4
