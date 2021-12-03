@@ -203,6 +203,12 @@ home_assistant_config:
     client_secret: "{{ vault_home_assistant_neato_client_secret }}"
   hydrawise:
     access_token: "{{ vault_home_assistant_hydrawise_access_token }}"
+  binary_sensor:
+    - platform: hydrawise
+  sensor:
+    - platform: hydrawise
+  switch:
+    - platform: hydrawise
 
 # https://github.com/influxdata/telegraf/releases
 telegraf_docker_image_version: 1.20.4
