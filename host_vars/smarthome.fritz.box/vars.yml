@@ -166,7 +166,7 @@ grafana_datasources:
 home_assistant_docker_image_version: 2021.11.5
 home_assistant_docker_labels:
   traefik.enable: "true"
-  traefik.http.routers.homeassistantapi.rule: "PathPrefix(`/api/services`) && Method(`POST`) && ClientIP(`{{ vault_traefik_loxone_miniserver_ip }}/32`)"
+  traefik.http.routers.homeassistantapi.rule: "PathPrefix(`/api/services`) && Method(`POST`) && ClientIP(`{{ vault_network_loxone_miniserver_ip }}/32`)"
   traefik.http.routers.homeassistantapi.entrypoints: webunsecure
   traefik.http.routers.homeassistantapi.service: homeassistant-service
   traefik.http.routers.homeassistant.rule: Host(`homeassistant.clubstr.de`)
@@ -209,6 +209,10 @@ home_assistant_config:
     - platform: hydrawise
   switch:
     - platform: hydrawise
+  media_player:
+    - platform: onkyo
+      host: "{{ vault_network_onkyo_av_receiver_ip }}"
+      name: Onkyo AV-Receiver
 
 # https://github.com/influxdata/telegraf/releases
 telegraf_docker_image_version: 1.20.4
