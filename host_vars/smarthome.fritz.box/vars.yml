@@ -159,6 +159,9 @@ grafana_datasources:
 home_assistant_docker_image_version: 2021.11.5
 home_assistant_docker_labels:
   traefik.enable: "true"
+  traefik.http.routers.homeassistantapi.rule: Host(`homeassistant.clubstr.de`) && ClientIP(`{{ vault_traefik_loxone_miniserver_ip }}/32`)
+  traefik.http.routers.homeassistantapi.entrypoints: webunsecure
+  traefik.http.routers.homeassistant.service: homeassistant-service
   traefik.http.routers.homeassistant.rule: Host(`homeassistant.clubstr.de`)
   traefik.http.routers.homeassistant.entrypoints: websecure
   traefik.http.routers.homeassistant.service: homeassistant-service
@@ -313,6 +316,8 @@ traefik_docker_publish_ports:
   - 80:80
   # websecure
   - 443:443
+  # webunsecure
+  - 8080:8080
   # telegraf-udp-influx-loxone
   - 8094:8094/udp
   # telegraf-udp-json-weatherflow
@@ -339,6 +344,8 @@ traefik_config:
       http:
         tls:
           certResolver: letsencryptresolver
+    webunsecure:
+      address: ":8080"
     telegraf-udp-influx-loxone:
       address: ":8094/udp"
     telegraf-udp-json-weatherflow:
