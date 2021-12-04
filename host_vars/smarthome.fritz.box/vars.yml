@@ -299,7 +299,7 @@ telegraf_config: |
     organization = "{{ influxdb_primary_organization_name }}"
     bucket = "WeatherFlow Tempest"
     [outputs.influxdb_v2.tagpass]
-      hub_sn = ["*"]
+      serial_number = ["*"]
 
   [[outputs.influxdb_v2]]
     urls = ["http://influxdb:8086"]
@@ -308,7 +308,7 @@ telegraf_config: |
     bucket = "Telegraf"
     [outputs.influxdb_v2.tagdrop]
       origin = ["loxone"]
-      hub_sn = ["*"]
+      serial_number = ["*"]
 
 # https://github.com/grafana/loki/releases
 loki_docker_image_version: 2.4.1
