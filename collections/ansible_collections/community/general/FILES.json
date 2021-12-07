@@ -25,7 +25,7 @@
    "name": ".azure-pipelines/azure-pipelines.yml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "ea4f724da8815fd4cd3a848c64d1e7742dd8d42147f88a5741c9f628580696d5",
+   "chksum_sha256": "f5356dd9a9352b5299874b8cfe4c08818957bbf522930664085c33a7d669483e",
    "format": 1
   },
   {
@@ -123,7 +123,7 @@
    "name": ".github/BOTMETA.yml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "28899a607536487618b62668155f0192778d2da398a78bc2b6f1c50b18aa46ce",
+   "chksum_sha256": "b7380be8220b1f88c432b87b4df92746a99962abc8f3dd963e30758ea93adc19",
    "format": 1
   },
   {
@@ -207,7 +207,7 @@
    "name": "CHANGELOG.rst",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "0b73fcb6fb67129fc6fefdf79f88d47bc234f20bd94471fe0301da3ca1cc7427",
+   "chksum_sha256": "fd6cba3c446136afadeb1b6fd09ba4b5855b5ae0c1c56ad0a14d6f6da37c6734",
    "format": 1
   },
   {
@@ -249,7 +249,7 @@
    "name": "changelogs/changelog.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "3520d47b4000385f978f08e245413a2f2b15b669d968923339c8f8afa04f0eac",
+   "chksum_sha256": "86f3ead989ecfd14d199d6884998d32c4f5389b55f5c1d065d4326dd4199a1c0",
    "format": 1
   },
   {
@@ -1198,6 +1198,13 @@
    "format": 1
   },
   {
+   "name": "plugins/inventory/xen_orchestra.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "59ca05ffee226ae97b97cc2cb374f7b334dacdfb7569045e0c2451f6a6cd4873",
+   "format": 1
+  },
+  {
    "name": "plugins/lookup",
    "ftype": "dir",
    "chksum_type": null,
@@ -1387,6 +1394,13 @@
    "format": 1
   },
   {
+   "name": "plugins/lookup/revbitspss.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "63dba93df50106fa2781e584db2ba5d16a87b982a4927ece21d9d8ec1304b2d8",
+   "format": 1
+  },
+  {
    "name": "plugins/lookup/shelvefile.py",
    "ftype": "file",
    "chksum_type": "sha256",
@@ -1460,7 +1474,7 @@
    "name": "plugins/module_utils/gitlab.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "d20ded532c35c4ed148b91493722ebe4416593fe496a4e48351681e14be59806",
+   "chksum_sha256": "346bd004878e6111bb5bb54c3c142c641319073024602b5370aa7b0eb65b3a5b",
    "format": 1
   },
   {
@@ -1726,7 +1740,7 @@
    "name": "plugins/module_utils/redfish_utils.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "396b38ac37b9d9dc40cede8066bc28238bb2d591af2402f7b1e65b01540b7ba7",
+   "chksum_sha256": "6445a6a725c615159e96f6f883f44e9d8ca01073efc461fdb4baa2ff4b7462f8",
    "format": 1
   },
   {
@@ -2503,7 +2517,7 @@
    "name": "plugins/modules/cloud/lxd/lxd_container.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "6ea3c8c7ac0b779f8aa086fa41480052236fe87b43d762c65b6b8e92ad66fa3f",
+   "chksum_sha256": "5de27b00057fddb48f258545e658312f4a71cd1e794cdae71b6f0f4d766f679f",
    "format": 1
   },
   {
@@ -2664,7 +2678,7 @@
    "name": "plugins/modules/cloud/misc/terraform.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "8ad7099a1ad8b8e0c72153c4e8687ae9e7d37dc5ff0dd3cfdb0cc99b08d958ba",
+   "chksum_sha256": "d960805d66367c4f3b1d96291ca8ddec50b2c0ed1d653e9ebb2254dba69374c6",
    "format": 1
   },
   {
@@ -4106,7 +4120,7 @@
    "name": "plugins/modules/github_repo.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "0c46ad06bf28d3e3c85ce969d3ed51c19c1d68b46f16b2066fe5dae50ac5a2f4",
+   "chksum_sha256": "46c5064a6ffa00ff6971115414370a5e49a5dbcef106f18c16a89428e6691fe0",
    "format": 1
   },
   {
@@ -4127,77 +4141,77 @@
    "name": "plugins/modules/gitlab_deploy_key.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "a57cad7c9a55a8f4a52f4c4bf67e0d40b7165eaa3332e3a14547900a61667818",
+   "chksum_sha256": "df0d5eb72b79c825108e54ab82b50ccd20e599351c478f51114c8e6efd41d15d",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_group.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "5ca83df615078fa37cd982faeff033f76baf9b0c51cdf094ff4176a23291ccd9",
+   "chksum_sha256": "c6f70de69c281c6d8801ea0acfc9bbf3575bda75810c26c3ed6200fe8ff8343e",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_group_members.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "15d24c96f863a1cf685d7ca8ec19f0228021b2b4723439aef3e3ae2e52c6cc72",
+   "chksum_sha256": "c5e5d77692b6593b2670c7cbc86ee1a4cecc01bdbb1852d6545213dc0b698cd6",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_group_variable.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "3ae8e0c8f5d875431b24d0c74b1be323bfbdd448a8a6c34f81f9eff17164161f",
+   "chksum_sha256": "33a1ffcfaa91cf79bdb425566fce434f02043c576de111eb49670f4fbd826cf8",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_hook.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "4998057b6acbb8956c1edcbe7e5a4dd455e42409230f6295c8d0ca93a82d18d9",
+   "chksum_sha256": "2050228d6c97bd450fff88aa2fcaf170ccfc586a29513c05b5478ac69c57deb6",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_project.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "c722aed7a15d052804c3d00ce5b826b130149d8f36bf18ac789e0b290e4d919d",
+   "chksum_sha256": "17c0b777978f8391345829134f5882add0ba420f51715e3e823f6b7af4678442",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_project_members.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "76334972aa89a3b4bcfbdd602bb58829a01155b51ec973c77c76c9da5648abe5",
+   "chksum_sha256": "5ce3300a4df85eda368c628cfc978aace452cd2a08c707772c4a611b5ed047d7",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_project_variable.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "94a110c7f38e4f15bf2781eccfa8efbfa07585062fd3490da6bbfb24c1897576",
+   "chksum_sha256": "0973ae03d1283e77b1e16c7336f6b21cec136479ad758df510b741076b8aae8b",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_protected_branch.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "d8976bce1b542c63956917d62751e182e239cba9b37f585e550fd02f7e922c7a",
+   "chksum_sha256": "0121a038ad152272c82099f014e0fccb9c787411d28a69c0243e92dca48daf53",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_runner.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "b609ba103ebfc18851fbe3be9dd1756ccd25efb10bc1cb7c0532f4b5a9a0f925",
+   "chksum_sha256": "9e6e17ad2e6a8ae137af38b2330c0939fd0be39a08b5660ce5f2dbd108174446",
    "format": 1
   },
   {
    "name": "plugins/modules/gitlab_user.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "579a7c808858ef663c683aaf3770ccac461f1c809da6ea56fc3415ec4e1fa45b",
+   "chksum_sha256": "424d5c57ee04ab344f94a249892cb6151223905e71767d07f809bf5997d7de76",
    "format": 1
   },
   {
@@ -4932,14 +4946,14 @@
    "name": "plugins/modules/ipmi_boot.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "6d0b36c19f9fa634bc7e2c220e12c927b971b892c9f83cc3e6465199d14b4383",
+   "chksum_sha256": "32bc6fd22d5a4705022af7af389209a8db051bd7994c24e233261bc8188234b3",
    "format": 1
   },
   {
    "name": "plugins/modules/ipmi_power.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "35997842f30db2bc7f0a183065807e2da6d3ed426a682bfe0e9cd87fc8e6db9e",
+   "chksum_sha256": "a45560911bd87c760f6d2c8b6422a93f48a98dcebe9ad8389298e101736ebfdb",
    "format": 1
   },
   {
@@ -5205,7 +5219,7 @@
    "name": "plugins/modules/listen_ports_facts.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "89d57be45b158485caafa94a255b9de02d64e97bed9109b627cc60750e31abfa",
+   "chksum_sha256": "6e48cbc9bac5b5b5626c80637ce3c66120ab4562cde63bd362cc09bb44cc7a5f",
    "format": 1
   },
   {
@@ -5282,7 +5296,7 @@
    "name": "plugins/modules/lxd_container.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "6ea3c8c7ac0b779f8aa086fa41480052236fe87b43d762c65b6b8e92ad66fa3f",
+   "chksum_sha256": "5de27b00057fddb48f258545e658312f4a71cd1e794cdae71b6f0f4d766f679f",
    "format": 1
   },
   {
@@ -5870,7 +5884,7 @@
    "name": "plugins/modules/net_tools/nmcli.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "ec0ed432a61b48196fe394bb24bc0183839fbcb4d415c2612506bd31d6876424",
+   "chksum_sha256": "0a39bb01a31804dcf89f07616d9b70213c9f91815c9f056a80e1e8a7e45c7ca6",
    "format": 1
   },
   {
@@ -5968,7 +5982,7 @@
    "name": "plugins/modules/nmcli.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "ec0ed432a61b48196fe394bb24bc0183839fbcb4d415c2612506bd31d6876424",
+   "chksum_sha256": "0a39bb01a31804dcf89f07616d9b70213c9f91815c9f056a80e1e8a7e45c7ca6",
    "format": 1
   },
   {
@@ -6451,7 +6465,7 @@
    "name": "plugins/modules/open_iscsi.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "54c38c2977008b02101c48421a08b0b392b5107435e5c21aec4f88f2528db4ac",
+   "chksum_sha256": "6b763ebadd28f180ca47b1b2395b1db5fdde17daa4fed62e318ba0f496233a17",
    "format": 1
   },
   {
@@ -6745,7 +6759,7 @@
    "name": "plugins/modules/packaging/os/pacman.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "63956e7f1a54d9e951c7dbeb1be56e4ead9fbde3d8918bb795a9885648d7cfe8",
+   "chksum_sha256": "e7cb3a761f37f9c9bb34da80d1978c083e9de01ee5cc2caf18c36483b2d29894",
    "format": 1
   },
   {
@@ -6983,7 +6997,7 @@
    "name": "plugins/modules/pacman.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "63956e7f1a54d9e951c7dbeb1be56e4ead9fbde3d8918bb795a9885648d7cfe8",
+   "chksum_sha256": "e7cb3a761f37f9c9bb34da80d1978c083e9de01ee5cc2caf18c36483b2d29894",
    "format": 1
   },
   {
@@ -7501,14 +7515,14 @@
    "name": "plugins/modules/redfish_config.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "168991a763bbb9bffba049ca48318e7c6ec5690d90ba42f31ba5b2ba3a67381b",
+   "chksum_sha256": "0b46c6fd282bac3a6a347c25af71a4c9eaab7a54fb019541606824c4ea167e99",
    "format": 1
   },
   {
    "name": "plugins/modules/redfish_info.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "2eee8122cb106d29ca9312a3753a2f6a31b40e0d9a5149be8c4f6190d90f1d8a",
+   "chksum_sha256": "5f9aeb09e5827e46c9b6b4420362d7c27d729672322a10637d66164d5341e980",
    "format": 1
   },
   {
@@ -7634,14 +7648,14 @@
    "name": "plugins/modules/remote_management/ipmi/ipmi_boot.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "6d0b36c19f9fa634bc7e2c220e12c927b971b892c9f83cc3e6465199d14b4383",
+   "chksum_sha256": "32bc6fd22d5a4705022af7af389209a8db051bd7994c24e233261bc8188234b3",
    "format": 1
   },
   {
    "name": "plugins/modules/remote_management/ipmi/ipmi_power.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "35997842f30db2bc7f0a183065807e2da6d3ed426a682bfe0e9cd87fc8e6db9e",
+   "chksum_sha256": "a45560911bd87c760f6d2c8b6422a93f48a98dcebe9ad8389298e101736ebfdb",
    "format": 1
   },
   {
@@ -7886,14 +7900,14 @@
    "name": "plugins/modules/remote_management/redfish/redfish_config.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "168991a763bbb9bffba049ca48318e7c6ec5690d90ba42f31ba5b2ba3a67381b",
+   "chksum_sha256": "0b46c6fd282bac3a6a347c25af71a4c9eaab7a54fb019541606824c4ea167e99",
    "format": 1
   },
   {
    "name": "plugins/modules/remote_management/redfish/redfish_info.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "2eee8122cb106d29ca9312a3753a2f6a31b40e0d9a5149be8c4f6190d90f1d8a",
+   "chksum_sha256": "5f9aeb09e5827e46c9b6b4420362d7c27d729672322a10637d66164d5341e980",
    "format": 1
   },
   {
@@ -8390,7 +8404,7 @@
    "name": "plugins/modules/source_control/github/github_repo.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "0c46ad06bf28d3e3c85ce969d3ed51c19c1d68b46f16b2066fe5dae50ac5a2f4",
+   "chksum_sha256": "46c5064a6ffa00ff6971115414370a5e49a5dbcef106f18c16a89428e6691fe0",
    "format": 1
   },
   {
@@ -8418,77 +8432,77 @@
    "name": "plugins/modules/source_control/gitlab/gitlab_deploy_key.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "a57cad7c9a55a8f4a52f4c4bf67e0d40b7165eaa3332e3a14547900a61667818",
+   "chksum_sha256": "df0d5eb72b79c825108e54ab82b50ccd20e599351c478f51114c8e6efd41d15d",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_group.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "5ca83df615078fa37cd982faeff033f76baf9b0c51cdf094ff4176a23291ccd9",
+   "chksum_sha256": "c6f70de69c281c6d8801ea0acfc9bbf3575bda75810c26c3ed6200fe8ff8343e",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_group_members.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "15d24c96f863a1cf685d7ca8ec19f0228021b2b4723439aef3e3ae2e52c6cc72",
+   "chksum_sha256": "c5e5d77692b6593b2670c7cbc86ee1a4cecc01bdbb1852d6545213dc0b698cd6",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_group_variable.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "3ae8e0c8f5d875431b24d0c74b1be323bfbdd448a8a6c34f81f9eff17164161f",
+   "chksum_sha256": "33a1ffcfaa91cf79bdb425566fce434f02043c576de111eb49670f4fbd826cf8",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_hook.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "4998057b6acbb8956c1edcbe7e5a4dd455e42409230f6295c8d0ca93a82d18d9",
+   "chksum_sha256": "2050228d6c97bd450fff88aa2fcaf170ccfc586a29513c05b5478ac69c57deb6",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_project.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "c722aed7a15d052804c3d00ce5b826b130149d8f36bf18ac789e0b290e4d919d",
+   "chksum_sha256": "17c0b777978f8391345829134f5882add0ba420f51715e3e823f6b7af4678442",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_project_members.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "76334972aa89a3b4bcfbdd602bb58829a01155b51ec973c77c76c9da5648abe5",
+   "chksum_sha256": "5ce3300a4df85eda368c628cfc978aace452cd2a08c707772c4a611b5ed047d7",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_project_variable.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "94a110c7f38e4f15bf2781eccfa8efbfa07585062fd3490da6bbfb24c1897576",
+   "chksum_sha256": "0973ae03d1283e77b1e16c7336f6b21cec136479ad758df510b741076b8aae8b",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_protected_branch.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "d8976bce1b542c63956917d62751e182e239cba9b37f585e550fd02f7e922c7a",
+   "chksum_sha256": "0121a038ad152272c82099f014e0fccb9c787411d28a69c0243e92dca48daf53",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_runner.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "b609ba103ebfc18851fbe3be9dd1756ccd25efb10bc1cb7c0532f4b5a9a0f925",
+   "chksum_sha256": "9e6e17ad2e6a8ae137af38b2330c0939fd0be39a08b5660ce5f2dbd108174446",
    "format": 1
   },
   {
    "name": "plugins/modules/source_control/gitlab/gitlab_user.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "579a7c808858ef663c683aaf3770ccac461f1c809da6ea56fc3415ec4e1fa45b",
+   "chksum_sha256": "424d5c57ee04ab344f94a249892cb6151223905e71767d07f809bf5997d7de76",
    "format": 1
   },
   {
@@ -8929,7 +8943,7 @@
    "name": "plugins/modules/system/listen_ports_facts.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "89d57be45b158485caafa94a255b9de02d64e97bed9109b627cc60750e31abfa",
+   "chksum_sha256": "6e48cbc9bac5b5b5626c80637ce3c66120ab4562cde63bd362cc09bb44cc7a5f",
    "format": 1
   },
   {
@@ -8992,7 +9006,7 @@
    "name": "plugins/modules/system/open_iscsi.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "54c38c2977008b02101c48421a08b0b392b5107435e5c21aec4f88f2528db4ac",
+   "chksum_sha256": "6b763ebadd28f180ca47b1b2395b1db5fdde17daa4fed62e318ba0f496233a17",
    "format": 1
   },
   {
@@ -9209,7 +9223,7 @@
    "name": "plugins/modules/terraform.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "8ad7099a1ad8b8e0c72153c4e8687ae9e7d37dc5ff0dd3cfdb0cc99b08d958ba",
+   "chksum_sha256": "d960805d66367c4f3b1d96291ca8ddec50b2c0ed1d653e9ebb2254dba69374c6",
    "format": 1
   },
   {
@@ -10889,7 +10903,7 @@
    "name": "tests/integration/targets/django_manage/aliases",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "b5a5b760921a6e1d85510e046ebb82ada5d83e7c4444539c87b0103d7a6482f2",
+   "chksum_sha256": "2688bf770b1ab976b4c5ecca934a17ff8137e9f2e8e96798f9bb5f2ceb3ec99d",
    "format": 1
   },
   {
@@ -14410,7 +14424,7 @@
    "name": "tests/integration/targets/listen_ports_facts/tasks/main.yml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "618caf5f19275f07c874dcb54eca422ee6c66259270bdb5d1f652db9706bf85c",
+   "chksum_sha256": "d8c8b38f02715e310477cd9002218a7e69f2ed4ce3061f6312386d799fa0eb9d",
    "format": 1
   },
   {
@@ -21001,6 +21015,13 @@
    "format": 1
   },
   {
+   "name": "tests/unit/plugins/inventory/test_xen_orchestra.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "804e1802b18939d5b2ffe781a5e150b9b0b4c7ac70a61fd3364eb433aee16df0",
+   "format": 1
+  },
+  {
    "name": "tests/unit/plugins/lookup",
    "ftype": "dir",
    "chksum_type": null,
@@ -21054,6 +21075,13 @@
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "97052edbff97b2b30d11ab8b147fe733bb382a02db51b4604bf0407a01fe2ef2",
+   "format": 1
+  },
+  {
+   "name": "tests/unit/plugins/lookup/test_revbitspss.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "609ea39bd85c2575bdcb475c2a26ddc85e119bb02fb9f8f6d16a42d4e6aa853d",
    "format": 1
   },
   {
@@ -21942,7 +21970,7 @@
    "name": "tests/unit/plugins/modules/net_tools/test_nmcli.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "8e94cb44eeea9e50df855e22c7ff6a9e4feb4e1eb36fd4ccaef4b8ca8ecd715f",
+   "chksum_sha256": "e006fd68e1a8741b8a35d2e3461016213dff3c3e922857c8e90fc8938374384d",
    "format": 1
   },
   {
@@ -22397,7 +22425,7 @@
    "name": "tests/unit/plugins/modules/source_control/github/test_github_repo.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "1782216eb6d08601535f8e2826c108c18f72aab1b2c63fd5fa93442c043bee58",
+   "chksum_sha256": "d796e9c56592e0cef63e5e152ed0a4ffe80a102d7385e6e7bd1d8fbd82935b7d",
    "format": 1
   },
   {
@@ -22425,28 +22453,28 @@
    "name": "tests/unit/plugins/modules/source_control/gitlab/test_gitlab_deploy_key.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "dc0baa87b9afc40ea18d261d34d3f1ff349983a013b82fed6b89f3965b58c9c3",
+   "chksum_sha256": "679b2354ea81dd87e4c9302182ba4454f31f9a6e41176c9681ef7f55cdb4b946",
    "format": 1
   },
   {
    "name": "tests/unit/plugins/modules/source_control/gitlab/test_gitlab_group.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "5eaa6d8a07464ce22c7088fe007330daa43fd721edb22e4e21f2c04258831666",
+   "chksum_sha256": "67cc9724895cfcd3dfc98038a102824fa60cfabb0b1669491fba418c4ae17e63",
    "format": 1
   },
   {
    "name": "tests/unit/plugins/modules/source_control/gitlab/test_gitlab_hook.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "830f487429ae71c3e72cd586cfc39fa150e46471b70f2c3ae83456b3094c708f",
+   "chksum_sha256": "259547068279dcbb64a126a0fdf1df9984b18895fe52b69fe82dfd18fa5105c1",
    "format": 1
   },
   {
    "name": "tests/unit/plugins/modules/source_control/gitlab/test_gitlab_project.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "fcdee81ec103c432b3dc691ce5354603fcc443952fb111cd984aa112a8895408",
+   "chksum_sha256": "01081c5c1e073e383475bac5ebc69899745760c46dc178372a176c3e60c2f5d7",
    "format": 1
   },
   {
@@ -22460,14 +22488,14 @@
    "name": "tests/unit/plugins/modules/source_control/gitlab/test_gitlab_runner.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "f066d9f751f596749e202fcf609d835d96446f76b93a43410640e72f40c01d58",
+   "chksum_sha256": "e8de95119d1968b07b06ffe29a2c607f3e276d90de2fc2f1ce12664ab0fd065f",
    "format": 1
   },
   {
    "name": "tests/unit/plugins/modules/source_control/gitlab/test_gitlab_user.py",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "e9be5c3fe1f70471f3a3ede6c87213dbb00fbcc7ed5f8cbc5c9b9c8fec16dfbb",
+   "chksum_sha256": "e3aae06f2d12a7dff8b564f8ebd1f073f0acea01378108ac4ca045d721c6830b",
    "format": 1
   },
   {
@@ -23594,7 +23622,7 @@
    "name": "tests/utils/shippable/shippable.sh",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "bef5b70dbdc92165ff45dd63b2d5c6342268d2b78aaf8af92287635d1eed3858",
+   "chksum_sha256": "346be0b4487b58d1848ffa2ac6c9ce3b2fb1c5b719b80a79542f790124b975b5",
    "format": 1
   },
   {
