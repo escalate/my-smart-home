@@ -37,6 +37,9 @@
       - gpg
       # file transfer
       - rsync
+      # compressor
+      - bzip2
+      - unzip
 
 - name: Install additional packages
   ansible.builtin.apt:
