@@ -42,3 +42,5 @@
       tags: traefik
     - role: coredns
       tags: coredns
+    - role: luxtronik
+      tags: luxtronik

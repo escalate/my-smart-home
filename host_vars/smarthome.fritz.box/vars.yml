@@ -420,3 +420,5 @@ coredns_config: |
     health :5380
     errors
   }
+
+luxtronik_ip_address: "{{ vault_network_alpha_innotec_heatpump_ip }}"

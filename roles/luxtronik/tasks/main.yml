@@ -1,0 +1,23 @@
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ luxtronik_backup_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create backup script
+  ansible.builtin.template:
+    src: backup-luxtronik.sh.j2
+    dest: /usr/local/bin/backup-luxtronik.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Add backup cron job
+  ansible.builtin.cron:
+    name: Backup Luxtronik statistics
+    minute: "0"
+    hour: "2"
+    job: "/usr/local/bin/backup-luxtronik.sh || echo \"ERROR: A problem occurred during backup of Luxtronik statistics. Please check the logfiles. journalctl -t backup-luxtronik.sh\""  # noqa 204
+    user: root

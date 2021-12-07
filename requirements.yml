@@ -104,6 +104,11 @@ roles:
     src: escalate.coredns
     version: v1.2.1
 
+  # https://galaxy.ansible.com/escalate/luxtronik
+  - name: luxtronik
+    src: escalate.luxtronik
+    version: v1.0.0
+
 collections:
   # https://galaxy.ansible.com/ansible/posix
   - name: ansible.posix
