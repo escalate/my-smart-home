@@ -16,13 +16,17 @@ Vagrant.configure("2") do |config|
     end
 
     test.vm.provision "ansible" do |ansible|
+      ansible.playbook = "vagrant.yml"
+      ansible.become = true
+    end
+
+    test.vm.provision "ansible" do |ansible|
       ansible.playbook = ansible_playbook
       ansible.groups = {
         ansible_group => [ansible_host],
       }
       ansible.become = true
       ansible.limit = ansible_host
-      ansible.compatibility_mode = "2.0"
       if ENV["ANSIBLE_ARGS"]
         ansible.raw_arguments = Shellwords.shellsplit(ENV["ANSIBLE_ARGS"])
       end
