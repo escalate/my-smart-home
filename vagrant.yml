@@ -4,3 +4,12 @@
       ansible.builtin.copy:
         dest: /boot/cmdline.txt
         content: ""
+
+    - name: Create missing groups
+      ansible.builtin.group:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - spi
+        - gpio
+        - i2c
