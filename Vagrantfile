@@ -3,7 +3,7 @@
 
 ansible_playbook = "site.yml"
 ansible_group = "gitops"
-ansible_host = "smart-home.fritz.box"
+ansible_host = "smarthome.fritz.box"
 
 Vagrant.configure("2") do |config|
   config.vm.box = "debian/bullseye64"
@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
     test.vm.network "private_network", type: "dhcp"
     test.vm.provider "virtualbox" do |v|
       v.cpus = 1
-      v.memory = 4096
+      v.memory = 8192
     end
 
     test.vm.provision "ansible" do |ansible|
@@ -32,7 +32,8 @@ Vagrant.configure("2") do |config|
       end
       ansible.extra_vars = {
         sshd_allow_users: [],
-        sshd_allow_groups: ["root", "vagrant"]
+        sshd_allow_groups: ["root", "vagrant"],
+        dhcpcd_static_ipv4_configuration_enabled: false
       }
     end
 
