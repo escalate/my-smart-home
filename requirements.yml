@@ -116,7 +116,7 @@ collections:
 
   # https://galaxy.ansible.com/community/docker
   - name: community.docker
-    verion: 2.0.1
+    verion: 2.0.2
 
   # https://galaxy.ansible.com/community/general
   - name: community.general
