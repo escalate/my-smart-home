@@ -22,13 +22,10 @@ requirements:
   - python >= 2.7
   - python-gitlab python module
 extends_documentation_fragment:
-- community.general.auth_basic
+  - community.general.auth_basic
+  - community.general.gitlab
 
 options:
-  api_token:
-    description:
-      - GitLab token for logging in.
-    type: str
   name:
     description:
       - Name of the group you want to create.
@@ -83,6 +80,12 @@ options:
       - Require all users in this group to setup two-factor authentication.
     type: bool
     version_added: 3.7.0
+  avatar_path:
+    description:
+      - Absolute path image to configure avatar. File size should not exceed 200 kb.
+      - This option is only used on creation, not for updates.
+    type: path
+    version_added: 4.2.0
 '''
 
 EXAMPLES = '''
@@ -169,7 +172,7 @@ from ansible.module_utils.api import basic_auth_argument_spec
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from ansible.module_utils.common.text.converters import to_native
 
-from ansible_collections.community.general.plugins.module_utils.gitlab import find_group, gitlab_authentication
+from ansible_collections.community.general.plugins.module_utils.gitlab import auth_argument_spec, find_group, gitlab_authentication
 
 
 class GitLabGroup(object):
@@ -212,6 +215,13 @@ class GitLabGroup(object):
             if options.get('require_two_factor_authentication'):
                 payload['require_two_factor_authentication'] = options['require_two_factor_authentication']
             group = self.create_group(payload)
+
+            # add avatar to group
+            if options['avatar_path']:
+                try:
+                    group.avatar = open(options['avatar_path'], 'rb')
+                except IOError as e:
+                    self._module.fail_json(msg='Cannot open {0}: {1}'.format(options['avatar_path'], e))
             changed = True
         else:
             changed, group = self.update_group(self.group_object, {
@@ -296,8 +306,8 @@ class GitLabGroup(object):
 
 def main():
     argument_spec = basic_auth_argument_spec()
+    argument_spec.update(auth_argument_spec())
     argument_spec.update(dict(
-        api_token=dict(type='str', no_log=True),
         name=dict(type='str', required=True),
         path=dict(type='str'),
         description=dict(type='str'),
@@ -308,19 +318,23 @@ def main():
         auto_devops_enabled=dict(type='bool'),
         subgroup_creation_level=dict(type='str', choices=['maintainer', 'owner']),
         require_two_factor_authentication=dict(type='bool'),
+        avatar_path=dict(type='path'),
     ))
 
     module = AnsibleModule(
         argument_spec=argument_spec,
         mutually_exclusive=[
             ['api_username', 'api_token'],
-            ['api_password', 'api_token'],
+            ['api_username', 'api_oauth_token'],
+            ['api_username', 'api_job_token'],
+            ['api_token', 'api_oauth_token'],
+            ['api_token', 'api_job_token'],
         ],
         required_together=[
             ['api_username', 'api_password'],
         ],
         required_one_of=[
-            ['api_username', 'api_token']
+            ['api_username', 'api_token', 'api_oauth_token', 'api_job_token']
         ],
         supports_check_mode=True,
     )
@@ -335,6 +349,7 @@ def main():
     auto_devops_enabled = module.params['auto_devops_enabled']
     subgroup_creation_level = module.params['subgroup_creation_level']
     require_two_factor_authentication = module.params['require_two_factor_authentication']
+    avatar_path = module.params['avatar_path']
 
     if not HAS_GITLAB_PACKAGE:
         module.fail_json(msg=missing_required_lib("python-gitlab"), exception=GITLAB_IMP_ERR)
@@ -373,6 +388,7 @@ def main():
             "auto_devops_enabled": auto_devops_enabled,
             "subgroup_creation_level": subgroup_creation_level,
             "require_two_factor_authentication": require_two_factor_authentication,
+            "avatar_path": avatar_path,
         }):
             module.exit_json(changed=True, msg="Successfully created or updated the group %s" % group_name, group=gitlab_group.group_object._attrs)
         else:

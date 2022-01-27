@@ -118,6 +118,8 @@ files:
   $doc_fragments/xenserver.py:
     maintainers: bvitnik
     labels: xenserver
+  $filters/counter.py:
+    maintainers: keilr
   $filters/dict.py:
     maintainers: felixfontein
   $filters/dict_kv.py:
@@ -156,7 +158,7 @@ files:
     maintainers: conloos
   $inventories/nmap.py: {}
   $inventories/online.py:
-    maintainers: sieben
+    maintainers: remyleone
   $inventories/opennebula.py:
     maintainers: feldsam
     labels: cloud opennebula
@@ -164,9 +166,9 @@ files:
   $inventories/proxmox.py:
     maintainers: $team_virt ilijamt
   $inventories/xen_orchestra.py:
-    maintainers: shinuza
+    maintainers: ddelnano shinuza
   $inventories/icinga2.py:
-    maintainers: bongoeadgc6
+    maintainers: BongoEADGC6
   $inventories/scaleway.py:
     maintainers: $team_scaleway
     labels: cloud scaleway
@@ -322,6 +324,10 @@ files:
   $modules/cloud/misc/proxmox_kvm.py:
     maintainers: helldorado
     ignore: skvidal
+  $modules/cloud/misc/proxmox_nic.py:
+    maintainers: Kogelvis
+  $modules/cloud/misc/proxmox_tasks_info:
+    maintainers: paginabianca
   $modules/cloud/misc/proxmox_template.py:
     maintainers: UnderGreen
     ignore: skvidal
@@ -341,7 +347,7 @@ files:
   $modules/cloud/oneandone/:
     maintainers: aajdinov edevenport
   $modules/cloud/online/:
-    maintainers: sieben
+    maintainers: remyleone
   $modules/cloud/opennebula/:
     maintainers: $team_opennebula
   $modules/cloud/opennebula/one_host.py:
@@ -411,11 +417,11 @@ files:
   $modules/cloud/scaleway/scaleway_ip_info.py:
     maintainers: Spredzy
   $modules/cloud/scaleway/scaleway_organization_info.py:
-    maintainers: sieben Spredzy
+    maintainers: Spredzy
   $modules/cloud/scaleway/scaleway_security_group.py:
     maintainers: DenBeke
   $modules/cloud/scaleway/scaleway_security_group_info.py:
-    maintainers: sieben Spredzy
+    maintainers: Spredzy
   $modules/cloud/scaleway/scaleway_security_group_rule.py:
     maintainers: DenBeke
   $modules/cloud/scaleway/scaleway_server_info.py:
@@ -534,6 +540,8 @@ files:
     maintainers: adamgoossens
   $modules/identity/keycloak/keycloak_identity_provider.py:
     maintainers: laurpaum
+  $modules/identity/keycloak/keycloak_realm_info.py:
+    maintainers: fynncfchen
   $modules/identity/keycloak/keycloak_realm.py:
     maintainers: kris2kris
   $modules/identity/keycloak/keycloak_role.py:
@@ -619,6 +627,8 @@ files:
     labels: cloudflare_dns
   $modules/net_tools/dnsimple.py:
     maintainers: drcapulet
+  $modules/net_tools/dnsimple_info.py:
+    maintainers: edhilgendorf
   $modules/net_tools/dnsmadeeasy.py:
     maintainers: briceburg
   $modules/net_tools/gandi_livedns.py:
@@ -720,6 +730,8 @@ files:
     maintainers: mwarkentin
   $modules/packaging/language/bundler.py:
     maintainers: thoiberg
+  $modules/packaging/language/cargo.py:
+    maintainers: radek-sprta
   $modules/packaging/language/composer.py:
     maintainers: dmtrs
     ignore: resmo
@@ -901,6 +913,10 @@ files:
   $modules/remote_management/manageiq/:
     labels: manageiq
     maintainers: $team_manageiq
+  $modules/remote_management/manageiq/manageiq_alert_profiles.py:
+    maintainers: elad661
+  $modules/remote_management/manageiq/manageiq_alerts.py:
+    maintainers: elad661
   $modules/remote_management/manageiq/manageiq_group.py:
     maintainers: evertmulder
   $modules/remote_management/manageiq/manageiq_tenant.py:
@@ -951,6 +967,8 @@ files:
     maintainers: SamyCoenen
   $modules/source_control/gitlab/gitlab_user.py:
     maintainers: LennertMertens stgrace
+  $modules/source_control/gitlab/gitlab_branch.py:
+    maintainers: paytroff
   $modules/source_control/hg.py:
     maintainers: yeukhon
   $modules/storage/emc/emc_vnx_sg_member.py:
@@ -1086,6 +1104,8 @@ files:
     keywords: beadm dladm illumos ipadm nexenta omnios openindiana pfexec smartos solaris sunos zfs zpool
   $modules/system/ssh_config.py:
     maintainers: gaqzi Akasurde
+  $modules/system/sudoers.py:
+    maintainers: JonEllis
   $modules/system/svc.py:
     maintainers: bcoca
   $modules/system/syspatch.py:
@@ -1224,9 +1244,9 @@ macros:
   team_opennebula: ilicmilan meerkampdvv rsmontero xorel nilsding
   team_oracle: manojmeda mross22 nalsaber
   team_purestorage: bannaych dnix101 genegr lionmax opslounge raekins sdodsley sile16
-  team_redfish: mraineri tomasg2012 xmadsen renxulei
+  team_redfish: mraineri tomasg2012 xmadsen renxulei rajeevkallur bhavya06
   team_rhn: FlossWare alikins barnabycourt vritant
-  team_scaleway: QuentinBrosse abarbare jerome-quere kindermoumoute remyleone sieben
+  team_scaleway: remyleone abarbare
   team_solaris: bcoca fishman jasperla jpdasma mator scathatheworm troy2914 xen0l
   team_suse: commel dcermak evrardjp lrupp toabctl AnderEnder alxgu andytom sealor
   team_virt: joshainglis karmab tleguern Thulium-Drake Ajpantuso
