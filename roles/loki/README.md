@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Loki (Docker)
 
-An Ansible role that manages [Loki](https://grafana.com/oss/loki/) Docker container with systemd on Raspberry Pi OS.
+An Ansible role that manages [Loki](https://grafana.com/oss/loki/) Docker container with systemd on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

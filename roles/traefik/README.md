@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Traefik Proxy (Docker)
 
-An Ansible role that manages [Traefik Proxy](https://traefik.io/traefik/) Docker container with systemd on Raspberry Pi OS.
+An Ansible role that manages [Traefik Proxy](https://traefik.io/traefik/) Docker container with systemd on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

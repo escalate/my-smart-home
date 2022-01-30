@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - CoreDNS (Docker)
 
-An Ansible role that manages [CoreDNS](https://coredns.io/) Docker container with systemd on Raspberry Pi OS.
+An Ansible role that manages [CoreDNS](https://coredns.io/) Docker container with systemd on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

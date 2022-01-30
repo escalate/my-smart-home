@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Remote Backup
 
-An Ansible role that manages remote backup job configuration on Raspberry Pi OS.
+An Ansible role that manages remote backup job configuration on Raspberry Pi OS (Debian Bullseye).
 
 The remote backup job expects a mountpoint for backing up the local files via rsync.
 

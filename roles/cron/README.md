@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Cron
 
-An Ansible role that manages [cron](https://wiki.debian.org/cron) on Raspberry Pi OS.
+An Ansible role that manages [cron](https://wiki.debian.org/cron) on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

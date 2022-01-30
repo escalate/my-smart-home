@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - msmtp
 
-An Ansible role that manages [msmtp](https://marlam.de/msmtp/) on Raspberry Pi OS.
+An Ansible role that manages [msmtp](https://marlam.de/msmtp/) on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

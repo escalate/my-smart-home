@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - SMB Mount
 
-An Ansible role that manages SMB (Server Message Block) mounts on Raspberry Pi OS.
+An Ansible role that manages SMB (Server Message Block) mounts on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

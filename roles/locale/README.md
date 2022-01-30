@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Locale
 
-An Ansible role that manages [locale](https://wiki.debian.org/Locale) on Raspberry Pi OS.
+An Ansible role that manages [locale](https://wiki.debian.org/Locale) on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

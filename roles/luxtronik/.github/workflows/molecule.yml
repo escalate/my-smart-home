@@ -21,8 +21,6 @@ jobs:
           python -m pip install --disable-pip-version-check ansible ansible-lint molecule[docker,lint,test]
 
       - name: Run Molecule tests
-        env:
-          MOLECULE_DEBIAN_VERSION: bullseye
         run: |
           make version
           make test

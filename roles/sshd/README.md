@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - sshd
 
-An Ansible role that manages [OpenSSH - sshd](https://www.openssh.com) on Raspberry Pi OS.
+An Ansible role that manages [OpenSSH - sshd](https://www.openssh.com) on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

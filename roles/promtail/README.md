@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Promtail (Docker)
 
-An Ansible role that manages [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/) Docker container with systemd on Raspberry Pi OS.
+An Ansible role that manages [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/) Docker container with systemd on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

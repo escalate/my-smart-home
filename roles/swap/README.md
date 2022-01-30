@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Swap
 
-An Ansible role that manages [swap](https://wiki.debian.org/Swap) with [dphys-swapfile](http://neil.franklin.ch/Projects/dphys-swapfile/) on Raspberry Pi OS.
+An Ansible role that manages [swap](https://wiki.debian.org/Swap) with [dphys-swapfile](http://neil.franklin.ch/Projects/dphys-swapfile/) on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 

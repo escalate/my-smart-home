@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Docker
 
-An Ansible role that manages [Docker CE](https://www.docker.com) on Raspberry Pi OS.
+An Ansible role that manages [Docker CE](https://www.docker.com) on Raspberry Pi OS (Debian Bullseye).
 
 ## Install
 
