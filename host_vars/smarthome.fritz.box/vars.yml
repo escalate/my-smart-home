@@ -399,7 +399,7 @@ traefik_env_vars:
   CF_ZONE_API_TOKEN: "{{ vault_traefik_env_cf_zone_api_token }}"
 
 # https://github.com/coredns/coredns/releases
-coredns_docker_image_version: 1.8.6
+coredns_docker_image_version: 1.8.7
 coredns_docker_network: internal
 coredns_config: |
   clubstr.de {
