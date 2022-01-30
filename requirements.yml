@@ -62,7 +62,7 @@ roles:
   # https://galaxy.ansible.com/escalate/docker
   - name: docker
     src: escalate.docker
-    version: v2.6.0
+    version: v2.7.0
 
   # https://galaxy.ansible.com/escalate/influxdb
   - name: influxdb
