@@ -218,7 +218,7 @@ home_assistant_config:
       name: Onkyo AV-Receiver
 
 # https://github.com/influxdata/telegraf/releases
-telegraf_docker_image_version: 1.20.4
+telegraf_docker_image_version: 1.21.3
 telegraf_docker_labels:
   traefik.enable: "true"
   # http
