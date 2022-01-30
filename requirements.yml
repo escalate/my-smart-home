@@ -67,7 +67,7 @@ roles:
   # https://galaxy.ansible.com/escalate/influxdb
   - name: influxdb
     src: escalate.influxdb
-    version: v1.15.0
+    version: v1.16.0
 
   # https://galaxy.ansible.com/escalate/grafana
   - name: grafana
