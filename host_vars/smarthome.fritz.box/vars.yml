@@ -311,7 +311,7 @@ telegraf_config: |
       serial_number = ["*"]
 
 # https://github.com/grafana/loki/releases
-loki_docker_image_version: 2.4.2
+loki_docker_image_version: 2.5.0
 loki_docker_network: internal
 loki_docker_labels:
   traefik.enable: "true"
