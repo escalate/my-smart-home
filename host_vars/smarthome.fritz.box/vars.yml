@@ -239,33 +239,33 @@ telegraf_config: |
   [agent]
     interval = "20s"
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/cpu/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/cpu/README.md
   [[inputs.cpu]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/disk/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/disk/README.md
   [[inputs.disk]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/diskio/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/diskio/README.md
   [[inputs.diskio]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/http_listener_v2/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/http_listener_v2/README.md
   [[inputs.http_listener_v2]]
     service_address = ":8081"
     data_format = "influx"
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/kernel/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/kernel/README.md
   [[inputs.kernel]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/mem/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/mem/README.md
   [[inputs.mem]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/net/NET_README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/net/NET_README.md
   [[inputs.net]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/processes/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/processes/README.md
   [[inputs.processes]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/socket_listener/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/socket_listener/README.md
   [[inputs.socket_listener]]
     service_address = "udp4://:8094"
     data_format = "influx"
@@ -278,13 +278,13 @@ telegraf_config: |
     tag_keys = ["serial_number", "hub_sn"]
     json_string_fields = ["reset_flags"]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/swap/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/swap/README.md
   [[inputs.swap]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/system/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/system/README.md
   [[inputs.system]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/outputs/influxdb_v2/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/outputs/influxdb_v2/README.md
   [[outputs.influxdb_v2]]
     urls = ["http://influxdb:8086"]
     token = "{{ vault_influxdb_users_telegraf_token }}"
