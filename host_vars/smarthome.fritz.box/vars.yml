@@ -244,6 +244,7 @@ telegraf_config: |
 
   # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/disk/README.md
   [[inputs.disk]]
+    ignore_fs = ["nsfs"]
 
   # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/diskio/README.md
   [[inputs.diskio]]
