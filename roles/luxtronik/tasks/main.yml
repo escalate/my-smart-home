@@ -21,3 +21,4 @@
     hour: "2"
     job: "/usr/local/bin/backup-luxtronik.sh || echo \"ERROR: A problem occurred during backup of Luxtronik statistics. Please check the logfiles. journalctl -t backup-luxtronik.sh\""  # noqa 204
     user: root
+    disabled: "{{ luxtronik_backup_cron_enabled | ternary(false, true) }}"

@@ -423,3 +423,4 @@ coredns_config: |
   }
 
 luxtronik_ip_address: "{{ vault_network_alpha_innotec_heatpump_ip }}"
+luxtronik_backup_cron_enabled: false

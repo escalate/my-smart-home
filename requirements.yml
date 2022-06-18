@@ -107,7 +107,7 @@ roles:
   # https://galaxy.ansible.com/escalate/luxtronik
   - name: luxtronik
     src: escalate.luxtronik
-    version: v1.1.0
+    version: v1.2.0
 
 collections:
   # https://galaxy.ansible.com/ansible/posix
