@@ -1,4 +1,4 @@
-[![Lint](https://github.com/escalate/my-smart-home/actions/workflows/lint.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/my-smart-home/actions/workflows/lint.yml)
+[![Test](https://github.com/escalate/my-smart-home/actions/workflows/test.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/my-smart-home/actions/workflows/test.yml)
 
 # My Smart Home
 
