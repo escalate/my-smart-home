@@ -2,9 +2,9 @@
 set -e
 
 if [ -f "/etc/ansible/.vault_pass.txt" ]; then
-    cat "/etc/ansible/.vault_pass.txt"
+  cat "/etc/ansible/.vault_pass.txt"
 elif [ -f "./.vault_pass.txt" ]; then
-    cat "./.vault_pass.txt"
+  cat "./.vault_pass.txt"
 else
-    exit 1
+  exit 1
 fi
