@@ -1,5 +1,6 @@
-# (c) 2021, Alexei Znamensky
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2021, Alexei Znamensky
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: test msimple (set a=80)
   msimple:
@@ -17,7 +18,7 @@
 - name: test msimple 2
   msimple:
     a: 101
-  ignore_errors: yes
+  ignore_errors: true
   register: simple2
 
 - name: assert simple2

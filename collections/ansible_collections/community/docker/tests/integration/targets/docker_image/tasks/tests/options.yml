@@ -1,12 +1,17 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Registering image name
   set_fact:
     iname: "{{ name_prefix ~ '-options' }}"
     iname_1: "{{ name_prefix ~ '-options-1' }}"
+    hello_world_alt: "{{ name_prefix }}-hello-world-alt:v1.2.3-foo"
 
 - name: Registering image name
   set_fact:
-    inames: "{{ inames + [iname, iname_1] }}"
+    inames: "{{ inames + [iname, iname_1, hello_world_alt] }}"
 
 ####################################################################
 ## build.args ######################################################
@@ -16,53 +21,50 @@
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - name: buildargs
   docker_image:
     name: "{{ iname }}"
     build:
       path: "{{ remote_tmp_dir }}/files"
+      dockerfile: "ArgsDockerfile"
       args:
+        IMAGE: "{{ docker_test_image_busybox }}"
         TEST1: val1
         TEST2: val2
         TEST3: "True"
-      pull: no
+      pull: false
     source: build
   register: buildargs_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: buildargs (idempotency)
   docker_image:
     name: "{{ iname }}"
     build:
       path: "{{ remote_tmp_dir }}/files"
+      dockerfile: "ArgsDockerfile"
       args:
+        IMAGE: "{{ docker_test_image_busybox }}"
         TEST1: val1
         TEST2: val2
         TEST3: "True"
-      pull: no
+      pull: false
     source: build
   register: buildargs_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - assert:
     that:
-    - buildargs_1 is changed
-    - buildargs_2 is not failed and buildargs_2 is not changed
-  when: docker_py_version is version('1.6.0', '>=')
-
-- assert:
-    that:
-    - buildargs_1 is failed
-    - buildargs_2 is failed
-  when: docker_py_version is version('1.6.0', '<')
+      - buildargs_1 is changed
+      - buildargs_2 is not failed and buildargs_2 is not changed
 
 ####################################################################
 ## build.container_limits ##########################################
@@ -74,10 +76,10 @@
     build:
       path: "{{ remote_tmp_dir }}/files"
       container_limits:
-        memory: 4000
-      pull: no
+        memory: 4KB
+      pull: false
     source: build
-  ignore_errors: yes
+  ignore_errors: true
   register: container_limits_1
 
 - name: container_limits
@@ -86,9 +88,9 @@
     build:
       path: "{{ remote_tmp_dir }}/files"
       container_limits:
-        memory: 7000000
-        memswap: 8000000
-      pull: no
+        memory: 7MB
+        memswap: 8MB
+      pull: false
     source: build
   register: container_limits_2
 
@@ -96,18 +98,18 @@
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - assert:
     that:
-    # It *sometimes* happens that the first task does not fail.
-    # For now, we work around this by
-    #   a) requiring that if it fails, the message must
-    #      contain 'Minimum memory limit allowed is (4|6)MB', and
-    #   b) requiring that either the first task, or the second
-    #      task is changed, but not both.
-    - "not container_limits_1 is failed or ('Minimum memory limit allowed is ') in container_limits_1.msg"
-    - "container_limits_1 is changed or container_limits_2 is changed and not (container_limits_1 is changed and container_limits_2 is changed)"
+      # It *sometimes* happens that the first task does not fail.
+      # For now, we work around this by
+      #   a) requiring that if it fails, the message must
+      #      contain 'Minimum memory limit allowed is (4|6)MB', and
+      #   b) requiring that either the first task, or the second
+      #      task is changed, but not both.
+      - "not container_limits_1 is failed or ('Minimum memory limit allowed is ') in container_limits_1.msg"
+      - "container_limits_1 is changed or container_limits_2 is changed and not (container_limits_1 is changed and container_limits_2 is changed)"
 
 ####################################################################
 ## build.dockerfile ################################################
@@ -119,7 +121,7 @@
     build:
       path: "{{ remote_tmp_dir }}/files"
       dockerfile: "MyDockerfile"
-      pull: no
+      pull: false
     source: build
   register: dockerfile_1
 
@@ -127,13 +129,13 @@
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - assert:
     that:
-    - dockerfile_1 is changed
-    - "('FROM ' ~ docker_test_image_alpine) in dockerfile_1.stdout"
-    - dockerfile_1['image']['Config']['WorkingDir'] == '/newdata'
+      - dockerfile_1 is changed
+      - "('FROM ' ~ docker_test_image_alpine) in dockerfile_1.stdout"
+      - dockerfile_1['image']['Config']['WorkingDir'] == '/newdata'
 
 ####################################################################
 ## build.platform ##################################################
@@ -143,7 +145,7 @@
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - name: build.platform
   docker_image:
@@ -151,10 +153,10 @@
     build:
       path: "{{ remote_tmp_dir }}/files"
       platform: linux
-      pull: no
+      pull: false
     source: build
   register: platform_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: build.platform (idempotency)
   docker_image:
@@ -162,28 +164,21 @@
     build:
       path: "{{ remote_tmp_dir }}/files"
       platform: linux
-      pull: no
+      pull: false
     source: build
   register: platform_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - assert:
     that:
-    - platform_1 is changed
-    - platform_2 is not failed and platform_2 is not changed
-  when: docker_py_version is version('3.0.0', '>=')
-
-- assert:
-    that:
-    - platform_1 is failed
-    - platform_2 is failed
-  when: docker_py_version is version('3.0.0', '<')
+      - platform_1 is changed
+      - platform_2 is not failed and platform_2 is not changed
 
 ####################################################################
 ## force ###########################################################
@@ -194,7 +189,7 @@
     name: "{{ iname }}"
     build:
       path: "{{ remote_tmp_dir }}/files"
-      pull: no
+      pull: false
     source: build
 
 - name: force (changed)
@@ -203,9 +198,9 @@
     build:
       path: "{{ remote_tmp_dir }}/files"
       dockerfile: "MyDockerfile"
-      pull: no
+      pull: false
     source: build
-    force_source: yes
+    force_source: true
   register: force_1
 
 - name: force (unchanged)
@@ -214,21 +209,21 @@
     build:
       path: "{{ remote_tmp_dir }}/files"
       dockerfile: "MyDockerfile"
-      pull: no
+      pull: false
     source: build
-    force_source: yes
+    force_source: true
   register: force_2
 
 - name: cleanup
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - assert:
     that:
-    - force_1 is changed
-    - force_2 is not changed
+      - force_1 is changed
+      - force_2 is not changed
 
 ####################################################################
 ## load path #######################################################
@@ -241,6 +236,63 @@
     source: pull
   register: archive_image
 
+- assert:
+    that:
+      - archive_image is changed
+
+- name: Copy archive because we will mutate it but other tests need the original
+  copy:
+    remote_src: true
+    src: "{{ remote_tmp_dir }}/image.tar"
+    dest: "{{ remote_tmp_dir }}/image_mutated.tar"
+
+- name: Archive image again (idempotent)
+  docker_image:
+    name: "{{ docker_test_image_hello_world }}"
+    archive_path: "{{ remote_tmp_dir }}/image_mutated.tar"
+    source: local
+  register: archive_image_2
+
+- assert:
+    that:
+      - archive_image_2 is not changed
+
+- name: Archive image 3rd time, should overwrite due to different id
+  docker_image:
+    name: "{{ docker_test_image_alpine_different }}"
+    archive_path: "{{ remote_tmp_dir }}/image_mutated.tar"
+    source: pull
+  register: archive_image_3
+
+- assert:
+    that:
+      - archive_image_3 is changed
+
+- name: Reset archive
+  copy:
+    remote_src: true
+    src: "{{ remote_tmp_dir }}/image.tar"
+    dest: "{{ remote_tmp_dir }}/image_mutated.tar"
+
+- name: Tag image with different name
+  docker_image:
+    name: "{{ docker_test_image_hello_world }}"
+    repository: "{{ hello_world_alt }}"
+    source: local
+
+- name: Archive image 4th time, should overwrite due to different name even when ID is same
+  docker_image:
+    name: "{{ hello_world_alt }}"
+    # Tagged as docker_test_image_hello_world but has same hash/id (before this task overwrites it)
+    archive_path: "{{ remote_tmp_dir }}/image_mutated.tar"
+    source: local
+  register: archive_image_4
+
+- assert:
+    that:
+      - archive_image_4 is changed
+
+# This is the test that needs the original, non-mutated archive
 - name: Archive image by ID
   docker_image:
     name: "{{ archive_image.image.Id }}"
@@ -257,7 +309,7 @@
   docker_image:
     name: "{{ docker_test_image_hello_world }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - name: load image (changed)
   docker_image:
@@ -289,34 +341,24 @@
   register: load_image_3
   ignore_errors: true
 
-- name: load image (invalid image, old API version)
-  docker_image:
-    name: foo:bar
-    load_path: "{{ remote_tmp_dir }}/image-invalid.tar"
-    source: load
-    api_version: "1.22"
-  register: load_image_4
-
 - name: load image (ID, idempotency)
   docker_image:
     name: "{{ archive_image.image.Id }}"
     load_path: "{{ remote_tmp_dir }}/image_id.tar"
     source: load
-  register: load_image_5
+  register: load_image_4
 
 - assert:
     that:
-    - load_image is changed
-    - archive_image['image']['Id'] == load_image['image']['Id']
-    - load_image_1 is not changed
-    - load_image_2 is failed
-    - >-
-      "The archive did not contain image 'foo:bar'. Instead, found '" ~ docker_test_image_hello_world ~ "'." == load_image_2.msg
-    - load_image_3 is failed
-    - '"Detected no loaded images. Archive potentially corrupt?" == load_image_3.msg'
-    - load_image_4 is changed
-    - "'The API version of your Docker daemon is < 1.23, which does not return the image loading result from the Docker daemon. Therefore, we cannot verify whether the expected image was loaded, whether multiple images where loaded, or whether the load actually succeeded. You should consider upgrading your Docker daemon.' in load_image_4.warnings"
-    - load_image_5 is not changed
+      - load_image is changed
+      - archive_image['image']['Id'] == load_image['image']['Id']
+      - load_image_1 is not changed
+      - load_image_2 is failed
+      - >-
+        ("The archive did not contain image 'foo:bar'. Instead, found '" ~ docker_test_image_hello_world ~ "'.") == load_image_2.msg
+      - load_image_3 is failed
+      - '"Detected no loaded images. Archive potentially corrupt?" == load_image_3.msg'
+      - load_image_4 is not changed
 
 ####################################################################
 ## build.path ######################################################
@@ -327,7 +369,7 @@
     name: "{{ iname }}"
     build:
       path: "{{ remote_tmp_dir }}/files"
-      pull: no
+      pull: false
     source: build
   register: path_1
 
@@ -336,7 +378,7 @@
     name: "{{ iname }}"
     build:
       path: "{{ remote_tmp_dir }}/files"
-      pull: no
+      pull: false
     source: build
   register: path_2
 
@@ -344,7 +386,7 @@
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - assert:
     that:
@@ -362,7 +404,7 @@
       path: "{{ remote_tmp_dir }}/files"
       dockerfile: "StagedDockerfile"
       target: first
-      pull: no
+      pull: false
     source: build
   register: dockerfile_2
 
@@ -370,12 +412,12 @@
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - assert:
     that:
-    - dockerfile_2 is changed
-    - dockerfile_2.image.Config.WorkingDir == '/first'
+      - dockerfile_2 is changed
+      - dockerfile_2.image.Config.WorkingDir == '/first'
 
 ####################################################################
 ## build.etc_hosts #################################################
@@ -387,7 +429,7 @@
     build:
       path: "{{ remote_tmp_dir }}/files"
       dockerfile: "EtcHostsDockerfile"
-      pull: no
+      pull: false
       etc_hosts:
         some-custom-host: "127.0.0.1"
     source: build
@@ -397,8 +439,66 @@
   docker_image:
     name: "{{ iname }}"
     state: absent
-    force_absent: yes
+    force_absent: true
 
 - assert:
     that:
       - path_1 is changed
+
+####################################################################
+## build.shm_size ##################################################
+####################################################################
+
+- name: Build image with custom shm_size
+  docker_image:
+    name: "{{ iname }}"
+    build:
+      path: "{{ remote_tmp_dir }}/files"
+      dockerfile: "MyDockerfile"
+      pull: false
+      shm_size: 128MB
+    source: build
+  register: path_1
+
+- name: cleanup
+  docker_image:
+    name: "{{ iname }}"
+    state: absent
+    force_absent: true
+
+- assert:
+    that:
+      - path_1 is changed
+
+####################################################################
+## build.labels ####################################################
+####################################################################
+
+- name: Build image with labels
+  docker_image:
+    name: "{{ iname }}"
+    build:
+      path: "{{ remote_tmp_dir }}/files"
+      dockerfile: "MyDockerfile"
+      pull: false
+      labels:
+        FOO: BAR
+        this is a label: this is the label's value
+    source: build
+  register: labels_1
+
+- name: cleanup
+  docker_image:
+    name: "{{ iname }}"
+    state: absent
+    force_absent: true
+
+- name: Show image information
+  debug:
+    var: labels_1.image
+
+- assert:
+    that:
+      - labels_1 is changed
+      - labels_1.image.Config.Labels.FOO == 'BAR'
+      - labels_1.image.Config.Labels["this is a label"] == "this is the label's value"

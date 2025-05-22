@@ -1,7 +1,12 @@
+---
 ####################################################################
 # WARNING: These are designed specifically for Ansible tests       #
 # and should not be used as examples of how to write Ansible roles #
 ####################################################################
+
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Scan new devices.
   aix_devices:
@@ -42,13 +47,13 @@
 - name: Put vscsi1 and children devices in Defined state.
   aix_devices:
     device: vscsi1
-    recursive: yes
+    recursive: true
     state: defined
 
 - name: Removes vscsi1 and children devices.
   aix_devices:
     device: vscsi1
-    recursive: yes
+    recursive: true
     state: absent
 
 - name: Changes en1 mtu to 9000 and disables arp.
@@ -56,7 +61,7 @@
     device: en1
     attributes:
       mtu: 900
-      arp: off
+      arp: 'off'
     state: present
 
 - name: Configure IP, netmask and set en1 up.

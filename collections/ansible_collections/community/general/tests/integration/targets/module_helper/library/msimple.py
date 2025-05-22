@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# (c) 2021, Alexei Znamensky <russoz@gmail.com>
+# Copyright (c) 2021, Alexei Znamensky <russoz@gmail.com>
 #
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
@@ -34,12 +35,13 @@ from ansible_collections.community.general.plugins.module_utils.mh.deco import c
 
 
 class MSimple(ModuleHelper):
-    output_params = ('a', 'b', 'c')
+    output_params = ('a', 'b', 'c', 'm')
     module = dict(
         argument_spec=dict(
             a=dict(type='int', default=0),
             b=dict(type='str'),
             c=dict(type='str'),
+            m=dict(type='str'),
         ),
         supports_check_mode=True,
     )
@@ -55,6 +57,8 @@ class MSimple(ModuleHelper):
             self.vars['c'] = str(self.vars.c) * 3
 
     def __run__(self):
+        if self.vars.m:
+            self.vars.msg = self.vars.m
         if self.vars.a >= 100:
             raise Exception("a >= 100")
         if self.vars.c == "abc change":

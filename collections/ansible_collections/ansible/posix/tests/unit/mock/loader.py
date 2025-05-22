@@ -30,7 +30,7 @@ class DictDataLoader(DataLoader):
 
     def __init__(self, file_mapping=None):
         file_mapping = {} if file_mapping is None else file_mapping
-        assert type(file_mapping) == dict
+        assert isinstance(file_mapping, dict)
 
         super(DictDataLoader, self).__init__()
 
@@ -46,8 +46,8 @@ class DictDataLoader(DataLoader):
 
     # TODO: the real _get_file_contents returns a bytestring, so we actually convert the
     #       unicode/text it's created with to utf-8
-    def _get_file_contents(self, path):
-        path = to_text(path)
+    def _get_file_contents(self, file_name):
+        path = to_text(file_name)
         if path in self._file_mapping:
             return (to_bytes(self._file_mapping[path]), False)
         else:

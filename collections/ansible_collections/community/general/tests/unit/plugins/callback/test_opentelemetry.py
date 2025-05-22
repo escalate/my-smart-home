@@ -1,14 +1,16 @@
-# (C) 2021, Victor Martinez <VictorMartinezRubio@gmail.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# -*- coding: utf-8 -*-
+# Copyright (c) 2021, Victor Martinez <VictorMartinezRubio@gmail.com>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from ansible.playbook.task import Task
 from ansible.executor.task_result import TaskResult
-from ansible_collections.community.general.tests.unit.compat import unittest
-from ansible_collections.community.general.tests.unit.compat.mock import patch, MagicMock, Mock
-from ansible_collections.community.general.plugins.callback.opentelemetry import OpenTelemetrySource, TaskData, CallbackModule
+from ansible_collections.community.internal_test_tools.tests.unit.compat import unittest
+from ansible_collections.community.internal_test_tools.tests.unit.compat.mock import patch, MagicMock, Mock
+from ansible_collections.community.general.plugins.callback.opentelemetry import OpenTelemetrySource, TaskData
 from collections import OrderedDict
 import sys
 
@@ -66,7 +68,8 @@ class TestOpentelemetry(unittest.TestCase):
         self.opentelemetry.finish_task(
             tasks_data,
             'ok',
-            self.my_task_result
+            self.my_task_result,
+            ""
         )
 
         task_data = tasks_data['myuuid']
@@ -83,7 +86,8 @@ class TestOpentelemetry(unittest.TestCase):
         self.opentelemetry.finish_task(
             tasks_data,
             'ok',
-            result
+            result,
+            ""
         )
 
         task_data = tasks_data['myuuid']
@@ -91,6 +95,22 @@ class TestOpentelemetry(unittest.TestCase):
         self.assertEqual(host_data.uuid, 'include')
         self.assertEqual(host_data.name, 'include')
         self.assertEqual(host_data.status, 'ok')
+        self.assertEqual(self.opentelemetry.ansible_version, None)
+
+    def test_finish_task_include_with_ansible_version(self):
+        task_fields = {'args': {'_ansible_version': '1.2.3'}}
+        result = TaskResult(host=None, task=self.mock_task, return_data={}, task_fields=task_fields)
+        tasks_data = OrderedDict()
+        tasks_data['myuuid'] = self.my_task
+
+        self.opentelemetry.finish_task(
+            tasks_data,
+            'ok',
+            result,
+            ""
+        )
+
+        self.assertEqual(self.opentelemetry.ansible_version, '1.2.3')
 
     def test_get_error_message(self):
         test_cases = (

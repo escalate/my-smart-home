@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # Copyright (c) Ansible Project
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""Check extra collection docs with antsibull-lint."""
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Check extra collection docs with antsibull-docs."""
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import os
+import glob
 import sys
 
 import yaml
@@ -13,20 +14,20 @@ import yaml
 
 def main():
     """Main entry point."""
-    paths = sys.argv[1:] or sys.stdin.read().splitlines()
-    paths = [path for path in paths if path.endswith('/aliases')]
-
     with open('.azure-pipelines/azure-pipelines.yml', 'rb') as f:
         azp = yaml.safe_load(f)
 
-    allowed_targets = set(['shippable/cloud/group1'])
+    allowed_targets = set(['azp/generic/1'])
     for stage in azp['stages']:
-        if stage['stage'].startswith(('Sanity', 'Unit', 'Cloud', 'Summary')):
+        if stage['stage'].startswith(('Sanity', 'Unit', 'Generic', 'Summary')):
             continue
         for job in stage['jobs']:
             for group in job['parameters']['groups']:
-                allowed_targets.add('shippable/posix/group{0}'.format(group))
+                allowed_targets.add('azp/posix/{0}'.format(group))
 
+    paths = glob.glob("tests/integration/targets/*/aliases")
+
+    has_errors = False
     for path in paths:
         targets = []
         skip = False
@@ -56,10 +57,14 @@ def main():
             if 'targets/setup_' in path:
                 continue
             print('%s: %s' % (path, 'found no targets'))
+            has_errors = True
         for target in targets:
             if target not in allowed_targets:
                 print('%s: %s' % (path, 'found invalid target "{0}"'.format(target)))
+                has_errors = True
+
+    return 1 if has_errors else 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

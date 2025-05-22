@@ -1,61 +1,60 @@
-# (c) 2021 Jeff Goldschrafe <jeff@holyhandgrenade.org>
+# Copyright (c) 2021 Jeff Goldschrafe <jeff@holyhandgrenade.org>
 # Based on Ansible local connection plugin by:
-# (c) 2012 Michael DeHaan <michael.dehaan@gmail.com>
-# (c) 2015, 2017 Toshio Kuratomi <tkuratomi@ansible.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2012 Michael DeHaan <michael.dehaan@gmail.com>
+# Copyright (c) 2015, 2017 Toshio Kuratomi <tkuratomi@ansible.com>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-DOCUMENTATION = '''
-    name: nsenter
-    short_description: execute on host running controller container
-    version_added: 1.9.0
+DOCUMENTATION = r"""
+name: nsenter
+short_description: execute on host running controller container
+version_added: 1.9.0
+description:
+  - This connection plugin allows Ansible, running in a privileged container, to execute tasks on the container host instead
+    of in the container itself.
+  - This is useful for running Ansible in a pull model, while still keeping the Ansible control node containerized.
+  - It relies on having privileged access to run C(nsenter) in the host's PID namespace, allowing it to enter the namespaces
+    of the provided PID (default PID 1, or init/systemd).
+author: Jeff Goldschrafe (@jgoldschrafe)
+options:
+  nsenter_pid:
     description:
-        - This connection plugin allows Ansible, running in a privileged container, to execute tasks on the container
-          host instead of in the container itself.
-        - This is useful for running Ansible in a pull model, while still keeping the Ansible control node
-          containerized.
-        - It relies on having privileged access to run C(nsenter) in the host's PID namespace, allowing it to enter the
-          namespaces of the provided PID (default PID 1, or init/systemd).
-    author: Jeff Goldschrafe (@jgoldschrafe)
-    options:
-        nsenter_pid:
-            description:
-                - PID to attach with using nsenter.
-                - The default should be fine unless you are attaching as a non-root user.
-            type: int
-            default: 1
-            vars:
-                - name: ansible_nsenter_pid
-            env:
-                - name: ANSIBLE_NSENTER_PID
-            ini:
-                - section: nsenter_connection
-                  key: nsenter_pid
-    notes:
-        - The remote user is ignored; this plugin always runs as root.
-        - >-
-            This plugin requires the Ansible controller container to be launched in the following way:
-            (1) The container image contains the C(nsenter) program;
-            (2) The container is launched in privileged mode;
-            (3) The container is launched in the host's PID namespace (C(--pid host)).
-'''
+      - PID to attach with using nsenter.
+      - The default should be fine unless you are attaching as a non-root user.
+    type: int
+    default: 1
+    vars:
+      - name: ansible_nsenter_pid
+    env:
+      - name: ANSIBLE_NSENTER_PID
+    ini:
+      - section: nsenter_connection
+        key: nsenter_pid
+notes:
+  - The remote user is ignored; this plugin always runs as root.
+  - "This plugin requires the Ansible controller container to be launched in the following way: (1) The container image contains
+    the C(nsenter) program; (2) The container is launched in privileged mode; (3) The container is launched in the host's
+    PID namespace (C(--pid host))."
+"""
 
 import os
 import pty
-import shutil
 import subprocess
 import fcntl
 
 import ansible.constants as C
-from ansible.errors import AnsibleError, AnsibleFileNotFound
-from ansible.module_utils.compat import selectors
+from ansible.errors import AnsibleError
 from ansible.module_utils.six import binary_type, text_type
 from ansible.module_utils.common.text.converters import to_bytes, to_native, to_text
 from ansible.plugins.connection import ConnectionBase
 from ansible.utils.display import Display
 from ansible.utils.path import unfrackpath
+
+from ansible_collections.community.docker.plugins.module_utils.selectors import selectors
+
 
 display = Display()
 
@@ -128,7 +127,7 @@ class Connection(ConnectionBase):
         # This plugin does not support pipelining. This diverges from the behavior of
         # the core "local" connection plugin that this one derives from.
         if sudoable and self.become and self.become.expect_prompt():
-            # Create a pty if sudoable for privlege escalation that needs it.
+            # Create a pty if sudoable for privilege escalation that needs it.
             # Falls back to using a standard pipe if this fails, which may
             # cause the command to fail in certain situations where we are escalating
             # privileges or the command otherwise needs a pty.

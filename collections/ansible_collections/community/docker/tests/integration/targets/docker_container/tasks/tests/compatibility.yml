@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Registering container name
   set_fact:
     cname: "{{ cname_prefix ~ '-hi' }}"
@@ -17,7 +21,7 @@
     command: '/bin/sh -c "sleep 10m"'
     state: started
     container_default_behavior: compatibility
-  check_mode: yes
+  check_mode: true
   register: start_1
 
 - name: Start container
@@ -44,22 +48,22 @@
     image: "{{ docker_test_image_alpine }}"
     state: started
     container_default_behavior: compatibility
-  check_mode: yes
+  check_mode: true
   register: start_4
 
 - name: cleanup
   docker_container:
     name: "{{ cname }}"
     state: absent
-    force_kill: yes
-  diff: no
+    force_kill: true
+  diff: false
 
 - assert:
     that:
-    - start_1 is changed
-    - start_2 is changed
-    - start_3 is not changed
-    - start_4 is not changed
+      - start_1 is changed
+      - start_2 is changed
+      - start_3 is not changed
+      - start_4 is not changed
 
 ####################################################################
 ## container_default_behavior: no_defaults #########################
@@ -72,7 +76,7 @@
     command: '/bin/sh -c "sleep 10m"'
     state: started
     container_default_behavior: no_defaults
-  check_mode: yes
+  check_mode: true
   register: start_1
 
 - name: Start container
@@ -100,19 +104,19 @@
     command: '/bin/sh -c "sleep 10m"'
     state: started
     container_default_behavior: no_defaults
-  check_mode: yes
+  check_mode: true
   register: start_4
 
 - name: cleanup
   docker_container:
     name: "{{ cname }}"
     state: absent
-    force_kill: yes
-  diff: no
+    force_kill: true
+  diff: false
 
 - assert:
     that:
-    - start_1 is changed
-    - start_2 is changed
-    - start_3 is not changed
-    - start_4 is not changed
+      - start_1 is changed
+      - start_2 is changed
+      - start_3 is not changed
+      - start_4 is not changed

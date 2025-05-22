@@ -2,85 +2,96 @@
 # coding: utf-8
 #
 # Copyright 2017 Red Hat | Ansible, Alex Grönholm <alex.gronholm@nextday.fi>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: docker_volume
 short_description: Manage Docker volumes
 description:
   - Create/remove Docker volumes.
-  - Performs largely the same function as the "docker volume" CLI subcommand.
+  - Performs largely the same function as the C(docker volume) CLI subcommand.
+extends_documentation_fragment:
+  - community.docker.docker.api_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: full
+  diff_mode:
+    support: full
+  idempotent:
+    support: partial
+    details:
+      - If O(recreate=always) the module is not idempotent.
+
 options:
   volume_name:
     description:
       - Name of the volume to operate on.
     type: str
-    required: yes
+    required: true
     aliases:
       - name
 
   driver:
     description:
-      - Specify the type of volume. Docker provides the C(local) driver, but 3rd party drivers can also be used.
+      - Specify the type of volume. Docker provides the V(local) driver, but 3rd party drivers can also be used.
     type: str
     default: local
 
   driver_options:
     description:
-      - "Dictionary of volume settings. Consult docker docs for valid options and values:
-        U(https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options)"
+      - 'Dictionary of volume settings. Consult the Docker documentation for valid options and values:
+        U(https://docs.docker.com/engine/reference/commandline/volume_create/#driver-specific-options).'
     type: dict
+    default: {}
 
   labels:
     description:
-      - Dictionary of label key/values to set for the volume
+      - Dictionary of label key/values to set for the volume.
     type: dict
 
   recreate:
     description:
-      - Controls when a volume will be recreated when I(state) is C(present). Please
-        note that recreating an existing volume will cause **any data in the existing volume
-        to be lost!** The volume will be deleted and a new volume with the same name will be
-        created.
-      - The value C(always) forces the volume to be always recreated.
-      - The value C(never) makes sure the volume will not be recreated.
-      - The value C(options-changed) makes sure the volume will be recreated if the volume
-        already exist and the driver, driver options or labels differ.
+      - Controls when a volume will be recreated when O(state=present). Please note that recreating an existing volume will
+        cause B(any data in the existing volume to be lost!) The volume will be deleted and a new volume with the same name
+        will be created.
+      - The value V(always) forces the volume to be always recreated.
+      - The value V(never) makes sure the volume will not be recreated.
+      - The value V(options-changed) makes sure the volume will be recreated if the volume already exist and the driver, driver
+        options or labels differ.
     type: str
     default: never
     choices:
-    - always
-    - never
-    - options-changed
+      - always
+      - never
+      - options-changed
 
   state:
     description:
-      - C(absent) deletes the volume.
-      - C(present) creates the volume, if it does not already exist.
+      - V(absent) deletes the volume.
+      - V(present) creates the volume, if it does not already exist.
     type: str
     default: present
     choices:
       - absent
       - present
 
-extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_1_documentation
-
-
 author:
   - Alex Grönholm (@agronholm)
 
 requirements:
-  - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 1.10.0 (use L(docker-py,https://pypi.org/project/docker-py/) for Python 2.6)"
-  - "The docker server >= 1.9.0"
-'''
+  - "Docker API >= 1.25"
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
+---
 - name: Create a volume
   community.docker.docker_volume:
     name: volume_one
@@ -96,34 +107,35 @@ EXAMPLES = '''
     driver_options:
       type: btrfs
       device: /dev/sda2
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 volume:
-    description:
+  description:
     - Volume inspection results for the affected volume.
-    returned: success
-    type: dict
-    sample: {}
-'''
+  returned: success
+  type: dict
+  sample: {}
+"""
 
 import traceback
 
 from ansible.module_utils.common.text.converters import to_native
+from ansible.module_utils.six import iteritems
 
-try:
-    from docker.errors import DockerException, APIError
-except ImportError:
-    # missing Docker SDK for Python handled in ansible.module_utils.docker.common
-    pass
-
-from ansible_collections.community.docker.plugins.module_utils.common import (
-    DockerBaseClass,
+from ansible_collections.community.docker.plugins.module_utils.common_api import (
     AnsibleDockerClient,
-    DifferenceTracker,
     RequestException,
 )
-from ansible.module_utils.six import iteritems, text_type
+from ansible_collections.community.docker.plugins.module_utils.util import (
+    DockerBaseClass,
+    DifferenceTracker,
+    sanitize_labels,
+)
+from ansible_collections.community.docker.plugins.module_utils._api.errors import (
+    APIError,
+    DockerException,
+)
 
 
 class TaskParameters(DockerBaseClass):
@@ -171,7 +183,7 @@ class DockerVolumeManager(object):
 
     def get_existing_volume(self):
         try:
-            volumes = self.client.volumes()
+            volumes = self.client.get_json('/volumes')
         except APIError as e:
             self.client.fail(to_native(e))
 
@@ -206,7 +218,7 @@ class DockerVolumeManager(object):
                                         parameter=value,
                                         active=self.existing_volume['Options'].get(key))
         if self.parameters.labels:
-            existing_labels = self.existing_volume.get('Labels', {})
+            existing_labels = self.existing_volume.get('Labels') or {}
             for label in self.parameters.labels:
                 if existing_labels.get(label) != self.parameters.labels.get(label):
                     differences.add('labels.%s' % label,
@@ -219,16 +231,15 @@ class DockerVolumeManager(object):
         if not self.existing_volume:
             if not self.check_mode:
                 try:
-                    params = dict(
-                        driver=self.parameters.driver,
-                        driver_opts=self.parameters.driver_options,
-                    )
-
+                    data = {
+                        'Name': self.parameters.volume_name,
+                        'Driver': self.parameters.driver,
+                        'DriverOpts': self.parameters.driver_options,
+                    }
                     if self.parameters.labels is not None:
-                        params['labels'] = self.parameters.labels
-
-                    resp = self.client.create_volume(self.parameters.volume_name, **params)
-                    self.existing_volume = self.client.inspect_volume(resp['Name'])
+                        data['Labels'] = self.parameters.labels
+                    resp = self.client.post_json_to_json('/volumes/create', data=data)
+                    self.existing_volume = self.client.get_json('/volumes/{0}', resp['Name'])
                 except APIError as e:
                     self.client.fail(to_native(e))
 
@@ -239,7 +250,7 @@ class DockerVolumeManager(object):
         if self.existing_volume:
             if not self.check_mode:
                 try:
-                    self.client.remove_volume(self.parameters.volume_name)
+                    self.client.delete_call('/volumes/{0}', self.parameters.volume_name)
                 except APIError as e:
                     self.client.fail(to_native(e))
 
@@ -284,27 +295,21 @@ def main():
         debug=dict(type='bool', default=False)
     )
 
-    option_minimal_versions = dict(
-        labels=dict(docker_py_version='1.10.0', docker_api_version='1.23'),
-    )
-
     client = AnsibleDockerClient(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        min_docker_version='1.10.0',
-        min_docker_api_version='1.21',
         # "The docker server >= 1.9.0"
-        option_minimal_versions=option_minimal_versions,
     )
+    sanitize_labels(client.module.params['labels'], 'labels', client)
 
     try:
         cm = DockerVolumeManager(client)
         client.module.exit_json(**cm.results)
     except DockerException as e:
-        client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
+        client.fail('An unexpected Docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when trying to talk to the Docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

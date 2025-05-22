@@ -1,35 +1,64 @@
 #!/usr/bin/python
 #
 # Copyright 2016 Red Hat | Ansible
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: docker_network
 short_description: Manage Docker networks
 description:
   - Create/remove Docker networks and connect containers to them.
-  - Performs largely the same function as the "docker network" CLI subcommand.
+  - Performs largely the same function as the C(docker network) CLI subcommand.
+extends_documentation_fragment:
+  - community.docker.docker.api_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: full
+  diff_mode:
+    support: full
+  idempotent:
+    support: partial
+    details:
+      - If O(force=true) the module is not idempotent.
+
 options:
   name:
     description:
       - Name of the network to operate on.
     type: str
-    required: yes
+    required: true
     aliases:
       - network_name
+
+  config_from:
+    description:
+      - Specifies the config only network to use the config from.
+    type: str
+    version_added: 3.10.0
+
+  config_only:
+    description:
+      - Sets that this is a config only network.
+    type: bool
+    version_added: 3.10.0
 
   connected:
     description:
       - List of container names or container IDs to connect to a network.
-      - Please note that the module only makes sure that these containers are connected to the network,
-        but does not care about connection options. If you rely on specific IP addresses etc., use the
-        M(community.docker.docker_container) module to ensure your containers are correctly connected to this network.
+      - Please note that the module only makes sure that these containers are connected to the network, but does not care
+        about connection options. If you rely on specific IP addresses and so on, use the M(community.docker.docker_container)
+        module to ensure your containers are correctly connected to this network.
     type: list
     elements: str
+    default: []
     aliases:
       - containers
 
@@ -43,31 +72,43 @@ options:
     description:
       - Dictionary of network settings. Consult docker docs for valid options and values.
     type: dict
+    default: {}
 
   force:
     description:
-      - With state C(absent) forces disconnecting all containers from the
-        network prior to deleting the network. With state C(present) will
-        disconnect all containers, delete the network and re-create the
-        network.
-      - This option is required if you have changed the IPAM or driver options
-        and want an existing network to be updated to use the new options.
+      - With state V(present) will disconnect all containers for existing networks, delete the network and re-create the network.
+      - This option is required if you have changed the IPAM or driver options and want an existing network to be updated
+        to use the new options.
     type: bool
-    default: no
+    default: false
 
   appends:
     description:
       - By default the connected list is canonical, meaning containers not on the list are removed from the network.
-      - Use I(appends) to leave existing containers connected.
+      - Use O(appends) to leave existing containers connected.
     type: bool
-    default: no
+    default: false
     aliases:
       - incremental
+
+  enable_ipv4:
+    description:
+      - Enable IPv4 networking.
+      - This is enabled by default, but can be explicitly disabled.
+      - Requires Docker API 1.47 or newer.
+    type: bool
+    version_added: 4.5.0
 
   enable_ipv6:
     description:
       - Enable IPv6 networking.
     type: bool
+
+  ingress:
+    description:
+      - Enable Swarm routing-mesh.
+    type: bool
+    version_added: 4.2.0
 
   ipam_driver:
     description:
@@ -81,9 +122,9 @@ options:
 
   ipam_config:
     description:
-      - List of IPAM config blocks. Consult
-        L(Docker docs,https://docs.docker.com/compose/compose-file/compose-file-v2/#ipam) for valid options and values.
-        Note that I(iprange) is spelled differently here (we use the notation from the Docker SDK for Python).
+      - List of IPAM config blocks. Consult L(Docker docs,https://docs.docker.com/compose/compose-file/compose-file-v2/#ipam)
+        for valid options and values. Note that O(ipam_config[].iprange) is spelled differently here (we use the notation
+        from the Docker SDK for Python).
     type: list
     elements: dict
     suboptions:
@@ -106,15 +147,11 @@ options:
 
   state:
     description:
-      - C(absent) deletes the network. If a network has connected containers, it
-        cannot be deleted. Use the I(force) option to disconnect all containers
-        and delete the network.
-      - C(present) creates the network, if it does not already exist with the
-        specified parameters, and connects the list of containers provided via
-        the connected parameter. Containers not on the list will be disconnected.
-        An empty list will leave no containers connected to the network. Use the
-        I(appends) option to leave existing containers connected. Use the I(force)
-        options to force re-creation of the network.
+      - V(absent) deletes the network. If a network has connected containers, these will be detached from the network.
+      - V(present) creates the network, if it does not already exist with the specified parameters, and connects the list
+        of containers provided by the O(connected) parameter. Containers not on the list will be disconnected. An empty list
+        will leave no containers connected to the network. Use the O(appends) option to leave existing containers connected.
+        Use the O(force) options to force re-creation of the network.
     type: str
     default: present
     choices:
@@ -130,6 +167,7 @@ options:
     description:
       - Dictionary of labels.
     type: dict
+    default: {}
 
   scope:
     description:
@@ -142,34 +180,30 @@ options:
 
   attachable:
     description:
-      - If enabled, and the network is in the global scope, non-service containers on worker nodes will be able to connect to the network.
+      - If enabled, and the network is in the global scope, non-service containers on worker nodes will be able to connect
+        to the network.
     type: bool
 
-extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_1_documentation
-
-
 notes:
-  - When network options are changed, the module disconnects all containers from the network, deletes the network, and re-creates the network.
-    It does not try to reconnect containers, except the ones listed in (I(connected), and even for these, it does not consider specific
-    connection options like fixed IP addresses or MAC addresses. If you need more control over how the containers are connected to the
-    network, loop the M(community.docker.docker_container) module to loop over your containers to make sure they are connected properly.
-  - The module does not support Docker Swarm, i.e. it will not try to disconnect or reconnect services. If services are connected to the
-    network, deleting the network will fail. When network options are changed, the network has to be deleted and recreated, so this will
-    fail as well.
-
+  - When network options are changed, the module disconnects all containers from the network, deletes the network, and re-creates
+    the network. It does not try to reconnect containers, except the ones listed in (O(connected), and even for these, it
+    does not consider specific connection options like fixed IP addresses or MAC addresses. If you need more control over
+    how the containers are connected to the network, loop the M(community.docker.docker_container) module to loop over your
+    containers to make sure they are connected properly.
+  - The module does not support Docker Swarm. This means that it will not try to disconnect or reconnect services. If services
+    are connected to the network, deleting the network will fail. When network options are changed, the network has to be
+    deleted and recreated, so this will fail as well.
 author:
   - "Ben Keith (@keitwb)"
   - "Chris Houseknecht (@chouseknecht)"
   - "Dave Bendit (@DBendit)"
 
 requirements:
-  - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 1.10.0 (use L(docker-py,https://pypi.org/project/docker-py/) for Python 2.6)"
-  - "The docker server >= 1.10.0"
-'''
+  - "Docker API >= 1.25"
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
+---
 - name: Create a network
   community.docker.docker_network:
     name: network_one
@@ -192,7 +226,7 @@ EXAMPLES = '''
     name: network_one
     connected:
       - container_a
-    appends: yes
+    appends: true
 
 - name: Create a network with driver options
   community.docker.docker_network:
@@ -221,14 +255,14 @@ EXAMPLES = '''
 - name: Create a network with IPv6 IPAM config
   community.docker.docker_network:
     name: network_ipv6_one
-    enable_ipv6: yes
+    enable_ipv6: true
     ipam_config:
       - subnet: fdd1:ac8c:0557:7ce1::/64
 
 - name: Create a network with IPv6 and custom IPv4 IPAM config
   community.docker.docker_network:
     name: network_ipv6_two
-    enable_ipv6: yes
+    enable_ipv6: true
     ipam_config:
       - subnet: 172.24.27.0/24
       - subnet: fdd1:ac8c:0557:7ce2::/64
@@ -237,42 +271,34 @@ EXAMPLES = '''
   community.docker.docker_network:
     name: network_one
     state: absent
-    force: yes
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 network:
-    description:
+  description:
     - Network inspection results for the affected network.
-    returned: success
-    type: dict
-    sample: {}
-'''
+  returned: success
+  type: dict
+  sample: {}
+"""
 
 import re
 import traceback
+import time
 
 from ansible.module_utils.common.text.converters import to_native
 
-from ansible_collections.community.docker.plugins.module_utils.version import LooseVersion
-
-from ansible_collections.community.docker.plugins.module_utils.common import (
+from ansible_collections.community.docker.plugins.module_utils.common_api import (
     AnsibleDockerClient,
-    DockerBaseClass,
-    docker_version,
-    DifferenceTracker,
-    clean_dict_booleans_for_docker_api,
     RequestException,
 )
-
-try:
-    from docker import utils
-    from docker.errors import DockerException
-    if LooseVersion(docker_version) >= LooseVersion('2.0.0'):
-        from docker.types import IPAMPool, IPAMConfig
-except Exception:
-    # missing Docker SDK for Python handled in ansible.module_utils.docker.common
-    pass
+from ansible_collections.community.docker.plugins.module_utils.util import (
+    DockerBaseClass,
+    DifferenceTracker,
+    clean_dict_booleans_for_docker_api,
+    sanitize_labels,
+)
+from ansible_collections.community.docker.plugins.module_utils._api.errors import DockerException
 
 
 class TaskParameters(DockerBaseClass):
@@ -282,6 +308,8 @@ class TaskParameters(DockerBaseClass):
 
         self.name = None
         self.connected = None
+        self.config_from = None
+        self.config_only = None
         self.driver = None
         self.driver_options = None
         self.ipam_driver = None
@@ -292,12 +320,19 @@ class TaskParameters(DockerBaseClass):
         self.internal = None
         self.labels = None
         self.debug = None
+        self.enable_ipv4 = None
         self.enable_ipv6 = None
         self.scope = None
         self.attachable = None
+        self.ingress = None
 
         for key, value in client.module.params.items():
             setattr(self, key, value)
+
+        # config_only sets driver to 'null' (and scope to 'local') so force that here. Otherwise we get
+        # diffs of 'null' --> 'bridge' given that the driver option defaults to 'bridge'.
+        if self.config_only:
+            self.driver = 'null'
 
 
 def container_names_in_network(network):
@@ -400,6 +435,14 @@ class DockerNetworkManager(object):
         :return: (bool, list)
         '''
         differences = DifferenceTracker()
+        if self.parameters.config_only is not None and self.parameters.config_only != net.get('ConfigOnly', False):
+            differences.add('config_only',
+                            parameter=self.parameters.config_only,
+                            active=net.get('ConfigOnly', False))
+        if self.parameters.config_from is not None and self.parameters.config_from != net.get('ConfigFrom', {}).get('Network', ''):
+            differences.add('config_from',
+                            parameter=self.parameters.config_from,
+                            active=net.get('ConfigFrom', {}).get('Network', ''))
         if self.parameters.driver and self.parameters.driver != net['Driver']:
             differences.add('driver',
                             parameter=self.parameters.driver,
@@ -459,6 +502,10 @@ class DockerNetworkManager(object):
                                             parameter=value,
                                             active=net_config.get(key))
 
+        if self.parameters.enable_ipv4 is not None and self.parameters.enable_ipv4 != net.get('EnableIPv4', False):
+            differences.add('enable_ipv4',
+                            parameter=self.parameters.enable_ipv4,
+                            active=net.get('EnableIPv4', False))
         if self.parameters.enable_ipv6 is not None and self.parameters.enable_ipv6 != net.get('EnableIPv6', False):
             differences.add('enable_ipv6',
                             parameter=self.parameters.enable_ipv6,
@@ -478,6 +525,10 @@ class DockerNetworkManager(object):
             differences.add('attachable',
                             parameter=self.parameters.attachable,
                             active=net.get('Attachable'))
+        if self.parameters.ingress is not None and self.parameters.ingress != net.get('Ingress', False):
+            differences.add('ingress',
+                            parameter=self.parameters.ingress,
+                            active=net.get('Ingress'))
         if self.parameters.labels:
             if not net.get('Labels'):
                 differences.add('labels',
@@ -494,45 +545,56 @@ class DockerNetworkManager(object):
 
     def create_network(self):
         if not self.existing_network:
-            params = dict(
-                driver=self.parameters.driver,
-                options=self.parameters.driver_options,
-            )
+            data = {
+                'Name': self.parameters.name,
+                'Driver': self.parameters.driver,
+                'Options': self.parameters.driver_options,
+                'IPAM': None,
+                'CheckDuplicate': None,
+            }
+
+            if self.parameters.config_only is not None:
+                data['ConfigOnly'] = self.parameters.config_only
+            if self.parameters.config_from:
+                data['ConfigFrom'] = {'Network': self.parameters.config_from}
+            if self.parameters.enable_ipv6 is not None:
+                data['EnableIPv6'] = self.parameters.enable_ipv6
+            if self.parameters.enable_ipv4 is not None:
+                data['EnableIPv4'] = self.parameters.enable_ipv4
+            if self.parameters.internal:
+                data['Internal'] = True
+            if self.parameters.scope is not None:
+                data['Scope'] = self.parameters.scope
+            if self.parameters.attachable is not None:
+                data['Attachable'] = self.parameters.attachable
+            if self.parameters.ingress is not None:
+                data['Ingress'] = self.parameters.ingress
+            if self.parameters.labels is not None:
+                data["Labels"] = self.parameters.labels
 
             ipam_pools = []
             if self.parameters.ipam_config:
                 for ipam_pool in self.parameters.ipam_config:
-                    if LooseVersion(docker_version) >= LooseVersion('2.0.0'):
-                        ipam_pools.append(IPAMPool(**ipam_pool))
-                    else:
-                        ipam_pools.append(utils.create_ipam_pool(**ipam_pool))
+                    ipam_pools.append({
+                        'Subnet': ipam_pool['subnet'],
+                        'IPRange': ipam_pool['iprange'],
+                        'Gateway': ipam_pool['gateway'],
+                        'AuxiliaryAddresses': ipam_pool['aux_addresses'],
+                    })
 
             if self.parameters.ipam_driver or self.parameters.ipam_driver_options or ipam_pools:
-                # Only add ipam parameter if a driver was specified or if IPAM parameters
-                # were specified. Leaving this parameter away can significantly speed up
+                # Only add IPAM if a driver was specified or if IPAM parameters were
+                # specified. Leaving this parameter out can significantly speed up
                 # creation; on my machine creation with this option needs ~15 seconds,
                 # and without just a few seconds.
-                if LooseVersion(docker_version) >= LooseVersion('2.0.0'):
-                    params['ipam'] = IPAMConfig(driver=self.parameters.ipam_driver,
-                                                pool_configs=ipam_pools,
-                                                options=self.parameters.ipam_driver_options)
-                else:
-                    params['ipam'] = utils.create_ipam_config(driver=self.parameters.ipam_driver,
-                                                              pool_configs=ipam_pools)
-
-            if self.parameters.enable_ipv6 is not None:
-                params['enable_ipv6'] = self.parameters.enable_ipv6
-            if self.parameters.internal is not None:
-                params['internal'] = self.parameters.internal
-            if self.parameters.scope is not None:
-                params['scope'] = self.parameters.scope
-            if self.parameters.attachable is not None:
-                params['attachable'] = self.parameters.attachable
-            if self.parameters.labels:
-                params['labels'] = self.parameters.labels
+                data['IPAM'] = {
+                    'Driver': self.parameters.ipam_driver,
+                    'Config': ipam_pools or [],
+                    'Options': self.parameters.ipam_driver_options,
+                }
 
             if not self.check_mode:
-                resp = self.client.create_network(self.parameters.name, **params)
+                resp = self.client.post_json_to_json('/networks/create', data=data)
                 self.client.report_warnings(resp, ['Warning'])
                 self.existing_network = self.client.get_network(network_id=resp['Id'])
             self.results['actions'].append("Created network %s with driver %s" % (self.parameters.name, self.parameters.driver))
@@ -542,7 +604,10 @@ class DockerNetworkManager(object):
         if self.existing_network:
             self.disconnect_all_containers()
             if not self.check_mode:
-                self.client.remove_network(self.parameters.name)
+                self.client.delete_call('/networks/{0}', self.parameters.name)
+                if self.existing_network.get('Scope', 'local') == 'swarm':
+                    while self.get_existing_network():
+                        time.sleep(0.1)
             self.results['actions'].append("Removed network %s" % (self.parameters.name,))
             self.results['changed'] = True
 
@@ -551,16 +616,30 @@ class DockerNetworkManager(object):
             return False
         return container_name in container_names_in_network(self.existing_network)
 
+    def is_container_exist(self, container_name):
+        try:
+            container = self.client.get_container(container_name)
+            return bool(container)
+
+        except DockerException as e:
+            self.client.fail('An unexpected Docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
+        except RequestException as e:
+            self.client.fail(
+                'An unexpected requests error occurred when trying to talk to the Docker daemon: {0}'.format(to_native(e)),
+                exception=traceback.format_exc())
+
     def connect_containers(self):
         for name in self.parameters.connected:
-            if not self.is_container_connected(name):
+            if not self.is_container_connected(name) and self.is_container_exist(name):
                 if not self.check_mode:
-                    self.client.connect_container_to_network(name, self.parameters.name)
+                    data = {
+                        "Container": name,
+                        "EndpointConfig": None,
+                    }
+                    self.client.post_json('/networks/{0}/connect', self.parameters.name, data=data)
                 self.results['actions'].append("Connected container %s" % (name,))
                 self.results['changed'] = True
-                self.diff_tracker.add('connected.{0}'.format(name),
-                                      parameter=True,
-                                      active=False)
+                self.diff_tracker.add('connected.{0}'.format(name), parameter=True, active=False)
 
     def disconnect_missing(self):
         if not self.existing_network:
@@ -582,7 +661,8 @@ class DockerNetworkManager(object):
 
     def disconnect_container(self, container_name):
         if not self.check_mode:
-            self.client.disconnect_container_from_network(container_name, self.parameters.name)
+            data = {"Container": container_name, "Force": True}
+            self.client.post_json('/networks/{0}/disconnect', self.parameters.name, data=data)
         self.results['actions'].append("Disconnected container %s" % (container_name,))
         self.results['changed'] = True
         self.diff_tracker.add('connected.{0}'.format(container_name),
@@ -623,6 +703,8 @@ class DockerNetworkManager(object):
 def main():
     argument_spec = dict(
         name=dict(type='str', required=True, aliases=['network_name']),
+        config_from=dict(type='str'),
+        config_only=dict(type='bool'),
         connected=dict(type='list', default=[], elements='str', aliases=['containers']),
         state=dict(type='str', default='present', choices=['present', 'absent']),
         driver=dict(type='str', default='bridge'),
@@ -637,38 +719,39 @@ def main():
             gateway=dict(type='str'),
             aux_addresses=dict(type='dict'),
         )),
+        enable_ipv4=dict(type='bool'),
         enable_ipv6=dict(type='bool'),
         internal=dict(type='bool'),
         labels=dict(type='dict', default={}),
         debug=dict(type='bool', default=False),
         scope=dict(type='str', choices=['local', 'global', 'swarm']),
         attachable=dict(type='bool'),
+        ingress=dict(type='bool'),
     )
 
     option_minimal_versions = dict(
-        scope=dict(docker_py_version='2.6.0', docker_api_version='1.30'),
-        attachable=dict(docker_py_version='2.0.0', docker_api_version='1.26'),
-        labels=dict(docker_api_version='1.23'),
-        ipam_driver_options=dict(docker_py_version='2.0.0'),
+        config_from=dict(docker_api_version='1.30'),
+        config_only=dict(docker_api_version='1.30'),
+        scope=dict(docker_api_version='1.30'),
+        attachable=dict(docker_api_version='1.26'),
+        enable_ipv4=dict(docker_api_version='1.47'),
     )
 
     client = AnsibleDockerClient(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        min_docker_version='1.10.0',
-        min_docker_api_version='1.22',
         # "The docker server >= 1.10.0"
         option_minimal_versions=option_minimal_versions,
     )
-
+    sanitize_labels(client.module.params['labels'], 'labels', client)
     try:
         cm = DockerNetworkManager(client)
         client.module.exit_json(**cm.results)
     except DockerException as e:
-        client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
+        client.fail('An unexpected Docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when trying to talk to the Docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

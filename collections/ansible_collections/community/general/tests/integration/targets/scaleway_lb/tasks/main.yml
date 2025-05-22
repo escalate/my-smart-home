@@ -1,10 +1,15 @@
+---
 ####################################################################
 # WARNING: These are designed specifically for Ansible tests       #
 # and should not be used as examples of how to write Ansible roles #
 ####################################################################
 
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Create a load-balancer (Check)
-  check_mode: yes
+  check_mode: true
   scaleway_lb:
     state: present
     name: '{{ name }}'
@@ -82,7 +87,7 @@
       - lb_creation_confirmation_task.scaleway_lb.status == "ready"
 
 - name: Update load-balancer (Check)
-  check_mode: yes
+  check_mode: true
   scaleway_lb:
     state: present
     name: '{{ name }}'
@@ -160,7 +165,7 @@
       - lb_update_confirmation_task.scaleway_lb.status == "ready"
 
 - name: Delete load-balancer (Check)
-  check_mode: yes
+  check_mode: true
   scaleway_lb:
     state: absent
     name: '{{ name }}'

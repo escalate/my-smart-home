@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-# (c) 2020-2021, Felix Fontein <felix@fontein.de>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2020-2021, Felix Fontein <felix@fontein.de>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 # Make coding more python3-ish
 from __future__ import absolute_import, division, print_function
@@ -12,6 +13,7 @@ from ansible_collections.community.internal_test_tools.tests.unit.compat.unittes
 from ansible_collections.community.internal_test_tools.tests.unit.compat.mock import (
     MagicMock,
 )
+from ansible_collections.community.internal_test_tools.tests.unit.utils.trust import make_trusted
 
 from ansible.plugins.loader import lookup_loader
 
@@ -29,9 +31,9 @@ class TestLookupModule(TestCase):
         self.assertListEqual(
             self.lookup.run(
                 [
-                    {'a': '[1, 2]'},
-                    {'b': '[item.a + 3, item.a + 6]'},
-                    {'c': '[item.a + item.b * 10]'},
+                    {'a': make_trusted('[1, 2]')},
+                    {'b': make_trusted('[item.a + 3, item.a + 6]')},
+                    {'c': make_trusted('[item.a + item.b * 10]')},
                 ],
                 {},
             ),

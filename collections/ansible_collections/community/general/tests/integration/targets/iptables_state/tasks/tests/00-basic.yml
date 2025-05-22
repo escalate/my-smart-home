@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: "ensure our next backup is not there (file)"
   file:
     path: "{{ iptables_saved }}"
@@ -18,14 +22,14 @@
   iptables_state:
     name: foobar
   register: iptables_state
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: "assert that results are as expected"
   assert:
     that:
       - iptables_state is failed
       - iptables_state.msg is match("Invalid options")
-    quiet: yes
+    quiet: true
 
 
 
@@ -33,14 +37,14 @@
   iptables_state:
     path: foobar
   register: iptables_state
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: "assert that results are as expected"
   assert:
     that:
       - iptables_state is failed
       - iptables_state.msg is match("missing required arguments")
-    quiet: yes
+    quiet: true
 
 
 
@@ -48,14 +52,14 @@
   iptables_state:
     state: saved
   register: iptables_state
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: "assert that results are as expected"
   assert:
     that:
       - iptables_state is failed
       - iptables_state.msg is match("missing required arguments")
-    quiet: yes
+    quiet: true
 
 
 
@@ -64,14 +68,14 @@
     path: foobar
     state: present
   register: iptables_state
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: "assert that results are as expected"
   assert:
     that:
       - iptables_state is failed
       - iptables_state.msg is match("value of state must be one of")
-    quiet: yes
+    quiet: true
 
 
 #
@@ -85,14 +89,14 @@
     path: "{{ iptables_saved }}"
     state: saved
   register: iptables_state
-  check_mode: yes
+  check_mode: true
 
 - name: "assert that results are as expected"
   assert:
     that:
       - iptables_state is changed
       - iptables_state.initial_state == iptables_state.saved
-    quiet: yes
+    quiet: true
 
 
 
@@ -107,7 +111,7 @@
     that:
       - iptables_state is changed
       - iptables_state.initial_state == iptables_state.saved
-    quiet: yes
+    quiet: true
 
 
 
@@ -122,7 +126,7 @@
     that:
       - iptables_state is not changed
       - iptables_state.initial_state == iptables_state.saved
-    quiet: yes
+    quiet: true
 
 
 
@@ -131,14 +135,14 @@
     path: "{{ iptables_saved }}"
     state: saved
   register: iptables_state
-  check_mode: yes
+  check_mode: true
 
 - name: "assert that results are as expected"
   assert:
     that:
       - iptables_state is not changed
       - iptables_state.initial_state == iptables_state.saved
-    quiet: yes
+    quiet: true
 
 
 
@@ -153,14 +157,14 @@
         path: "{{ iptables_saved }}"
         state: restored
       register: iptables_state
-      check_mode: yes
+      check_mode: true
 
     - name: "assert that results are as expected"
       assert:
         that:
           - iptables_state is not changed
           - iptables_state.initial_state == iptables_state.restored
-        quiet: yes
+        quiet: true
 
   rescue:
     - name: "assert that results are not as expected for only one reason (xtables lock)"
@@ -168,7 +172,7 @@
         that:
           - iptables_state is failed
           - iptables_state.stderr is search('xtables lock')
-        quiet: yes
+        quiet: true
       register: xtables_lock
 
 
@@ -186,7 +190,7 @@
         that:
           - iptables_state is not changed
           - iptables_state.initial_state == iptables_state.restored
-        quiet: yes
+        quiet: true
 
   rescue:
     - name: "assert that results are not as expected for only one reason (xtables lock)"
@@ -194,7 +198,7 @@
         that:
           - iptables_state is failed
           - iptables_state.stderr is search('xtables lock')
-        quiet: yes
+        quiet: true
       register: xtables_lock
 
 
@@ -213,14 +217,14 @@
         path: "{{ iptables_saved }}"
         state: restored
       register: iptables_state
-      check_mode: yes
+      check_mode: true
 
     - name: "assert that results are as expected"
       assert:
         that:
           - iptables_state is changed
           - iptables_state.initial_state != iptables_state.restored
-        quiet: yes
+        quiet: true
 
   rescue:
     - name: "assert that results are not as expected for only one reason (xtables lock)"
@@ -228,7 +232,7 @@
         that:
           - iptables_state is failed
           - iptables_state.stderr is search('xtables lock')
-        quiet: yes
+        quiet: true
       register: xtables_lock
 
 
@@ -249,7 +253,7 @@
           - iptables_state is changed
           - iptables_state.initial_state != iptables_state.restored
           - iptables_state.applied
-        quiet: yes
+        quiet: true
 
   rescue:
     - name: "assert that results are not as expected for only one reason (xtables lock)"
@@ -257,7 +261,7 @@
         that:
           - iptables_state is failed
           - iptables_state.stderr is search('xtables lock')
-        quiet: yes
+        quiet: true
       register: xtables_lock
 
 
@@ -277,7 +281,7 @@
         that:
           - iptables_state is not changed
           - iptables_state.initial_state == iptables_state.restored
-        quiet: yes
+        quiet: true
 
   rescue:
     - name: "assert that results are not as expected for only one reason (xtables lock)"
@@ -285,7 +289,7 @@
         that:
           - iptables_state is failed
           - iptables_state.stderr is search('xtables lock')
-        quiet: yes
+        quiet: true
       register: xtables_lock
 
 
@@ -297,14 +301,14 @@
         path: "{{ iptables_saved }}"
         state: restored
       register: iptables_state
-      check_mode: yes
+      check_mode: true
 
     - name: "assert that results are as expected"
       assert:
         that:
           - iptables_state is not changed
           - iptables_state.initial_state == iptables_state.restored
-        quiet: yes
+        quiet: true
 
   rescue:
     - name: "assert that results are not as expected for only one reason (xtables lock)"
@@ -312,5 +316,5 @@
         that:
           - iptables_state is failed
           - iptables_state.stderr is search('xtables lock')
-        quiet: yes
+        quiet: true
       register: xtables_lock

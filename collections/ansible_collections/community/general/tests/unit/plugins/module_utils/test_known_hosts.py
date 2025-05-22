@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # (c) 2015, Michael Scherer <mscherer@redhat.com>
 # Copyright (c) 2017 Ansible Project
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -92,11 +93,12 @@ def test_get_fqdn_and_port(url, fqdn, port):
     assert known_hosts.get_fqdn_and_port(url) == (fqdn, port)
 
 
-@pytest.mark.parametrize('fqdn, port, add_host_key_cmd, stdin',
-                         ((URLS[k]['get_fqdn'], URLS[k]['port'], URLS[k]['add_host_key_cmd'], {})
-                          for k in sorted(URLS) if URLS[k]['is_ssh_url']),
-                         indirect=['stdin'])
-def test_add_host_key(am, mocker, fqdn, port, add_host_key_cmd):
+@pytest.mark.parametrize('fqdn, port, add_host_key_cmd',
+                         ((URLS[k]['get_fqdn'], URLS[k]['port'], URLS[k]['add_host_key_cmd'])
+                          for k in sorted(URLS) if URLS[k]['is_ssh_url']))
+def test_add_host_key(mocker, fqdn, port, add_host_key_cmd):
+    am = mocker.MagicMock()
+
     get_bin_path = mocker.MagicMock()
     get_bin_path.return_value = keyscan_cmd = "/custom/path/ssh-keyscan"
     am.get_bin_path = get_bin_path

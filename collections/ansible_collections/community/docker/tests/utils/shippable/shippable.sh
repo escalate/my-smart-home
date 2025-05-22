@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 set -o pipefail -eux
 
@@ -15,7 +18,7 @@ function join {
 }
 
 # Ensure we can write other collections to this dir
-sudo chown "$(whoami)" "${PWD}/../../"
+sudo chown -R "$(whoami)" "${PWD}/../../../"
 
 test="$(join / "${args[@]:1}")"
 
@@ -62,23 +65,20 @@ else
     retry pip install "https://github.com/ansible/ansible/archive/stable-${ansible_version}.tar.gz" --disable-pip-version-check
 fi
 
-if [ "${SHIPPABLE_BUILD_ID:-}" ]; then
-    export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible"
-    SHIPPABLE_RESULT_DIR="$(pwd)/shippable"
-    TEST_DIR="${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/community/docker"
-    mkdir -p "${TEST_DIR}"
-    cp -aT "${SHIPPABLE_BUILD_DIR}" "${TEST_DIR}"
-    cd "${TEST_DIR}"
-else
-    export ANSIBLE_COLLECTIONS_PATHS="${PWD}/../../../"
-fi
-
-if [ "${test}" == "sanity/extra" ]; then
-    retry pip install junit-xml --disable-pip-version-check
-fi
+export ANSIBLE_COLLECTIONS_PATHS="${PWD}/../../../"
 
 # START: HACK
-if [ "${test}" == "sanity/extra" ]; then
+
+COMMUNITY_CRYPTO_BRANCH=main
+if [ "${ansible_version}" == "2.16" ]; then
+    COMMUNITY_CRYPTO_BRANCH=stable-2
+fi
+
+retry git clone --depth=1 --single-branch --branch stable-1 https://github.com/ansible-collections/community.library_inventory_filtering.git "${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/community/library_inventory_filtering_v1"
+# NOTE: we're installing with git to work around Galaxy being a huge PITA (https://github.com/ansible/galaxy/issues/2429)
+# retry ansible-galaxy -vvv collection install community.library_inventory_filtering_v1
+
+if [ "${test}" == "units/1" ]; then
     # Nothing further should be added to this list.
     # This is to prevent modules or plugins in this collection having a runtime dependency on other collections.
     retry git clone --depth=1 --single-branch https://github.com/ansible-collections/community.internal_test_tools.git "${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/community/internal_test_tools"
@@ -86,10 +86,10 @@ if [ "${test}" == "sanity/extra" ]; then
     # retry ansible-galaxy -vvv collection install community.internal_test_tools
 fi
 
-if [ "${script}" != "sanity" ] && [ "${script}" != "units" ] && [ "${test}" != "sanity/extra" ]; then
+if [ "${script}" != "sanity/1" ] && [ "${script}" != "units/1" ]; then
     # To prevent Python dependencies on other collections only install other collections for integration tests
     retry git clone --depth=1 --single-branch https://github.com/ansible-collections/ansible.posix.git "${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/ansible/posix"
-    retry git clone --depth=1 --single-branch https://github.com/ansible-collections/community.crypto.git "${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/community/crypto"
+    retry git clone --depth=1 --single-branch --branch "${COMMUNITY_CRYPTO_BRANCH}" https://github.com/ansible-collections/community.crypto.git "${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/community/crypto"
     retry git clone --depth=1 --single-branch https://github.com/ansible-collections/community.general.git "${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/community/general"
     # NOTE: we're installing with git to work around Galaxy being a huge PITA (https://github.com/ansible/galaxy/issues/2429)
     # retry ansible-galaxy -vvv collection install ansible.posix

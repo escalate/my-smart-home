@@ -1,17 +1,7 @@
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: disable userdir module
   community.general.apache2_module:
@@ -81,9 +71,9 @@
     community.general.apache2_module:
       name: autoindex
       state: absent
-      force: True
+      force: true
 
-  - name: reenable autoindex
+  - name: re-enable autoindex
     community.general.apache2_module:
       name: autoindex
       state: present
@@ -103,7 +93,7 @@
     community.general.apache2_module:
       name: dump_io
       state: present
-    ignore_errors: True
+    ignore_errors: true
     register: enable_dumpio_wrong
 
   - name: disable dump_io
@@ -142,7 +132,7 @@
     community.general.apache2_module:
       name: "{{ item }}"
       state: absent
-      ignore_configcheck: True
+      ignore_configcheck: true
     with_items:
       - mpm_worker
       - mpm_event
@@ -152,7 +142,7 @@
     community.general.apache2_module:
       name: mpm_event
       state: present
-      ignore_configcheck: True
+      ignore_configcheck: true
     register: enabledmpmevent
 
   - name: ensure changed mpm_event
@@ -164,7 +154,7 @@
     community.general.apache2_module:
       name: "{{ item.name }}"
       state: "{{ item.state }}"
-      ignore_configcheck: True
+      ignore_configcheck: true
     with_items:
       - name: mpm_event
         state: absent
@@ -190,7 +180,7 @@
       - mpm_worker
       - mpm_event
       - mpm_prefork
-    ignore_errors: yes
+    ignore_errors: true
     register: remove_with_configcheck
 
   - name: ensure configcheck fails task with when run without mpm modules
@@ -203,7 +193,7 @@
     community.general.apache2_module:
       name: "{{item}}"
       state: absent
-      ignore_configcheck: True
+      ignore_configcheck: true
     with_items:
       - mpm_worker
       - mpm_event
@@ -213,5 +203,5 @@
     community.general.apache2_module:
       name: mpm_event
       state: present
-      ignore_configcheck: True
+      ignore_configcheck: true
     register: enabledmpmevent

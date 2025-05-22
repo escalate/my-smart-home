@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
 
-# (c) 2016, Hiroaki Nakamura <hnakamur@gmail.com>
-#
-# This code is part of Ansible, but is an independent component.
-# This particular file snippet, and this file snippet only, is BSD licensed.
-# Modules you write using this snippet, which is embedded dynamically by Ansible
-# still belong to the author of the module, and may assign their own license
-# to the complete work.
-#
-# Simplified BSD License (see licenses/simplified_bsd.txt or https://opensource.org/licenses/BSD-2-Clause)
+# Copyright (c) 2016, Hiroaki Nakamura <hnakamur@gmail.com>
+# Simplified BSD License (see LICENSES/BSD-2-Clause.txt or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
+import os
 import socket
 import ssl
+import json
 
 from ansible.module_utils.urls import generic_urlparse
 from ansible.module_utils.six.moves.urllib.parse import urlparse
@@ -25,8 +21,6 @@ from ansible.module_utils.common.text.converters import to_text
 # httplib/http.client connection using unix domain socket
 HTTPConnection = http_client.HTTPConnection
 HTTPSConnection = http_client.HTTPSConnection
-
-import json
 
 
 class UnixHTTPConnection(HTTPConnection):
@@ -47,7 +41,7 @@ class LXDClientException(Exception):
 
 
 class LXDClient(object):
-    def __init__(self, url, key_file=None, cert_file=None, debug=False):
+    def __init__(self, url, key_file=None, cert_file=None, debug=False, server_cert_file=None, server_check_hostname=True):
         """LXD Client.
 
         :param url: The URL of the LXD server. (e.g. unix:/var/lib/lxd/unix.socket or https://127.0.0.1)
@@ -58,6 +52,10 @@ class LXDClient(object):
         :type cert_file: ``str``
         :param debug: The debug flag. The request and response are stored in logs when debug is true.
         :type debug: ``bool``
+        :param server_cert_file: The path of the server certificate file.
+        :type server_cert_file: ``str``
+        :param server_check_hostname: Whether to check the server's hostname as part of TLS verification.
+        :type debug: ``bool``
         """
         self.url = url
         self.debug = debug
@@ -66,7 +64,11 @@ class LXDClient(object):
             self.cert_file = cert_file
             self.key_file = key_file
             parts = generic_urlparse(urlparse(self.url))
-            ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            if server_cert_file:
+                # Check that the received cert is signed by the provided server_cert_file
+                ctx.load_verify_locations(cafile=server_cert_file)
+            ctx.check_hostname = server_check_hostname
             ctx.load_cert_chain(cert_file, keyfile=key_file)
             self.connection = HTTPSConnection(parts.get('netloc'), context=ctx)
         elif url.startswith('unix:'):
@@ -75,11 +77,14 @@ class LXDClient(object):
         else:
             raise LXDClientException('URL scheme must be unix: or https:')
 
-    def do(self, method, url, body_json=None, ok_error_codes=None, timeout=None):
+    def do(self, method, url, body_json=None, ok_error_codes=None, timeout=None, wait_for_container=None):
         resp_json = self._send_request(method, url, body_json=body_json, ok_error_codes=ok_error_codes, timeout=timeout)
         if resp_json['type'] == 'async':
             url = '{0}/wait'.format(resp_json['operation'])
             resp_json = self._send_request('GET', url)
+            if wait_for_container:
+                while resp_json['metadata']['status'] == 'Running':
+                    resp_json = self._send_request('GET', url)
             if resp_json['metadata']['status'] != 'Success':
                 self._raise_err_from_json(resp_json)
         return resp_json
@@ -127,3 +132,11 @@ class LXDClient(object):
         if err is None:
             err = resp_json.get('error', None)
         return err
+
+
+def default_key_file():
+    return os.path.expanduser('~/.config/lxc/client.key')
+
+
+def default_cert_file():
+    return os.path.expanduser('~/.config/lxc/client.crt')

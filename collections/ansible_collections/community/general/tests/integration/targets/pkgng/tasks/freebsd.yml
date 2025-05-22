@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 ##
 ## pkgng - prepare test environment
 ##
@@ -33,15 +37,15 @@
 - name: Verify package sentinel file is present
   stat:
     path: '{{ pkgng_test_pkg_sentinelfile_path }}'
-    get_attributes: no
-    get_checksum: no
-    get_mime: no
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
   register: pkgng_example3_stat_before
 
 - name: Install package (checkmode)
   pkgng:
     name: '{{ pkgng_test_pkg_name }}'
-  check_mode: yes
+  check_mode: true
   register: pkgng_example3_checkmode
 
 - name: Remove package
@@ -59,9 +63,9 @@
 - name: Verify package sentinel file is not present
   stat:
     path: '{{ pkgng_test_pkg_sentinelfile_path }}'
-    get_attributes: no
-    get_checksum: no
-    get_mime: no
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
   register: pkgng_example3_stat_after
 
 - name: Ensure pkgng installs package correctly
@@ -100,14 +104,14 @@
       pkgng:
         name: '*'
         state: latest
-      check_mode: yes
+      check_mode: true
       register: pkgng_example4_wildcard_checkmode
 
     - name: Check for available package upgrade (checkmode)
       pkgng:
         name: '{{ pkgng_test_pkg_name }}'
         state: latest
-      check_mode: yes
+      check_mode: true
       register: pkgng_example4_checkmode
 
     - name: Upgrade out-of-date package
@@ -137,13 +141,49 @@
           - not pkgng_example4_idempotent.changed
 
 ##
+## pkgng - example - state=latest for out-of-date package without privileges
+##
+- name: Install intentionally out-of-date package and try to upgrade it with unprivileged user
+  block:
+    - ansible.builtin.user:
+        name: powerless
+        shell: /bin/bash
+
+    - name: Create out-of-date test package
+      import_tasks: create-outofdate-pkg.yml
+
+    - name: Install out-of-date test package
+      command: 'pkg add {{ pkgng_test_outofdate_pkg_path }}'
+      register: pkgng_example4_nopower_prepare
+
+    - name: Check for any available package upgrades with unprivileged user
+      become: true
+      become_user: powerless
+      pkgng:
+        name: '*'
+        state: latest
+      register: pkgng_example4_nopower_wildcard
+      ignore_errors: true
+
+    - name: Remove test out-of-date package
+      pkgng:
+        name: '{{ pkgng_test_pkg_name }}'
+        state: absent
+
+    - name: Ensure pkgng upgrades package correctly
+      assert:
+        that:
+          - not pkgng_example4_nopower_prepare.failed
+          - pkgng_example4_nopower_wildcard.failed
+
+##
 ## pkgng - example - Install multiple packages in one command
 ##
 - name: Remove test package (checkmode)
   pkgng:
     name: '{{ pkgng_test_pkg_name }}'
     state: absent
-  check_mode: yes
+  check_mode: true
   register: pkgng_example5_prepare
 
 - name: Install three packages
@@ -179,7 +219,7 @@
   pkgng:
     name: '{{ pkgng_test_pkg_name }}'
     state: absent
-  check_mode: yes
+  check_mode: true
   register: pkgng_example6_check
 
 - name: Create out-of-date test package
@@ -239,7 +279,7 @@
       pkgng:
         name: autotools
         state: absent
-        autoremove: yes
+        autoremove: true
       register: pkgng_example7
 
     - name: Check if autoremove uninstalled known autotools dependencies
@@ -248,17 +288,16 @@
           - autoconf
           - automake
           - libtool
-          - m4
         state: absent
-      check_mode: yes
+      check_mode: true
       register: pkgng_example7_cleanup
 
     - name: Ensure pkgng autoremove works correctly
       assert:
         that:
-          - pkgng_example7_prepare_install.changed
+          - pkgng_example7_prepare_install is changed
           - "'autoremoved' is in(pkgng_example7.msg)"
-          - not pkgng_example7_cleanup.changed
+          - pkgng_example7_cleanup is not changed
 
 ##
 ## pkgng - example - single annotations
@@ -273,7 +312,7 @@
   pkgng:
     name: '{{ pkgng_test_pkg_name }}'
     annotation: '+ansibletest_example8=duplicate'
-  ignore_errors: yes
+  ignore_errors: true
   register: pkgng_example8_add_annotation_failure
 
 - name: Verify annotation is actually there
@@ -284,14 +323,14 @@
   pkgng:
     name: '{{ pkgng_test_pkg_name }}'
     annotation: '+ansibletest_example8=added'
-  check_mode: yes
+  check_mode: true
   register: pkgng_example8_add_annotation_checkmode_nochange
 
 - name: Install and annotate single package (checkmode, changed)
   pkgng:
     name: '{{ pkgng_test_pkg_name }}'
     annotation: '+ansibletest_example8_checkmode=added'
-  check_mode: yes
+  check_mode: true
   register: pkgng_example8_add_annotation_checkmode_change
 
 - name: Verify check_mode did not add an annotation
@@ -308,7 +347,7 @@
   pkgng:
     name: '{{ pkgng_test_pkg_name }}'
     annotation: ':ansiblemissing=modified'
-  ignore_errors: yes
+  ignore_errors: true
   register: pkgng_example8_modify_annotation_failure
 
 - name: Verify annotation has been modified
@@ -411,7 +450,7 @@
   pkgng:
     name: '{{ pkgng_test_pkg_name }}'
     annotation: '{{ item }}'
-  ignore_errors: yes
+  ignore_errors: true
   register: pkgng_example8_invalid_annotation_failure
   loop:
     - 'naked_string'
@@ -430,8 +469,10 @@
       - '(pkgng_example8_invalid_annotation_failure.results | selectattr("changed") | list | count) == 0'
       # Invalid strings should always fail
       - '(pkgng_example8_invalid_annotation_failure.results | rejectattr("failed") | list | count) == 0'
-      # Invalid strings should not cause an exception
-      - '(pkgng_example8_invalid_annotation_failure.results | selectattr("exception", "defined") | list | count) == 0'
+      # Invalid strings should not cause a module crash
+      - '(pkgng_example8_invalid_annotation_failure.results | selectattr("module_stdout", "defined") | list | count) == 0'
+      # Invalid strings should have a proper msg field
+      - '(pkgng_example8_invalid_annotation_failure.results | selectattr("msg", "match", "failed to annotate zsh, invalid annotate string: .*") | list | count) == 4'
       # Verify annotations are unaffected
       - '(pkgng_example8_invalid_annotation_verify.stdout_lines | select("search",  "(naked_string|invalid_operation|empty_first_tag|validsecond|notag)") | list | count) == 0'
 
@@ -444,7 +485,7 @@
   pkgng:
     name: '{{ pkgng_test_pkg_name }}'
     pkgsite: DoesNotExist
-  ignore_errors: yes
+  ignore_errors: true
   register: pkgng_example10_invalid_pkgsite_failure
 
 - name: Ensure invalid pkgsite fails as expected
@@ -461,31 +502,68 @@
   # NOTE: FreeBSD 12.0 test runner receives a "connection reset by peer" after ~20% downloaded so we are
   #       only running this on 12.1 or higher
   #
-  when: ansible_distribution_version is version('12.01', '>=')
+  # NOTE: FreeBSD 12.3 fails with some kernel mismatch for packages
+  #       (someone with FreeBSD knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 12.4 fails to update repositories because it cannot load certificates from /usr/share/keys/pkg/trusted
+  #       (someone with FreeBSD knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 13.0 fails to update the package catalogue for unknown reasons (someone with FreeBSD
+  #       knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 13.1 fails to update the package catalogue for unknown reasons (someone with FreeBSD
+  #       knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 13.2 fails to update the package catalogue for unknown reasons (someone with FreeBSD
+  #       knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 13.3 fails to update the package catalogue for unknown reasons (someone with FreeBSD
+  #       knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 13.4 fails to update the package catalogue for unknown reasons (someone with FreeBSD
+  #       knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 13.5 fails to update the package catalogue for unknown reasons (someone with FreeBSD
+  #       knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 14.0 fails to update the package catalogue for unknown reasons (someone with FreeBSD
+  #       knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 14.1 fails to update the package catalogue for unknown reasons (someone with FreeBSD
+  #       knowledge has to take a look)
+  #
+  # NOTE: FreeBSD 14.2 fails as well (someone with FreeBSD knowledge has to take a look)
+  #
+  # See also
+  # https://github.com/ansible-collections/community.general/issues/5795
+  when: >-
+    (ansible_distribution_version is version('12.01', '>=') and ansible_distribution_version is version('12.3', '<'))
+    or (ansible_distribution_version is version('13.6', '>=') and ansible_distribution_version is version('14.0', '<'))
+    or ansible_distribution_version is version('14.3', '>=')
   block:
     - name: Setup testjail
-      include: setup-testjail.yml
+      include_tasks: setup-testjail.yml
 
     - name: Install package in jail as rootdir
       include_tasks: install_single_package.yml
       vars:
         pkgng_test_rootdir: /usr/jails/testjail
         pkgng_test_install_prefix: /usr/jails/testjail
-        pkgng_test_install_cleanup: yes
+        pkgng_test_install_cleanup: true
 
     - name: Install package in jail
       include_tasks: install_single_package.yml
       vars:
         pkgng_test_jail: testjail
         pkgng_test_install_prefix: /usr/jails/testjail
-        pkgng_test_install_cleanup: yes
+        pkgng_test_install_cleanup: true
 
     - name: Install package in jail as chroot
       include_tasks: install_single_package.yml
       vars:
         pkgng_test_chroot: /usr/jails/testjail
         pkgng_test_install_prefix: /usr/jails/testjail
-        pkgng_test_install_cleanup: yes
+        pkgng_test_install_cleanup: true
   always:
     - name: Stop and remove testjail
       failed_when: false

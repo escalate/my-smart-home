@@ -1,12 +1,16 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # -----------------------------------------------------------
 
 - name: "[{{ item }}] Given a started service with RunAtLoad set to true..."
   launchd:
     name: "{{ launchd_service_name }}"
     state: started
-    enabled: yes
-  become: yes
+    enabled: true
+  become: true
   register: test_1_launchd_start_result
 
 - name: "[{{ item }}] Validate that service was started"
@@ -27,6 +31,6 @@
       \s+<key>RunAtLoad</key>
       \s+<true/>
     replace: found_run_at_load
-  check_mode: yes
+  check_mode: true
   register: contents_would_have
   failed_when: not contents_would_have is changed

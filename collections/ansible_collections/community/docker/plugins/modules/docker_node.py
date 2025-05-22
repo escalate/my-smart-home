@@ -1,76 +1,85 @@
 #!/usr/bin/python
 #
-# (c) 2019 Piotr Wojciechowski <piotr@it-playground.pl>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2019 Piotr Wojciechowski <piotr@it-playground.pl>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: docker_node
 short_description: Manage Docker Swarm node
 description:
-    - Manages the Docker nodes via Swarm Manager.
-    - This module allows to change the node's role, its availability, and to modify, add or remove node labels.
-options:
-    hostname:
-        description:
-            - The hostname or ID of node as registered in Swarm.
-            - If more than one node is registered using the same hostname the ID must be used,
-              otherwise module will fail.
-        type: str
-        required: yes
-    labels:
-        description:
-            - User-defined key/value metadata that will be assigned as node attribute.
-            - Label operations in this module apply to the docker swarm node specified by I(hostname).
-              Use M(community.docker.docker_swarm) module to add/modify/remove swarm cluster labels.
-            - The actual state of labels assigned to the node when module completes its work depends on
-              I(labels_state) and I(labels_to_remove) parameters values. See description below.
-        type: dict
-    labels_state:
-        description:
-            - It defines the operation on the labels assigned to node and labels specified in I(labels) option.
-            - Set to C(merge) to combine labels provided in I(labels) with those already assigned to the node.
-              If no labels are assigned then it will add listed labels. For labels that are already assigned
-              to the node, it will update their values. The labels not specified in I(labels) will remain unchanged.
-              If I(labels) is empty then no changes will be made.
-            - Set to C(replace) to replace all assigned labels with provided ones. If I(labels) is empty then
-              all labels assigned to the node will be removed.
-        type: str
-        default: 'merge'
-        choices:
-          - merge
-          - replace
-    labels_to_remove:
-        description:
-            - List of labels that will be removed from the node configuration. The list has to contain only label
-              names, not their values.
-            - If the label provided on the list is not assigned to the node, the entry is ignored.
-            - If the label is both on the I(labels_to_remove) and I(labels), then value provided in I(labels) remains
-              assigned to the node.
-            - If I(labels_state) is C(replace) and I(labels) is not provided or empty then all labels assigned to
-              node are removed and I(labels_to_remove) is ignored.
-        type: list
-        elements: str
-    availability:
-        description: Node availability to assign. If not provided then node availability remains unchanged.
-        choices:
-          - active
-          - pause
-          - drain
-        type: str
-    role:
-        description: Node role to assign. If not provided then node role remains unchanged.
-        choices:
-          - manager
-          - worker
-        type: str
+  - Manages the Docker nodes through a Swarm Manager.
+  - This module allows to change the node's role, its availability, and to modify, add or remove node labels.
 extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_1_documentation
+  - community.docker.docker
+  - community.docker.docker.docker_py_1_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: full
+  diff_mode:
+    support: none
+  idempotent:
+    support: full
+
+options:
+  hostname:
+    description:
+      - The hostname or ID of node as registered in Swarm.
+      - If more than one node is registered using the same hostname the ID must be used, otherwise module will fail.
+    type: str
+    required: true
+  labels:
+    description:
+      - User-defined key/value metadata that will be assigned as node attribute.
+      - Label operations in this module apply to the docker swarm node specified by O(hostname). Use M(community.docker.docker_swarm)
+        module to add/modify/remove swarm cluster labels.
+      - The actual state of labels assigned to the node when module completes its work depends on O(labels_state) and O(labels_to_remove)
+        parameters values. See description below.
+    type: dict
+  labels_state:
+    description:
+      - It defines the operation on the labels assigned to node and labels specified in O(labels) option.
+      - Set to V(merge) to combine labels provided in O(labels) with those already assigned to the node. If no labels are
+        assigned then it will add listed labels. For labels that are already assigned to the node, it will update their values.
+        The labels not specified in O(labels) will remain unchanged. If O(labels) is empty then no changes will be made.
+      - Set to V(replace) to replace all assigned labels with provided ones. If O(labels) is empty then all labels assigned
+        to the node will be removed.
+    type: str
+    default: 'merge'
+    choices:
+      - merge
+      - replace
+  labels_to_remove:
+    description:
+      - List of labels that will be removed from the node configuration. The list has to contain only label names, not their
+        values.
+      - If the label provided on the list is not assigned to the node, the entry is ignored.
+      - If the label is both on the O(labels_to_remove) and O(labels), then value provided in O(labels) remains assigned to
+        the node.
+      - If O(labels_state=replace) and O(labels) is not provided or empty then all labels assigned to node are removed and
+        O(labels_to_remove) is ignored.
+    type: list
+    elements: str
+  availability:
+    description: Node availability to assign. If not provided then node availability remains unchanged.
+    choices:
+      - active
+      - pause
+      - drain
+    type: str
+  role:
+    description: Node role to assign. If not provided then node role remains unchanged.
+    choices:
+      - manager
+      - worker
+    type: str
 
 requirements:
   - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 2.4.0"
@@ -78,10 +87,10 @@ requirements:
 author:
   - Piotr Wojciechowski (@WojciechowskiPiotr)
   - Thierry Bouvet (@tbouvet)
+"""
 
-'''
-
-EXAMPLES = '''
+EXAMPLES = r"""
+---
 - name: Set node role
   community.docker.docker_node:
     hostname: mynode
@@ -116,15 +125,14 @@ EXAMPLES = '''
     labels_to_remove:
       - key1
       - key2
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 node:
-  description: Information about node after 'update' operation
+  description: Information about node after 'update' operation.
   returned: success
   type: dict
-
-'''
+"""
 
 import traceback
 
@@ -142,6 +150,7 @@ from ansible_collections.community.docker.plugins.module_utils.common import (
 from ansible.module_utils.common.text.converters import to_native
 
 from ansible_collections.community.docker.plugins.module_utils.swarm import AnsibleDockerSwarmClient
+from ansible_collections.community.docker.plugins.module_utils.util import sanitize_labels
 
 
 class TaskParameters(DockerBaseClass):
@@ -160,6 +169,8 @@ class TaskParameters(DockerBaseClass):
 
         for key, value in client.module.params.items():
             setattr(self, key, value)
+
+        sanitize_labels(self.labels, "labels", client)
 
 
 class SwarmNodeManager(DockerBaseClass):
@@ -274,7 +285,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
         min_docker_version='2.4.0',
-        min_docker_api_version='1.25',
     )
 
     try:
@@ -288,7 +298,7 @@ def main():
         client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when Docker SDK for Python tried to talk to the docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

@@ -1,14 +1,14 @@
 #!/usr/bin/python
 #
-# (c) 2019 Piotr Wojciechowski <piotr@it-playground.pl>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2019 Piotr Wojciechowski <piotr@it-playground.pl>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: docker_node_info
 
 short_description: Retrieves facts about docker swarm node from Swarm Manager
@@ -17,7 +17,13 @@ description:
   - Retrieves facts about a docker node.
   - Essentially returns the output of C(docker node inspect <name>).
   - Must be executed on a host running as Swarm Manager, otherwise the module will fail.
-
+extends_documentation_fragment:
+  - community.docker.docker
+  - community.docker.docker.docker_py_1_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+  - community.docker.attributes.info_module
+  - community.docker.attributes.idempotent_not_modify_state
 
 options:
   name:
@@ -26,30 +32,27 @@ options:
       - The list of nodes names to inspect.
       - If empty then return information of all nodes in Swarm cluster.
       - When identifying the node use either the hostname of the node (as registered in Swarm) or node ID.
-      - If I(self) is C(true) then this parameter is ignored.
+      - If O(self=true) then this parameter is ignored.
     type: list
     elements: str
   self:
     description:
-      - If C(true), queries the node (i.e. the docker daemon) the module communicates with.
-      - If C(true) then I(name) is ignored.
-      - If C(false) then query depends on I(name) presence and value.
+      - If V(true), queries the node (that is, the docker daemon) the module communicates with.
+      - If V(true) then O(name) is ignored.
+      - If V(false) then query depends on O(name) presence and value.
     type: bool
-    default: no
-extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_1_documentation
-
+    default: false
 
 author:
   - Piotr Wojciechowski (@WojciechowskiPiotr)
 
 requirements:
   - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 2.4.0"
-  - "Docker API >= 1.24"
-'''
+  - "Docker API >= 1.25"
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
+---
 - name: Get info on all nodes
   community.docker.docker_node_info:
   register: result
@@ -70,20 +73,19 @@ EXAMPLES = '''
   community.docker.docker_node_info:
     self: true
   register: result
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 nodes:
-    description:
-      - Facts representing the current state of the nodes. Matches the C(docker node inspect) output.
-      - Can contain multiple entries if more than one node provided in I(name), or I(name) is not provided.
-      - If I(name) contains a list of nodes, the output will provide information on all nodes registered
-        at the swarm, including nodes that left the swarm but haven't been removed from the cluster on swarm
-        managers and nodes that are unreachable.
-    returned: always
-    type: list
-    elements: dict
-'''
+  description:
+    - Facts representing the current state of the nodes. Matches the C(docker node inspect) output.
+    - Can contain multiple entries if more than one node provided in O(name), or O(name) is not provided.
+    - If O(name) contains a list of nodes, the output will provide information on all nodes registered at the swarm, including
+      nodes that left the swarm but have not been removed from the cluster on swarm managers and nodes that are unreachable.
+  returned: always
+  type: list
+  elements: dict
+"""
 
 import traceback
 
@@ -136,7 +138,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
         min_docker_version='2.4.0',
-        min_docker_api_version='1.24',
     )
 
     client.fail_task_if_not_swarm_manager()
@@ -152,7 +153,7 @@ def main():
         client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when Docker SDK for Python tried to talk to the docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

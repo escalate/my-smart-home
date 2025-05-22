@@ -1,72 +1,78 @@
 #!/usr/bin/python
 
 # Copyright 2016 Red Hat | Ansible
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: docker_swarm
 short_description: Manage Swarm cluster
 description:
   - Create a new Swarm cluster.
   - Add/Remove nodes or managers to an existing cluster.
+extends_documentation_fragment:
+  - community.docker.docker
+  - community.docker.docker.docker_py_1_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: full
+  diff_mode:
+    support: full
+  idempotent:
+    support: full
+
 options:
   advertise_addr:
     description:
       - Externally reachable address advertised to other nodes.
-      - This can either be an address/port combination
-          in the form C(192.168.1.1:4567), or an interface followed by a
-          port number, like C(eth0:4567).
-      - If the port number is omitted,
-          the port number from the listen address is used.
-      - If I(advertise_addr) is not specified, it will be automatically
-          detected when possible.
-      - Only used when swarm is initialised or joined. Because of this it's not
-        considered for idempotency checking.
+      - This can either be an address/port combination in the form V(192.168.1.1:4567), or an interface followed by a port
+        number, like V(eth0:4567).
+      - If the port number is omitted, the port number from the listen address is used.
+      - If O(advertise_addr) is not specified, it will be automatically detected when possible.
+      - Only used when swarm is initialised or joined. Because of this it is not considered for idempotency checking.
     type: str
   default_addr_pool:
     description:
       - Default address pool in CIDR format.
-      - Only used when swarm is initialised. Because of this it's not considered
-        for idempotency checking.
+      - Only used when swarm is initialised. Because of this it is not considered for idempotency checking.
       - Requires API version >= 1.39.
     type: list
     elements: str
   subnet_size:
     description:
       - Default address pool subnet mask length.
-      - Only used when swarm is initialised. Because of this it's not considered
-        for idempotency checking.
+      - Only used when swarm is initialised. Because of this it is not considered for idempotency checking.
       - Requires API version >= 1.39.
     type: int
   listen_addr:
     description:
       - Listen address used for inter-manager communication.
-      - This can either be an address/port combination in the form
-          C(192.168.1.1:4567), or an interface followed by a port number,
-          like C(eth0:4567).
-      - If the port number is omitted, the default swarm listening port
-          is used.
-      - Only used when swarm is initialised or joined. Because of this it's not
-        considered for idempotency checking.
+      - This can either be an address/port combination in the form V(192.168.1.1:4567), or an interface followed by a port
+        number, like V(eth0:4567).
+      - If the port number is omitted, the default swarm listening port is used.
+      - Only used when swarm is initialised or joined. Because of this it is not considered for idempotency checking.
     type: str
     default: 0.0.0.0:2377
   force:
     description:
-      - Use with state C(present) to force creating a new Swarm, even if already part of one.
-      - Use with state C(absent) to Leave the swarm even if this node is a manager.
+      - Use with state V(present) to force creating a new Swarm, even if already part of one.
+      - Use with state V(absent) to Leave the swarm even if this node is a manager.
     type: bool
-    default: no
+    default: false
   state:
     description:
-      - Set to C(present), to create/update a new cluster.
-      - Set to C(join), to join an existing cluster.
-      - Set to C(absent), to leave an existing cluster.
-      - Set to C(remove), to remove an absent node from the cluster.
-        Note that removing requires Docker SDK for Python >= 2.4.0.
+      - Set to V(present), to create/update a new cluster.
+      - Set to V(join), to join an existing cluster.
+      - Set to V(absent), to leave an existing cluster.
+      - Set to V(remove), to remove an absent node from the cluster. Note that removing requires Docker SDK for Python >=
+        2.4.0.
+      - M(community.docker.docker_node) can be used to demote a manager before removal.
     type: str
     default: present
     choices:
@@ -77,35 +83,35 @@ options:
   node_id:
     description:
       - Swarm id of the node to remove.
-      - Used with I(state=remove).
+      - Used with O(state=remove).
     type: str
   join_token:
     description:
       - Swarm token used to join a swarm cluster.
-      - Used with I(state=join).
-      - If this value is specified, the corresponding value in the return values will be censored by Ansible.
-        This is a side-effect of this value not being logged.
+      - Used with O(state=join).
+      - If this value is specified, the corresponding value in the return values will be censored by Ansible. This is a side-effect
+        of this value not being logged.
     type: str
   remote_addrs:
     description:
       - Remote address of one or more manager nodes of an existing Swarm to connect to.
-      - Used with I(state=join).
+      - Used with O(state=join).
     type: list
     elements: str
   task_history_retention_limit:
     description:
       - Maximum number of tasks history stored.
-      - Docker default value is C(5).
+      - Docker default value is V(5).
     type: int
   snapshot_interval:
     description:
       - Number of logs entries between snapshot.
-      - Docker default value is C(10000).
+      - Docker default value is V(10000).
     type: int
   keep_old_snapshots:
     description:
       - Number of snapshots to keep beyond the current snapshot.
-      - Docker default value is C(0).
+      - Docker default value is V(0).
     type: int
   log_entries_for_slow_followers:
     description:
@@ -114,22 +120,22 @@ options:
   heartbeat_tick:
     description:
       - Amount of ticks (in seconds) between each heartbeat.
-      - Docker default value is C(1s).
+      - Docker default value is V(1) seconds.
     type: int
   election_tick:
     description:
       - Amount of ticks (in seconds) needed without a leader to trigger a new election.
-      - Docker default value is C(10s).
+      - Docker default value is V(10) seconds.
     type: int
   dispatcher_heartbeat_period:
     description:
-      - The delay for an agent to send a heartbeat to the dispatcher.
-      - Docker default value is C(5s).
+      - The delay (in nanoseconds) for an agent to send a heartbeat to the dispatcher.
+      - Docker default value is 5 seconds, which corresponds to a value of V(5000000000).
     type: int
   node_cert_expiry:
     description:
-      - Automatic expiry for nodes certificates.
-      - Docker default value is C(3months).
+      - Automatic expiry for nodes certificates, given in nanoseconds.
+      - Docker default value is 90 days, which corresponds to a value of V(7776000000000000).
     type: int
   name:
     description:
@@ -138,8 +144,8 @@ options:
   labels:
     description:
       - User-defined key/value metadata.
-      - Label operations in this module apply to the docker swarm cluster.
-        Use M(community.docker.docker_node) module to add/modify/remove swarm node labels.
+      - Label operations in this module apply to the docker swarm cluster. Use M(community.docker.docker_node) module to add/modify/remove
+        swarm node labels.
       - Requires API version >= 1.32.
     type: dict
   signing_ca_cert:
@@ -156,39 +162,51 @@ options:
     type: str
   ca_force_rotate:
     description:
-      - An integer whose purpose is to force swarm to generate a new signing CA certificate and key,
-          if none have been specified.
-      - Docker default value is C(0).
+      - An integer whose purpose is to force swarm to generate a new signing CA certificate and key, if none have been specified.
+      - Docker default value is V(0).
       - Requires API version >= 1.30.
     type: int
   autolock_managers:
     description:
       - If set, generate a key and use it to lock data stored on the managers.
-      - Docker default value is C(no).
+      - Docker default value is V(false).
       - M(community.docker.docker_swarm_info) can be used to retrieve the unlock key.
     type: bool
   rotate_worker_token:
     description: Rotate the worker join token.
     type: bool
-    default: no
+    default: false
   rotate_manager_token:
     description: Rotate the manager join token.
     type: bool
-    default: no
-extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_1_documentation
+    default: false
+  data_path_addr:
+    description:
+      - Address or interface to use for data path traffic.
+      - This can either be an address in the form V(192.168.1.1), or an interface, like V(eth0).
+      - Only used when swarm is initialised or joined. Because of this it is not considered for idempotency checking.
+      - Requires API version >= 1.30.
+    type: str
+    version_added: 2.5.0
+  data_path_port:
+    description:
+      - Port to use for data path traffic.
+      - This needs to be a port number like V(9789).
+      - Only used when swarm is initialised. Because of this it is not considered for idempotency checking.
+      - Requires API version >= 1.40.
+    type: int
+    version_added: 3.1.0
 
 requirements:
-  - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 1.10.0 (use L(docker-py,https://pypi.org/project/docker-py/) for Python 2.6)"
+  - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 1.10.0"
   - Docker API >= 1.25
 author:
   - Thierry Bouvet (@tbouvet)
   - Piotr Wojciechowski (@WojciechowskiPiotr)
-'''
+"""
 
-EXAMPLES = '''
-
+EXAMPLES = r"""
+---
 - name: Init a new swarm with default parameters
   community.docker.docker_swarm:
     state: present
@@ -203,7 +221,7 @@ EXAMPLES = '''
     state: join
     advertise_addr: 192.168.1.2
     join_token: SWMTKN-1--xxxxx
-    remote_addrs: [ '192.168.1.1:2377' ]
+    remote_addrs: ['192.168.1.1:2377']
 
 - name: Leave swarm for a node
   community.docker.docker_swarm:
@@ -218,52 +236,59 @@ EXAMPLES = '''
   community.docker.docker_swarm:
     state: remove
     node_id: mynode
-'''
 
-RETURN = '''
+- name: Init a new swarm with different data path interface
+  community.docker.docker_swarm:
+    state: present
+    advertise_addr: eth0
+    data_path_addr: ens10
+
+- name: Init a new swarm with a different data path port
+  community.docker.docker_swarm:
+    state: present
+    data_path_port: 9789
+"""
+
+RETURN = r"""
 swarm_facts:
-  description: Informations about swarm.
+  description: Information about swarm.
   returned: success
   type: dict
   contains:
-      JoinTokens:
-          description: Tokens to connect to the Swarm.
+    JoinTokens:
+      description: Tokens to connect to the Swarm.
+      returned: success
+      type: dict
+      contains:
+        Worker:
+          description:
+            - Token to join the cluster as a new *worker* node.
+            - B(Note:) if this value has been specified as O(join_token), the value here will not be the token, but C(VALUE_SPECIFIED_IN_NO_LOG_PARAMETER).
+              If you pass O(join_token), make sure your playbook/role does not depend on this return value!
           returned: success
-          type: dict
-          contains:
-              Worker:
-                  description:
-                    - Token to join the cluster as a new *worker* node.
-                    - "B(Note:) if this value has been specified as I(join_token), the value here will not
-                       be the token, but C(VALUE_SPECIFIED_IN_NO_LOG_PARAMETER). If you pass I(join_token),
-                       make sure your playbook/role does not depend on this return value!"
-                  returned: success
-                  type: str
-                  example: SWMTKN-1--xxxxx
-              Manager:
-                  description:
-                    - Token to join the cluster as a new *manager* node.
-                    - "B(Note:) if this value has been specified as I(join_token), the value here will not
-                       be the token, but C(VALUE_SPECIFIED_IN_NO_LOG_PARAMETER). If you pass I(join_token),
-                       make sure your playbook/role does not depend on this return value!"
-                  returned: success
-                  type: str
-                  example: SWMTKN-1--xxxxx
-      UnlockKey:
-          description: The swarm unlock-key if I(autolock_managers) is C(true).
-          returned: on success if I(autolock_managers) is C(true)
-            and swarm is initialised, or if I(autolock_managers) has changed.
           type: str
-          example: SWMKEY-1-xxx
+          example: SWMTKN-1--xxxxx
+        Manager:
+          description:
+            - Token to join the cluster as a new *manager* node.
+            - B(Note:) if this value has been specified as O(join_token), the value here will not be the token, but C(VALUE_SPECIFIED_IN_NO_LOG_PARAMETER).
+              If you pass O(join_token), make sure your playbook/role does not depend on this return value!
+          returned: success
+          type: str
+          example: SWMTKN-1--xxxxx
+    UnlockKey:
+      description: The swarm unlock-key if O(autolock_managers=true).
+      returned: on success if O(autolock_managers=true) and swarm is initialised, or if O(autolock_managers) has changed.
+      type: str
+      example: SWMKEY-1-xxx
 
 actions:
   description: Provides the actions done on the swarm.
   returned: when action failed.
   type: list
   elements: str
-  example: "['This cluster is already a swarm cluster']"
-
-'''
+  example: ['This cluster is already a swarm cluster']
+"""
 
 import json
 import traceback
@@ -276,8 +301,11 @@ except ImportError:
 
 from ansible_collections.community.docker.plugins.module_utils.common import (
     DockerBaseClass,
-    DifferenceTracker,
     RequestException,
+)
+from ansible_collections.community.docker.plugins.module_utils.util import (
+    DifferenceTracker,
+    sanitize_labels,
 )
 
 from ansible_collections.community.docker.plugins.module_utils.swarm import AnsibleDockerSwarmClient
@@ -293,6 +321,8 @@ class TaskParameters(DockerBaseClass):
         self.listen_addr = None
         self.remote_addrs = None
         self.join_token = None
+        self.data_path_addr = None
+        self.data_path_port = None
 
         # Spec
         self.snapshot_interval = None
@@ -398,7 +428,8 @@ class TaskParameters(DockerBaseClass):
         for k in self.__dict__:
             if k in ('advertise_addr', 'listen_addr', 'remote_addrs', 'join_token',
                      'rotate_worker_token', 'rotate_manager_token', 'spec',
-                     'default_addr_pool', 'subnet_size'):
+                     'default_addr_pool', 'subnet_size', 'data_path_addr',
+                     'data_path_port'):
                 continue
             if not client.option_minimal_versions[k]['supported']:
                 continue
@@ -494,6 +525,10 @@ class SwarmManager(DockerBaseClass):
                 init_arguments['default_addr_pool'] = self.parameters.default_addr_pool
             if self.parameters.subnet_size is not None:
                 init_arguments['subnet_size'] = self.parameters.subnet_size
+            if self.parameters.data_path_addr is not None:
+                init_arguments['data_path_addr'] = self.parameters.data_path_addr
+            if self.parameters.data_path_port is not None:
+                init_arguments['data_path_port'] = self.parameters.data_path_port
             try:
                 self.client.init_swarm(**init_arguments)
             except APIError as exc:
@@ -545,10 +580,16 @@ class SwarmManager(DockerBaseClass):
             self.results['actions'].append("This node is already part of a swarm.")
             return
         if not self.check_mode:
+            join_arguments = {
+                'remote_addrs': self.parameters.remote_addrs,
+                'join_token': self.parameters.join_token,
+                'listen_addr': self.parameters.listen_addr,
+                'advertise_addr': self.parameters.advertise_addr,
+            }
+            if self.parameters.data_path_addr is not None:
+                join_arguments['data_path_addr'] = self.parameters.data_path_addr
             try:
-                self.client.join_swarm(
-                    remote_addrs=self.parameters.remote_addrs, join_token=self.parameters.join_token,
-                    listen_addr=self.parameters.listen_addr, advertise_addr=self.parameters.advertise_addr)
+                self.client.join_swarm(**join_arguments)
             except APIError as exc:
                 self.client.fail("Can not join the Swarm Cluster: %s" % to_native(exc))
         self.results['actions'].append("New node is added to swarm cluster")
@@ -597,6 +638,8 @@ def _detect_remove_operation(client):
 def main():
     argument_spec = dict(
         advertise_addr=dict(type='str'),
+        data_path_addr=dict(type='str'),
+        data_path_port=dict(type='int'),
         state=dict(type='str', default='present', choices=['present', 'join', 'absent', 'remove']),
         force=dict(type='bool', default=False),
         listen_addr=dict(type='str', default='0.0.0.0:2377'),
@@ -642,6 +685,8 @@ def main():
         ),
         default_addr_pool=dict(docker_py_version='4.0.0', docker_api_version='1.39'),
         subnet_size=dict(docker_py_version='4.0.0', docker_api_version='1.39'),
+        data_path_addr=dict(docker_py_version='4.0.0', docker_api_version='1.30'),
+        data_path_port=dict(docker_py_version='6.0.0', docker_api_version='1.40'),
     )
 
     client = AnsibleDockerSwarmClient(
@@ -649,9 +694,9 @@ def main():
         supports_check_mode=True,
         required_if=required_if,
         min_docker_version='1.10.0',
-        min_docker_api_version='1.25',
         option_minimal_versions=option_minimal_versions,
     )
+    sanitize_labels(client.module.params['labels'], 'labels', client)
 
     try:
         results = dict(
@@ -666,7 +711,7 @@ def main():
         client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when Docker SDK for Python tried to talk to the docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

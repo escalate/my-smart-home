@@ -1,3 +1,8 @@
+---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: collect repo configuration before test
   shell: "grep . /etc/zypp/repos.d/*"
   register: before
@@ -6,7 +11,7 @@
   command: zypper -n ref
 
 - block:
-    - include: 'zypper_repository.yml'
+    - include_tasks: 'zypper_repository.yml'
   always:
     - name: remove repositories added during test
       community.general.zypper_repository:
@@ -33,3 +38,11 @@
 
     - name: ensure zypper ref still works
       command: zypper -n ref
+
+- block:
+    - include_tasks: 'zypper_repository.yml'
+  always:
+    - name: remove repositories added during test
+      community.general.zypper_repository:
+        name: "test"
+        state: absent

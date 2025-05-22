@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2020, FELDSAM s.r.o. - FeldHost™ <support@feldhost.cz>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # The API responses used in these tests were recorded from OpenNebula version 5.10.
 
@@ -9,14 +10,61 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from collections import OrderedDict
+import json
+import os
 
 import pytest
 
+from ansible import constants as C
 from ansible.inventory.data import InventoryData
+from ansible.inventory.manager import InventoryManager
+from ansible.module_utils.common.text.converters import to_native
+from ansible_collections.community.internal_test_tools.tests.unit.mock.loader import DictDataLoader
+from ansible_collections.community.internal_test_tools.tests.unit.mock.path import mock_unfrackpath_noop
+
 from ansible_collections.community.general.plugins.inventory.opennebula import InventoryModule
 
 
-@pytest.fixture(scope="module")
+original_exists = os.path.exists
+original_access = os.access
+
+
+def exists_mock(path, exists=True):
+    def exists(f):
+        if to_native(f) == path:
+            return exists
+        return original_exists(f)
+
+    return exists
+
+
+def access_mock(path, can_access=True):
+    def access(f, m, *args, **kwargs):
+        if to_native(f) == path:
+            return can_access
+        return original_access(f, m, *args, **kwargs)  # pragma: no cover
+
+    return access
+
+
+class HistoryEntry(object):
+    def __init__(self):
+        self.SEQ = '384'
+        self.HOSTNAME = 'sam-691-sam'
+        self.HID = '10'
+        self.CID = '0'
+        self.DS_ID = '100'
+        self.VM_MAD = 'kvm'
+        self.TM_MAD = '3par'
+        self.ACTION = '0'
+
+
+class HistoryRecords(object):
+    def __init__(self):
+        self.HISTORY = [HistoryEntry()]
+
+
+@pytest.fixture
 def inventory():
     r = InventoryModule()
     r.inventory = InventoryData()
@@ -33,6 +81,18 @@ def test_verify_file_bad_config(inventory):
     assert inventory.verify_file('foobar.opennebula.yml') is False
 
 
+def get_vm_pool_json():
+    with open('tests/unit/plugins/inventory/fixtures/opennebula_inventory.json', 'r') as json_file:
+        jsondata = json.load(json_file)
+
+    data = type('pyone.bindings.VM_POOLSub', (object,), {'VM': []})()
+
+    for fake_server in jsondata:
+        data.VM.append(type('pyone.bindings.VMType90Sub', (object,), fake_server)())
+
+    return data
+
+
 def get_vm_pool():
     data = type('pyone.bindings.VM_POOLSub', (object,), {'VM': []})()
 
@@ -41,7 +101,7 @@ def get_vm_pool():
         'ETIME': 0,
         'GID': 132,
         'GNAME': 'CSApparelVDC',
-        'HISTORY_RECORDS': {},
+        'HISTORY_RECORDS': HistoryRecords(),
         'ID': 7157,
         'LAST_POLL': 1632762935,
         'LCM_STATE': 3,
@@ -87,7 +147,7 @@ def get_vm_pool():
         'ETIME': 0,
         'GID': 0,
         'GNAME': 'oneadmin',
-        'HISTORY_RECORDS': {},
+        'HISTORY_RECORDS': [],
         'ID': 327,
         'LAST_POLL': 1632763543,
         'LCM_STATE': 3,
@@ -150,7 +210,7 @@ def get_vm_pool():
         'ETIME': 0,
         'GID': 0,
         'GNAME': 'oneadmin',
-        'HISTORY_RECORDS': {},
+        'HISTORY_RECORDS': [],
         'ID': 107,
         'LAST_POLL': 1632764186,
         'LCM_STATE': 3,
@@ -195,36 +255,104 @@ def get_vm_pool():
     return data
 
 
-def get_option(option):
-    if option == 'api_url':
-        return 'https://opennebula:2633/RPC2'
-    if option == 'api_username':
-        return 'username'
-    elif option == 'api_password':
-        return 'password'
-    elif option == 'api_authfile':
-        return '~/.one/one_auth'
-    elif option == 'hostname':
-        return 'v4_first_ip'
-    elif option == 'group_by_labels':
-        return True
-    elif option == 'filter_by_label':
-        return None
-    else:
-        return False
+options_base_test = {
+    'api_url': 'https://opennebula:2633/RPC2',
+    'api_username': 'username',
+    'api_password': 'password',
+    'api_authfile': '~/.one/one_auth',
+    'hostname': 'v4_first_ip',
+    'group_by_labels': True,
+    'filter_by_label': None,
+}
+
+
+# given a dictionary `opts_dict`, return a function that behaves like ansible's inventory get_options
+def mk_get_options(opts_dict):
+    def inner(opt):
+        return opts_dict.get(opt, False)
+    return inner
 
 
 def test_get_connection_info(inventory, mocker):
-    inventory.get_option = mocker.MagicMock(side_effect=get_option)
+    inventory.get_option = mocker.MagicMock(side_effect=mk_get_options(options_base_test))
 
     auth = inventory._get_connection_info()
     assert (auth.username and auth.password)
 
 
+def test_populate_constructable_templating(mocker):
+    inventory_filename = '/fake/opennebula.yml'
+
+    mocker.patch.object(InventoryModule, '_get_vm_pool', side_effect=get_vm_pool_json)
+    mocker.patch('ansible_collections.community.general.plugins.inventory.opennebula.HAS_PYONE', True)
+    mocker.patch('ansible.inventory.manager.unfrackpath', mock_unfrackpath_noop)
+    mocker.patch('os.path.exists', exists_mock(inventory_filename))
+    mocker.patch('os.access', access_mock(inventory_filename))
+
+    # the templating engine is needed for the constructable groups/vars
+    # so give that some fake data and instantiate it.
+    C.INVENTORY_ENABLED = ['community.general.opennebula']
+    inventory_file = {inventory_filename: r'''
+---
+plugin: community.general.opennebula
+api_url: https://opennebula:2633/RPC2
+api_username: username
+api_password: password
+api_authfile: '~/.one/one_auth'
+hostname: v4_first_ip
+group_by_labels: true
+compose:
+  is_linux: GUEST_OS == 'linux'
+filter_by_label: bench
+groups:
+  benchmark_clients: TGROUP.endswith('clients')
+  lin: is_linux == true
+keyed_groups:
+  - key: TGROUP
+    prefix: tgroup
+'''}
+    im = InventoryManager(loader=DictDataLoader(inventory_file), sources=inventory_filename)
+
+    # note the vm_pool (and json data file) has four hosts,
+    # but the options above asks ansible to filter one out
+    assert len(get_vm_pool_json().VM) == 4
+    assert set([vm.NAME for vm in get_vm_pool_json().VM]) == set([
+        'terraform_demo_00',
+        'terraform_demo_01',
+        'terraform_demo_srv_00',
+        'bs-windows',
+    ])
+    assert set(im._inventory.hosts) == set(['terraform_demo_00', 'terraform_demo_01', 'terraform_demo_srv_00'])
+
+    host_demo00 = im._inventory.get_host('terraform_demo_00')
+    host_demo01 = im._inventory.get_host('terraform_demo_01')
+    host_demosrv = im._inventory.get_host('terraform_demo_srv_00')
+
+    assert 'benchmark_clients' in im._inventory.groups
+    assert 'lin' in im._inventory.groups
+    assert im._inventory.groups['benchmark_clients'].hosts == [host_demo00, host_demo01]
+    assert im._inventory.groups['lin'].hosts == [host_demo00, host_demo01, host_demosrv]
+
+    # test group by label:
+    assert 'bench' in im._inventory.groups
+    assert 'foo' in im._inventory.groups
+    assert im._inventory.groups['bench'].hosts == [host_demo00, host_demo01, host_demosrv]
+    assert im._inventory.groups['serv'].hosts == [host_demosrv]
+    assert im._inventory.groups['foo'].hosts == [host_demo00, host_demo01]
+
+    # test `compose` transforms GUEST_OS=Linux to is_linux == True
+    assert host_demo00.get_vars()['GUEST_OS'] == 'linux'
+    assert host_demo00.get_vars()['is_linux'] is True
+
+    # test `keyed_groups`
+    assert im._inventory.groups['tgroup_bench_clients'].hosts == [host_demo00, host_demo01]
+    assert im._inventory.groups['tgroup_bench_server'].hosts == [host_demosrv]
+
+
 def test_populate(inventory, mocker):
     # bypass API fetch call
     inventory._get_vm_pool = mocker.MagicMock(side_effect=get_vm_pool)
-    inventory.get_option = mocker.MagicMock(side_effect=get_option)
+    inventory.get_option = mocker.MagicMock(side_effect=mk_get_options(options_base_test))
     inventory._populate()
 
     # get different hosts

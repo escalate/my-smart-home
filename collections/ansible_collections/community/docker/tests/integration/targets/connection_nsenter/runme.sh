@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 set -euo pipefail
 
 [[ -n "${DEBUG:-}" || -n "${ANSIBLE_DEBUG:-}" ]] && set -x
 
-readonly IMAGE="quay.io/ansible/toolset:latest"
+readonly IMAGE="quay.io/ansible/ansible-runner:devel"
+# shellcheck disable=SC2155
 readonly PYTHON="$(command -v python3 python | head -n1)"
 
 # Determine collection root
@@ -15,6 +19,7 @@ while true; do
     fi
     COLLECTION_ROOT="${COLLECTION_ROOT}../"
 done
+# shellcheck disable=SC2155
 readonly COLLECTION_ROOT="$(cd ${COLLECTION_ROOT} ; pwd)"
 
 # Setup phase
@@ -31,7 +36,6 @@ cleanup() {
     echo "Shutdown"
     ANSIBLE_ROLES_PATH=.. ansible-playbook shutdown.yml
     echo "Done"
-    exit 0
 }
 
 envs=(--env "HOME=${HOME:-}")

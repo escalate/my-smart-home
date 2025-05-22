@@ -4,8 +4,10 @@
 ####################################################################
 
 # Test code for the pids module
-# Copyright: (c) 2019, Saranya Sridharan
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2019, Saranya Sridharan
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Attempt installation of latest 'psutil' version
   pip:
     name: psutil
@@ -30,54 +32,50 @@
 
 - name: "Picking a random process name"
   set_fact:
-    random_name: some-random-long-name-{{ 99999999 | random }}
+    random_name: some-random-long-name-{{ 10000000000 + (9999999999 | random) }}
 
-- name: "finding the 'sleep' binary"
-  command: which sleep
-  register: find_sleep
-
-- name: "Copying 'sleep' binary"
-  command: cp {{ find_sleep.stdout }} {{ remote_tmp_dir }}/{{ random_name }}
-  # The following does not work on macOS 11.1 (it uses shutil.copystat, and that will die with a PermissionError):
-  # copy:
-  #   src: "{{ find_sleep.stdout }}"
-  #   dest: "{{ remote_tmp_dir }}/{{ random_name }}"
-  #   mode: "0777"
-  #   remote_src: true
-
-- name: Copy helper script
+- name: Copy the fake 'sleep' source code
   copy:
-    src: obtainpid.sh
+    src: sleeper.c
+    dest: "{{ remote_tmp_dir }}/sleeper.c"
+    mode: 0644
+
+- name: Compile fake 'sleep' binary
+  command: cc {{ remote_tmp_dir }}/sleeper.c -o {{ remote_tmp_dir }}/{{ random_name }}
+
+- name: Copy templated helper script
+  template:
+    src: obtainpid.sh.j2
     dest: "{{ remote_tmp_dir }}/obtainpid.sh"
+    mode: 0755
 
-- name: "Running the copy of 'sleep' binary"
-  command: "sh {{ remote_tmp_dir }}/obtainpid.sh '{{ remote_tmp_dir }}/{{ random_name }}' '{{ remote_tmp_dir }}/obtainpid.txt'"
-
+- name: "Run the fake 'sleep' binary"
+  command: sh {{ remote_tmp_dir }}/obtainpid.sh
   async: 100
   poll: 0
 
-- name: "Wait for one second to make sure that the sleep copy has actually been started"
+- name: "Wait for one second to make sure that the fake 'sleep' binary has actually been started"
   pause:
     seconds: 1
 
-- name: "Checking the process IDs (PIDs) of sleep binary"
+- name: "Checking the process IDs (PIDs) of fake 'sleep' binary"
   pids:
     name: "{{ random_name }}"
   register: pids
 
 - name: "Checking that exact non-substring matches are required"
   pids:
-    name: "{{ random_name[0:5] }}"
+    name: "{{ random_name[0:25] }}"
   register: exactpidmatch
 
 - name: "Checking that patterns can be used with the pattern option"
   pids:
-    pattern: "{{ random_name[0:5] }}"
+    pattern: "{{ random_name[0:25] }}"
   register: pattern_pid_match
 
 - name: "Checking that case-insensitive patterns can be used with the pattern option"
   pids:
-    pattern: "{{ random_name[0:5] | upper }}"
+    pattern: "{{ random_name[0:25] | upper }}"
     ignore_case: true
   register: caseinsensitive_pattern_pid_match
 
@@ -90,6 +88,15 @@
   slurp:
     src:  "{{ remote_tmp_dir }}/obtainpid.txt"
   register: newpid
+
+- name: Gather all processes to make debugging easier
+  command: ps aux
+  register: result
+  no_log: true
+
+- name: List all processes to make debugging easier
+  debug:
+    var: result.stdout_lines
 
 - name: "Verify that the Process IDs (PIDs) returned is not empty and also equal to the PIDs obtained in console"
   assert:

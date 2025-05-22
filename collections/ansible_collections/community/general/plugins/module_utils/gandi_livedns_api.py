@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-# Copyright: (c) 2019 Gregory Thiemonge <gregory.thiemonge@gmail.com>
-# Simplified BSD License (see licenses/simplified_bsd.txt or https://opensource.org/licenses/BSD-2-Clause)
+# Copyright (c) 2019 Gregory Thiemonge <gregory.thiemonge@gmail.com>
+# Simplified BSD License (see LICENSES/BSD-2-Clause.txt or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
@@ -32,6 +33,7 @@ class GandiLiveDNSAPI(object):
     def __init__(self, module):
         self.module = module
         self.api_key = module.params['api_key']
+        self.personal_access_token = module.params['personal_access_token']
 
     def _build_error_message(self, module, info):
         s = ''
@@ -49,7 +51,12 @@ class GandiLiveDNSAPI(object):
         return s
 
     def _gandi_api_call(self, api_call, method='GET', payload=None, error_on_404=True):
-        headers = {'Authorization': 'Apikey {0}'.format(self.api_key),
+        authorization_header = (
+            'Bearer {0}'.format(self.personal_access_token)
+            if self.personal_access_token
+            else 'Apikey {0}'.format(self.api_key)
+        )
+        headers = {'Authorization': authorization_header,
                    'Content-Type': 'application/json'}
         data = None
         if payload:

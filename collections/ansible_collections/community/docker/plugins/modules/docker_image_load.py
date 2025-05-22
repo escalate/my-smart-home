@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright 2016 Red Hat | Ansible
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: docker_image_load
 
 short_description: Load docker image(s) from archives
@@ -17,8 +17,19 @@ short_description: Load docker image(s) from archives
 version_added: 1.3.0
 
 description:
-  - Load one or multiple Docker images from a C(.tar) archive, and return information on
-    the loaded image(s).
+  - Load one or multiple Docker images from a C(.tar) archive, and return information on the loaded image(s).
+extends_documentation_fragment:
+  - community.docker.docker.api_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: none
+  diff_mode:
+    support: none
+  idempotent:
+    support: none
 
 options:
   path:
@@ -27,22 +38,21 @@ options:
     type: path
     required: true
 
-extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_2_documentation
-
-notes:
-  - Does not support C(check_mode).
-
 requirements:
-  - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 2.5.0"
-  - "Docker API >= 1.23"
+  - "Docker API >= 1.25"
 
 author:
   - Felix Fontein (@felixfontein)
-'''
 
-EXAMPLES = '''
+seealso:
+  - module: community.docker.docker_image_export
+  - module: community.docker.docker_image_push
+  - module: community.docker.docker_image_remove
+  - module: community.docker.docker_image_tag
+"""
+
+EXAMPLES = r"""
+---
 - name: Load all image(s) from the given tar file
   community.docker.docker_image_load:
     path: /path/to/images.tar
@@ -51,42 +61,40 @@ EXAMPLES = '''
 - name: Print the loaded image names
   ansible.builtin.debug:
     msg: "Loaded the following images: {{ result.image_names | join(', ') }}"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 image_names:
-    description: List of image names and IDs loaded from the archive.
-    returned: success
-    type: list
-    elements: str
-    sample:
-      - 'hello-world:latest'
-      - 'sha256:e004c2cc521c95383aebb1fb5893719aa7a8eae2e7a71f316a4410784edb00a9'
+  description: List of image names and IDs loaded from the archive.
+  returned: success
+  type: list
+  elements: str
+  sample:
+    - 'hello-world:latest'
+    - 'sha256:e004c2cc521c95383aebb1fb5893719aa7a8eae2e7a71f316a4410784edb00a9'
 images:
-    description: Image inspection results for the loaded images.
-    returned: success
-    type: list
-    elements: dict
-    sample: []
-'''
+  description: Image inspection results for the loaded images.
+  returned: success
+  type: list
+  elements: dict
+  sample: []
+"""
 
 import errno
 import traceback
 
 from ansible.module_utils.common.text.converters import to_native
 
-from ansible_collections.community.docker.plugins.module_utils.common import (
+from ansible_collections.community.docker.plugins.module_utils.common_api import (
     AnsibleDockerClient,
-    DockerBaseClass,
-    is_image_name_id,
     RequestException,
 )
+from ansible_collections.community.docker.plugins.module_utils.util import (
+    DockerBaseClass,
+    is_image_name_id,
+)
 
-try:
-    from docker.errors import DockerException
-except ImportError:
-    # missing Docker SDK for Python handled in module_utils.docker.common
-    pass
+from ansible_collections.community.docker.plugins.module_utils._api.errors import DockerException
 
 
 class ImageManager(DockerBaseClass):
@@ -123,7 +131,8 @@ class ImageManager(DockerBaseClass):
             self.log("Opening image {0}".format(self.path))
             with open(self.path, 'rb') as image_tar:
                 self.log("Loading images from {0}".format(self.path))
-                for line in self.client.load_image(image_tar):
+                res = self.client._post(self.client._url("/images/load"), data=image_tar, stream=True)
+                for line in self.client._stream_helper(res, decode=True):
                     self.log(line, pretty_print=True)
                     self._extract_output_line(line, load_output)
         except EnvironmentError as exc:
@@ -166,8 +175,6 @@ def main():
             path=dict(type='path', required=True),
         ),
         supports_check_mode=False,
-        min_docker_version='2.5.0',
-        min_docker_api_version='1.23',
     )
 
     try:
@@ -179,10 +186,10 @@ def main():
         ImageManager(client, results)
         client.module.exit_json(**results)
     except DockerException as e:
-        client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
+        client.fail('An unexpected Docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when trying to talk to the Docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

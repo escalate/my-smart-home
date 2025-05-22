@@ -1,18 +1,20 @@
+---
 ####################################################################
 # WARNING: These are designed specifically for Ansible tests       #
 # and should not be used as examples of how to write Ansible roles #
 ####################################################################
 
 # Test code for the mas module.
-# Copyright: (c) 2020, Lukas Bestle <project-ansible@lukasbestle.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
----
+# Copyright (c) 2020, Lukas Bestle <project-ansible@lukasbestle.com>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Test preparation
 - name: Uninstall Rested to ensure consistent starting point
   mas:
     id: 421879749
     state: absent
-  become: yes
+  become: true
 
 - name: Determine whether the app is installed
   stat:
@@ -34,7 +36,7 @@
     id: 421879749
     state: present
   register: install_check
-  check_mode: yes
+  check_mode: true
 
 - name: Ensure that the status would have changed
   assert:
@@ -96,8 +98,8 @@
     id: 421879749
     state: absent
   register: uninstall_check
-  become: yes
-  check_mode: yes
+  become: true
+  check_mode: true
 
 - name: Ensure that the status would have changed
   assert:
@@ -115,12 +117,12 @@
     that:
     - install_status.stat.exists == true
 
-- name: Unistall Rested
+- name: Uninstall Rested
   mas:
     id: 421879749
     state: absent
   register: uninstall
-  become: yes
+  become: true
 
 - name: Ensure that the status changed
   assert:
@@ -147,7 +149,7 @@
     id: 421879749
     state: absent
   register: uninstall_again
-  become: yes
+  become: true
 
 - name: Ensure that the status is unchanged (already uninstalled)
   assert:

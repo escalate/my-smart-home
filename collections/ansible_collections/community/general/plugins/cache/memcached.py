@@ -1,48 +1,51 @@
 # -*- coding: utf-8 -*-
-# (c) 2014, Brian Coca, Josh Drake, et al
-# (c) 2017 Ansible Project
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2014, Brian Coca, Josh Drake, et al
+# Copyright (c) 2017 Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
-DOCUMENTATION = '''
-    author: Unknown (!UNKNOWN)
-    name: memcached
-    short_description: Use memcached DB for cache
+DOCUMENTATION = r"""
+author: Unknown (!UNKNOWN)
+name: memcached
+short_description: Use memcached DB for cache
+description:
+  - This cache uses JSON formatted, per host records saved in memcached.
+requirements:
+  - memcache (python lib)
+options:
+  _uri:
     description:
-        - This cache uses JSON formatted, per host records saved in memcached.
-    requirements:
-      - memcache (python lib)
-    options:
-      _uri:
-        description:
-          - List of connection information for the memcached DBs
-        default: ['127.0.0.1:11211']
-        type: list
-        env:
-          - name: ANSIBLE_CACHE_PLUGIN_CONNECTION
-        ini:
-          - key: fact_caching_connection
-            section: defaults
-      _prefix:
-        description: User defined prefix to use when creating the DB entries
-        default: ansible_facts
-        env:
-          - name: ANSIBLE_CACHE_PLUGIN_PREFIX
-        ini:
-          - key: fact_caching_prefix
-            section: defaults
-      _timeout:
-        default: 86400
-        description: Expiration timeout in seconds for the cache plugin data. Set to 0 to never expire
-        env:
-          - name: ANSIBLE_CACHE_PLUGIN_TIMEOUT
-        ini:
-          - key: fact_caching_timeout
-            section: defaults
-        type: integer
-'''
+      - List of connection information for the memcached DBs.
+    default: ['127.0.0.1:11211']
+    type: list
+    elements: string
+    env:
+      - name: ANSIBLE_CACHE_PLUGIN_CONNECTION
+    ini:
+      - key: fact_caching_connection
+        section: defaults
+  _prefix:
+    description: User defined prefix to use when creating the DB entries.
+    type: string
+    default: ansible_facts
+    env:
+      - name: ANSIBLE_CACHE_PLUGIN_PREFIX
+    ini:
+      - key: fact_caching_prefix
+        section: defaults
+  _timeout:
+    default: 86400
+    type: integer
+        # TODO: determine whether it is OK to change to: type: float
+    description: Expiration timeout in seconds for the cache plugin data. Set to 0 to never expire.
+    env:
+      - name: ANSIBLE_CACHE_PLUGIN_TIMEOUT
+    ini:
+      - key: fact_caching_timeout
+        section: defaults
+"""
 
 import collections
 import os
@@ -50,11 +53,9 @@ import time
 from multiprocessing import Lock
 from itertools import chain
 
-from ansible import constants as C
 from ansible.errors import AnsibleError
 from ansible.module_utils.common._collections_compat import MutableSet
 from ansible.plugins.cache import BaseCacheModule
-from ansible.release import __version__ as ansible_base_version
 from ansible.utils.display import Display
 
 try:
@@ -175,20 +176,11 @@ class CacheModule(BaseCacheModule):
     def __init__(self, *args, **kwargs):
         connection = ['127.0.0.1:11211']
 
-        try:
-            super(CacheModule, self).__init__(*args, **kwargs)
-            if self.get_option('_uri'):
-                connection = self.get_option('_uri')
-            self._timeout = self.get_option('_timeout')
-            self._prefix = self.get_option('_prefix')
-        except KeyError:
-            # TODO: remove once we no longer support Ansible 2.9
-            if not ansible_base_version.startswith('2.9.'):
-                raise AnsibleError("Do not import CacheModules directly. Use ansible.plugins.loader.cache_loader instead.")
-            if C.CACHE_PLUGIN_CONNECTION:
-                connection = C.CACHE_PLUGIN_CONNECTION.split(',')
-            self._timeout = C.CACHE_PLUGIN_TIMEOUT
-            self._prefix = C.CACHE_PLUGIN_PREFIX
+        super(CacheModule, self).__init__(*args, **kwargs)
+        if self.get_option('_uri'):
+            connection = self.get_option('_uri')
+        self._timeout = self.get_option('_timeout')
+        self._prefix = self.get_option('_prefix')
 
         if not HAS_MEMCACHE:
             raise AnsibleError("python-memcached is required for the memcached fact cache")
@@ -198,7 +190,7 @@ class CacheModule(BaseCacheModule):
         self._keys = CacheModuleKeys(self._db, self._db.get(CacheModuleKeys.PREFIX) or [])
 
     def _make_key(self, key):
-        return "{0}{1}".format(self._prefix, key)
+        return f"{self._prefix}{key}"
 
     def _expire_keys(self):
         if self._timeout > 0:

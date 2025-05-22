@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 # (c) 2020, Alexei Znamensky <russoz@gmail.com>
-# Copyright: (c) 2020, Ansible Project
-# Simplified BSD License (see licenses/simplified_bsd.txt or https://opensource.org/licenses/BSD-2-Clause)
+# Copyright (c) 2020, Ansible Project
+# Simplified BSD License (see LICENSES/BSD-2-Clause.txt or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-import traceback
-
-from ansible_collections.community.general.plugins.module_utils.mh.base import ModuleHelperBase
-from ansible_collections.community.general.plugins.module_utils.mh.deco import module_fails_on_exception
-
 
 class DependencyCtxMgr(object):
+    """
+    DEPRECATION WARNING
+
+    This class is deprecated and will be removed in community.general 11.0.0
+    Modules should use plugins/module_utils/deps.py instead.
+    """
     def __init__(self, name, msg=None):
         self.name = name
         self.msg = msg
@@ -34,25 +36,3 @@ class DependencyCtxMgr(object):
     @property
     def text(self):
         return self.msg or str(self.exc_val)
-
-
-class DependencyMixin(ModuleHelperBase):
-    _dependencies = []
-
-    @classmethod
-    def dependency(cls, name, msg):
-        cls._dependencies.append(DependencyCtxMgr(name, msg))
-        return cls._dependencies[-1]
-
-    def fail_on_missing_deps(self):
-        for d in self._dependencies:
-            if not d.has_it:
-                self.module.fail_json(changed=False,
-                                      exception="\n".join(traceback.format_exception(d.exc_type, d.exc_val, d.exc_tb)),
-                                      msg=d.text,
-                                      **self.output)
-
-    @module_fails_on_exception
-    def run(self):
-        self.fail_on_missing_deps()
-        super(DependencyMixin, self).run()

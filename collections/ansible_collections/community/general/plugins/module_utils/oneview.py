@@ -7,7 +7,8 @@
 #
 # Copyright (2016-2017) Hewlett Packard Enterprise Development LP
 #
-# Simplified BSD License (see licenses/simplified_bsd.txt or https://opensource.org/licenses/BSD-2-Clause)
+# Simplified BSD License (see LICENSES/BSD-2-Clause.txt or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -15,7 +16,8 @@ __metaclass__ = type
 import abc
 import collections
 import json
-import os
+# (TODO: remove next line!)
+import os  # noqa: F401, pylint: disable=unused-import
 import traceback
 
 HPE_ONEVIEW_IMP_ERR = None

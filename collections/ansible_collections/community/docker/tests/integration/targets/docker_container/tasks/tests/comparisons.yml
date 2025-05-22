@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Registering container name
   set_fact:
     cname: "{{ cname_prefix ~ '-comparisons' }}"
@@ -26,7 +30,7 @@
     name: "{{ cname }}"
     state: started
     hostname: example.org
-    force_kill: yes
+    force_kill: true
     comparisons:
       hostname: ignore
   register: value_2
@@ -38,7 +42,7 @@
     name: "{{ cname }}"
     state: started
     hostname: example.org
-    force_kill: yes
+    force_kill: true
     comparisons:
       hostname: strict
   register: value_3
@@ -47,14 +51,14 @@
   docker_container:
     name: "{{ cname }}"
     state: absent
-    force_kill: yes
-  diff: no
+    force_kill: true
+  diff: false
 
 - assert:
     that:
-    - value_1 is changed
-    - value_2 is not changed
-    - value_3 is changed
+      - value_1 is changed
+      - value_2 is not changed
+      - value_3 is changed
 
 ####################################################################
 ## list ############################################################
@@ -67,8 +71,8 @@
     name: "{{ cname }}"
     state: started
     dns_servers:
-    - 1.1.1.1
-    - 8.8.8.8
+      - 1.1.1.1
+      - 8.8.8.8
   register: list_1
 
 - name: list (change, ignore)
@@ -78,8 +82,8 @@
     name: "{{ cname }}"
     state: started
     dns_servers:
-    - 9.9.9.9
-    force_kill: yes
+      - 9.9.9.9
+    force_kill: true
     comparisons:
       dns_servers: ignore
   register: list_2
@@ -91,8 +95,8 @@
     name: "{{ cname }}"
     state: started
     dns_servers:
-    - 9.9.9.9
-    force_kill: yes
+      - 9.9.9.9
+    force_kill: true
     comparisons:
       dns_servers: strict
   register: list_3
@@ -101,14 +105,14 @@
   docker_container:
     name: "{{ cname }}"
     state: absent
-    force_kill: yes
-  diff: no
+    force_kill: true
+  diff: false
 
 - assert:
     that:
-    - list_1 is changed
-    - list_2 is not changed
-    - list_3 is changed
+      - list_1 is changed
+      - list_2 is not changed
+      - list_3 is changed
 
 ####################################################################
 ## set #############################################################
@@ -121,8 +125,8 @@
     name: "{{ cname }}"
     state: started
     groups:
-    - "1010"
-    - "1011"
+      - "1010"
+      - "1011"
   register: set_1
 
 - name: set (change, ignore)
@@ -132,10 +136,10 @@
     name: "{{ cname }}"
     state: started
     groups:
-    - "1010"
-    - "1011"
-    - "1012"
-    force_kill: yes
+      - "1010"
+      - "1011"
+      - "1012"
+    force_kill: true
     comparisons:
       groups: ignore
   register: set_2
@@ -147,10 +151,10 @@
     name: "{{ cname }}"
     state: started
     groups:
-    - "1010"
-    - "1011"
-    - "1012"
-    force_kill: yes
+      - "1010"
+      - "1011"
+      - "1012"
+    force_kill: true
     comparisons:
       groups: allow_more_present
   register: set_3
@@ -162,9 +166,9 @@
     name: "{{ cname }}"
     state: started
     groups:
-    - "1010"
-    - "1012"
-    force_kill: yes
+      - "1010"
+      - "1012"
+    force_kill: true
     comparisons:
       groups: allow_more_present
   register: set_4
@@ -176,9 +180,9 @@
     name: "{{ cname }}"
     state: started
     groups:
-    - "1010"
-    - "1012"
-    force_kill: yes
+      - "1010"
+      - "1012"
+    force_kill: true
     comparisons:
       groups: strict
   register: set_5
@@ -187,16 +191,16 @@
   docker_container:
     name: "{{ cname }}"
     state: absent
-    force_kill: yes
-  diff: no
+    force_kill: true
+  diff: false
 
 - assert:
     that:
-    - set_1 is changed
-    - set_2 is not changed
-    - set_3 is changed
-    - set_4 is not changed
-    - set_5 is changed
+      - set_1 is changed
+      - set_2 is not changed
+      - set_3 is changed
+      - set_4 is not changed
+      - set_5 is changed
 
 ####################################################################
 ## set(dict) #######################################################
@@ -209,8 +213,8 @@
     name: "{{ cname }}"
     state: started
     devices:
-    - "/dev/random:/dev/virt-random:rwm"
-    - "/dev/urandom:/dev/virt-urandom:rwm"
+      - "/dev/random:/dev/virt-random:rwm"
+      - "/dev/urandom:/dev/virt-urandom:rwm"
   register: set_dict_1
 
 - name: set(dict) (change, ignore)
@@ -220,10 +224,10 @@
     name: "{{ cname }}"
     state: started
     devices:
-    - "/dev/random:/dev/virt-random:rwm"
-    - "/dev/urandom:/dev/virt-urandom:rwm"
-    - "/dev/null:/dev/virt-null:rwm"
-    force_kill: yes
+      - "/dev/random:/dev/virt-random:rwm"
+      - "/dev/urandom:/dev/virt-urandom:rwm"
+      - "/dev/null:/dev/virt-null:rwm"
+    force_kill: true
     comparisons:
       devices: ignore
   register: set_dict_2
@@ -235,10 +239,10 @@
     name: "{{ cname }}"
     state: started
     devices:
-    - "/dev/random:/dev/virt-random:rwm"
-    - "/dev/urandom:/dev/virt-urandom:rwm"
-    - "/dev/null:/dev/virt-null:rwm"
-    force_kill: yes
+      - "/dev/random:/dev/virt-random:rwm"
+      - "/dev/urandom:/dev/virt-urandom:rwm"
+      - "/dev/null:/dev/virt-null:rwm"
+    force_kill: true
     comparisons:
       devices: allow_more_present
   register: set_dict_3
@@ -250,9 +254,9 @@
     name: "{{ cname }}"
     state: started
     devices:
-    - "/dev/random:/dev/virt-random:rwm"
-    - "/dev/null:/dev/virt-null:rwm"
-    force_kill: yes
+      - "/dev/random:/dev/virt-random:rwm"
+      - "/dev/null:/dev/virt-null:rwm"
+    force_kill: true
     comparisons:
       devices: allow_more_present
   register: set_dict_4
@@ -264,9 +268,9 @@
     name: "{{ cname }}"
     state: started
     devices:
-    - "/dev/random:/dev/virt-random:rwm"
-    - "/dev/null:/dev/virt-null:rwm"
-    force_kill: yes
+      - "/dev/random:/dev/virt-random:rwm"
+      - "/dev/null:/dev/virt-null:rwm"
+    force_kill: true
     comparisons:
       devices: strict
   register: set_dict_5
@@ -275,16 +279,16 @@
   docker_container:
     name: "{{ cname }}"
     state: absent
-    force_kill: yes
-  diff: no
+    force_kill: true
+  diff: false
 
 - assert:
     that:
-    - set_dict_1 is changed
-    - set_dict_2 is not changed
-    - set_dict_3 is changed
-    - set_dict_4 is not changed
-    - set_dict_5 is changed
+      - set_dict_1 is changed
+      - set_dict_2 is not changed
+      - set_dict_3 is changed
+      - set_dict_4 is not changed
+      - set_dict_5 is changed
 
 ####################################################################
 ## dict ############################################################
@@ -311,7 +315,7 @@
       ansible.test.1: hello
       ansible.test.2: world
       ansible.test.3: ansible
-    force_kill: yes
+    force_kill: true
     comparisons:
       labels: ignore
   register: dict_2
@@ -326,7 +330,7 @@
       ansible.test.1: hello
       ansible.test.2: world
       ansible.test.3: ansible
-    force_kill: yes
+    force_kill: true
     comparisons:
       labels: allow_more_present
   register: dict_3
@@ -340,7 +344,7 @@
     labels:
       ansible.test.1: hello
       ansible.test.3: ansible
-    force_kill: yes
+    force_kill: true
     comparisons:
       labels: allow_more_present
   register: dict_4
@@ -354,7 +358,7 @@
     labels:
       ansible.test.1: hello
       ansible.test.3: ansible
-    force_kill: yes
+    force_kill: true
     comparisons:
       labels: strict
   register: dict_5
@@ -363,16 +367,16 @@
   docker_container:
     name: "{{ cname }}"
     state: absent
-    force_kill: yes
-  diff: no
+    force_kill: true
+  diff: false
 
 - assert:
     that:
-    - dict_1 is changed
-    - dict_2 is not changed
-    - dict_3 is changed
-    - dict_4 is not changed
-    - dict_5 is changed
+      - dict_1 is changed
+      - dict_2 is not changed
+      - dict_3 is changed
+      - dict_4 is not changed
+      - dict_5 is changed
 
 ####################################################################
 ## wildcard ########################################################
@@ -380,9 +384,8 @@
 
 - name: Pull {{ docker_test_image_hello_world }} image to make sure wildcard_2 test succeeds
   # If the image isn't there, it will pull it and return 'changed'.
-  docker_image:
+  docker_image_pull:
     name: "{{ docker_test_image_hello_world }}"
-    source: pull
 
 - name: wildcard
   docker_container:
@@ -409,7 +412,7 @@
     labels:
       ansible.test.1: hello
       ansible.test.4: ignore
-    force_kill: yes
+    force_kill: true
     comparisons:
       '*': ignore
   register: wildcard_2
@@ -426,7 +429,7 @@
       ansible.test.1: hello
       ansible.test.2: world
       ansible.test.3: ansible
-    force_kill: yes
+    force_kill: true
     comparisons:
       '*': strict
   register: wildcard_3
@@ -443,7 +446,7 @@
       ansible.test.1: hello
       ansible.test.2: world
       ansible.test.3: ansible
-    force_kill: yes
+    force_kill: true
     comparisons:
       '*': strict
   register: wildcard_4
@@ -452,12 +455,12 @@
   docker_container:
     name: "{{ cname }}"
     state: absent
-    force_kill: yes
-  diff: no
+    force_kill: true
+  diff: false
 
 - assert:
     that:
-    - wildcard_1 is changed
-    - wildcard_2 is not changed
-    - wildcard_3 is changed
-    - wildcard_4 is not changed
+      - wildcard_1 is changed
+      - wildcard_2 is not changed
+      - wildcard_3 is changed
+      - wildcard_4 is not changed

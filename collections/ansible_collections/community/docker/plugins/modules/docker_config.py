@@ -1,74 +1,105 @@
 #!/usr/bin/python
 #
 # Copyright 2016 Red Hat | Ansible
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: docker_config
 
-short_description: Manage docker configs.
-
+short_description: Manage docker configs
 
 description:
-     - Create and remove Docker configs in a Swarm environment. Similar to C(docker config create) and C(docker config rm).
-     - Adds to the metadata of new configs 'ansible_key', an encrypted hash representation of the data, which is then used
-       in future runs to test if a config has changed. If 'ansible_key' is not present, then a config will not be updated
-       unless the I(force) option is set.
-     - Updates to configs are performed by removing the config and creating it again.
+  - Create and remove Docker configs in a Swarm environment. Similar to C(docker config create) and C(docker config rm).
+  - Adds to the metadata of new configs C(ansible_key), an encrypted hash representation of the data, which is then used in
+    future runs to test if a config has changed. If C(ansible_key) is not present, then a config will not be updated unless
+    the O(force) option is set.
+  - Updates to configs are performed by removing the config and creating it again.
+extends_documentation_fragment:
+  - community.docker.docker
+  - community.docker.docker.docker_py_2_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: full
+  diff_mode:
+    support: none
+  idempotent:
+    support: partial
+    details:
+      - If O(force=true) the module is not idempotent.
+
 options:
   data:
     description:
       - The value of the config.
-      - Mutually exclusive with I(data_src). One of I(data) and I(data_src) is required if I(state=present).
+      - Mutually exclusive with O(data_src). One of O(data) and O(data_src) is required if O(state=present).
     type: str
   data_is_b64:
     description:
-      - If set to C(true), the data is assumed to be Base64 encoded and will be
-        decoded before being used.
-      - To use binary I(data), it is better to keep it Base64 encoded and let it
-        be decoded by this option.
+      - If set to V(true), the data is assumed to be Base64 encoded and will be decoded before being used.
+      - To use binary O(data), it is better to keep it Base64 encoded and let it be decoded by this option.
     type: bool
-    default: no
+    default: false
   data_src:
     description:
       - The file on the target from which to read the config.
-      - Mutually exclusive with I(data). One of I(data) and I(data_src) is required if I(state=present).
+      - Mutually exclusive with O(data). One of O(data) and O(data_src) is required if O(state=present).
     type: path
     version_added: 1.10.0
   labels:
     description:
-      - "A map of key:value meta data, where both the I(key) and I(value) are expected to be a string."
-      - If new meta data is provided, or existing meta data is modified, the config will be updated by removing it and creating it again.
+      - A map of key:value meta data, where both the C(key) and C(value) are expected to be a string.
+      - If new meta data is provided, or existing meta data is modified, the config will be updated by removing it and creating
+        it again.
     type: dict
   force:
     description:
-      - Use with state C(present) to always remove and recreate an existing config.
-      - If C(true), an existing config will be replaced, even if it has not been changed.
+      - Use with O(state=present) to always remove and recreate an existing config.
+      - If V(true), an existing config will be replaced, even if it has not been changed.
     type: bool
-    default: no
+    default: false
+  rolling_versions:
+    description:
+      - If set to V(true), configs are created with an increasing version number appended to their name.
+      - Adds a label containing the version number to the managed configs with the name C(ansible_version).
+    type: bool
+    default: false
+    version_added: 2.2.0
+  versions_to_keep:
+    description:
+      - When using O(rolling_versions), the number of old versions of the config to keep.
+      - Extraneous old configs are deleted after the new one is created.
+      - Set to V(-1) to keep everything or V(0) or V(1) to keep only the current one.
+    type: int
+    default: 5
+    version_added: 2.2.0
   name:
     description:
       - The name of the config.
     type: str
-    required: yes
+    required: true
   state:
     description:
-      - Set to C(present), if the config should exist, and C(absent), if it should not.
+      - Set to V(present), if the config should exist, and V(absent), if it should not.
     type: str
     default: present
     choices:
       - absent
       - present
-
-extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_2_documentation
-
+  template_driver:
+    description:
+      - Set to V(golang) to use a Go template in O(data) or a Go template file in O(data_src).
+    type: str
+    choices:
+      - golang
+    version_added: 2.5.0
 
 requirements:
   - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 2.6.0"
@@ -77,10 +108,10 @@ requirements:
 author:
   - Chris Houseknecht (@chouseknecht)
   - John Hu (@ushuz)
-'''
+"""
 
-EXAMPLES = '''
-
+EXAMPLES = r"""
+---
 - name: Create config foo (from a file on the control machine)
   community.docker.docker_config:
     name: foo
@@ -132,7 +163,7 @@ EXAMPLES = '''
     name: foo
     data: Goodnight everyone!
     labels:
-      bar: monkey   # Changing a label will cause a remove/create of the config
+      bar: monkey # Changing a label will cause a remove/create of the config
       one: '1'
     state: present
 
@@ -140,23 +171,30 @@ EXAMPLES = '''
   community.docker.docker_config:
     name: foo
     data: Goodnight everyone!
-    force: yes
+    force: true
     state: present
 
 - name: Remove config foo
   community.docker.docker_config:
     name: foo
     state: absent
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 config_id:
   description:
     - The ID assigned by Docker to the config object.
-  returned: success and I(state) is C(present)
+  returned: success and O(state=present)
   type: str
   sample: 'hzehrmyjigmcp2gb6nlhmjqcv'
-'''
+config_name:
+  description:
+    - The name of the created config object.
+  returned: success and O(state=present)
+  type: str
+  sample: 'awesome_config'
+  version_added: 2.2.0
+"""
 
 import base64
 import hashlib
@@ -170,9 +208,12 @@ except ImportError:
 
 from ansible_collections.community.docker.plugins.module_utils.common import (
     AnsibleDockerClient,
+    RequestException,
+)
+from ansible_collections.community.docker.plugins.module_utils.util import (
     DockerBaseClass,
     compare_generic,
-    RequestException,
+    sanitize_labels,
 )
 from ansible.module_utils.common.text.converters import to_native, to_bytes
 
@@ -205,14 +246,36 @@ class ConfigManager(DockerBaseClass):
                 self.client.fail('Error while reading {src}: {error}'.format(src=data_src, error=to_native(exc)))
         self.labels = parameters.get('labels')
         self.force = parameters.get('force')
+        self.rolling_versions = parameters.get('rolling_versions')
+        self.versions_to_keep = parameters.get('versions_to_keep')
+        self.template_driver = parameters.get('template_driver')
+
+        if self.rolling_versions:
+            self.version = 0
         self.data_key = None
+        self.configs = []
 
     def __call__(self):
+        self.get_config()
         if self.state == 'present':
             self.data_key = hashlib.sha224(self.data).hexdigest()
             self.present()
+            self.remove_old_versions()
         elif self.state == 'absent':
             self.absent()
+
+    def get_version(self, config):
+        try:
+            return int(config.get('Spec', {}).get('Labels', {}).get('ansible_version', 0))
+        except ValueError:
+            return 0
+
+    def remove_old_versions(self):
+        if not self.rolling_versions or self.versions_to_keep < 0:
+            return
+        if not self.check_mode:
+            while len(self.configs) > max(self.versions_to_keep, 1):
+                self.remove_config(self.configs.pop(0))
 
     def get_config(self):
         ''' Find an existing config. '''
@@ -221,24 +284,42 @@ class ConfigManager(DockerBaseClass):
         except APIError as exc:
             self.client.fail("Error accessing config %s: %s" % (self.name, to_native(exc)))
 
-        for config in configs:
-            if config['Spec']['Name'] == self.name:
-                return config
-        return None
+        if self.rolling_versions:
+            self.configs = [
+                config
+                for config in configs
+                if config['Spec']['Name'].startswith('{name}_v'.format(name=self.name))
+            ]
+            self.configs.sort(key=self.get_version)
+        else:
+            self.configs = [
+                config for config in configs if config['Spec']['Name'] == self.name
+            ]
 
     def create_config(self):
         ''' Create a new config '''
         config_id = None
-        # We can't see the data after creation, so adding a label we can use for idempotency check
+        # We ca not see the data after creation, so adding a label we can use for idempotency check
         labels = {
             'ansible_key': self.data_key
         }
+        if self.rolling_versions:
+            self.version += 1
+            labels['ansible_version'] = str(self.version)
+            self.name = '{name}_v{version}'.format(name=self.name, version=self.version)
         if self.labels:
             labels.update(self.labels)
 
         try:
             if not self.check_mode:
-                config_id = self.client.create_config(self.name, self.data, labels=labels)
+                # only use templating argument when self.template_driver is defined
+                kwargs = {}
+                if self.template_driver:
+                    kwargs['templating'] = {
+                        'name': self.template_driver
+                    }
+                config_id = self.client.create_config(self.name, self.data, labels=labels, **kwargs)
+                self.configs += self.client.configs(filters={'id': config_id})
         except APIError as exc:
             self.client.fail("Error creating config: %s" % to_native(exc))
 
@@ -247,36 +328,56 @@ class ConfigManager(DockerBaseClass):
 
         return config_id
 
+    def remove_config(self, config):
+        try:
+            if not self.check_mode:
+                self.client.remove_config(config['ID'])
+        except APIError as exc:
+            self.client.fail("Error removing config %s: %s" % (config['Spec']['Name'], to_native(exc)))
+
     def present(self):
         ''' Handles state == 'present', creating or updating the config '''
-        config = self.get_config()
-        if config:
+        if self.configs:
+            config = self.configs[-1]
             self.results['config_id'] = config['ID']
+            self.results['config_name'] = config['Spec']['Name']
             data_changed = False
+            template_driver_changed = False
             attrs = config.get('Spec', {})
             if attrs.get('Labels', {}).get('ansible_key'):
                 if attrs['Labels']['ansible_key'] != self.data_key:
                     data_changed = True
+            else:
+                if not self.force:
+                    self.client.module.warn("'ansible_key' label not found. Config will not be changed unless the force parameter is set to 'true'")
+            # template_driver has changed if it was set in the previous config
+            # and now it differs, or if it was not set but now it is.
+            if attrs.get('Templating', {}).get('Name'):
+                if attrs['Templating']['Name'] != self.template_driver:
+                    template_driver_changed = True
+            elif self.template_driver:
+                template_driver_changed = True
             labels_changed = not compare_generic(self.labels, attrs.get('Labels'), 'allow_more_present', 'dict')
-            if data_changed or labels_changed or self.force:
+            if self.rolling_versions:
+                self.version = self.get_version(config)
+            if data_changed or template_driver_changed or labels_changed or self.force:
                 # if something changed or force, delete and re-create the config
-                self.absent()
+                if not self.rolling_versions:
+                    self.absent()
                 config_id = self.create_config()
                 self.results['changed'] = True
                 self.results['config_id'] = config_id
+                self.results['config_name'] = self.name
         else:
             self.results['changed'] = True
             self.results['config_id'] = self.create_config()
+            self.results['config_name'] = self.name
 
     def absent(self):
         ''' Handles state == 'absent', removing the config '''
-        config = self.get_config()
-        if config:
-            try:
-                if not self.check_mode:
-                    self.client.remove_config(config['ID'])
-            except APIError as exc:
-                self.client.fail("Error removing config %s: %s" % (self.name, to_native(exc)))
+        if self.configs:
+            for config in self.configs:
+                self.remove_config(config)
             self.results['changed'] = True
 
 
@@ -288,7 +389,10 @@ def main():
         data_is_b64=dict(type='bool', default=False),
         data_src=dict(type='path'),
         labels=dict(type='dict'),
-        force=dict(type='bool', default=False)
+        force=dict(type='bool', default=False),
+        rolling_versions=dict(type='bool', default=False),
+        versions_to_keep=dict(type='int', default=5),
+        template_driver=dict(type='str', choices=['golang']),
     )
 
     required_if = [
@@ -299,6 +403,10 @@ def main():
         ('data', 'data_src'),
     ]
 
+    option_minimal_versions = dict(
+        template_driver=dict(docker_py_version='5.0.3', docker_api_version='1.37'),
+    )
+
     client = AnsibleDockerClient(
         argument_spec=argument_spec,
         supports_check_mode=True,
@@ -306,7 +414,9 @@ def main():
         mutually_exclusive=mutually_exclusive,
         min_docker_version='2.6.0',
         min_docker_api_version='1.30',
+        option_minimal_versions=option_minimal_versions,
     )
+    sanitize_labels(client.module.params['labels'], 'labels', client)
 
     try:
         results = dict(
@@ -319,7 +429,7 @@ def main():
         client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when Docker SDK for Python tried to talk to the docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

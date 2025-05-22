@@ -7,7 +7,8 @@
 # to the complete work.
 #
 # Copyright (c), Simon Dodsley <simon@purestorage.com>,2017
-# Simplified BSD License (see licenses/simplified_bsd.txt or https://opensource.org/licenses/BSD-2-Clause)
+# Simplified BSD License (see LICENSES/BSD-2-Clause.txt or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -20,13 +21,15 @@ except ImportError:
 
 HAS_PURITY_FB = True
 try:
-    from purity_fb import PurityFb, FileSystem, FileSystemSnapshot, SnapshotSuffix, rest
+    from purity_fb import PurityFb, FileSystem, FileSystemSnapshot, SnapshotSuffix, rest  # noqa: F401, pylint: disable=unused-import
 except ImportError:
     HAS_PURITY_FB = False
 
-from functools import wraps
+# (TODO: remove next line!)
+from functools import wraps  # noqa: F401, pylint: disable=unused-import
 from os import environ
-from os import path
+# (TODO: remove next line!)
+from os import path  # noqa: F401, pylint: disable=unused-import
 import platform
 
 VERSION = 1.2

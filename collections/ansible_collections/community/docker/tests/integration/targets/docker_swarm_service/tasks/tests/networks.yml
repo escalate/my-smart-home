@@ -1,4 +1,7 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Registering service name
   set_fact:
@@ -29,7 +32,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - "{{ network_name_1 }}"
@@ -39,7 +42,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - "{{ network_name_1 }}"
@@ -49,7 +52,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -59,7 +62,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - "{{ network_name_1 }}"
@@ -70,7 +73,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - "{{ network_name_1 }}"
@@ -81,7 +84,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -92,7 +95,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -103,7 +106,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - "{{ network_name_2 }}"
@@ -114,7 +117,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - "{{ network_name_2 }}"
@@ -124,7 +127,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - "{{ network_name_2 }}"
@@ -134,7 +137,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks: []
   register: networks_11
@@ -143,7 +146,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks: []
   register: networks_12
@@ -152,40 +155,40 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - "idonotexist"
   register: networks_13
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: networks (missing dict key name)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - foo: "bar"
   register: networks_14
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: networks (invalid list type)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - [1, 2, 3]
   register: networks_15
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -210,14 +213,14 @@
 
 - assert:
     that:
-    - networks_4.rebuilt == false
-    - networks_7.rebuilt == false
+      - networks_4.rebuilt == false
+      - networks_7.rebuilt == false
   when: docker_api_version is version('1.29', '>=') and docker_py_version is version('2.7.0', '>=')
 
 - assert:
     that:
-    - networks_4.rebuilt == true
-    - networks_7.rebuilt == true
+      - networks_4.rebuilt == true
+      - networks_7.rebuilt == true
   when: docker_api_version is version('1.29', '<') or docker_py_version is version('2.7.0', '<')
 
 ####################################################################
@@ -228,7 +231,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -241,7 +244,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -254,7 +257,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -267,7 +270,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -279,7 +282,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -290,7 +293,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -301,20 +304,20 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
         aliases:
           - [1, 2, 3]
   register: networks_aliases_7
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -335,7 +338,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -348,7 +351,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -361,7 +364,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -374,7 +377,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -386,19 +389,19 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
         options: [1, 2, 3]
   register: networks_options_5
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: networks.options (empty)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -409,7 +412,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     networks:
       - name: "{{ network_name_1 }}"
@@ -420,7 +423,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -441,10 +444,10 @@
   docker_network:
     name: "{{ network_name }}"
     state: absent
-    force: yes
+    force: true
   loop:
     - "{{ network_name_1 }}"
     - "{{ network_name_2 }}"
   loop_control:
     loop_var: network_name
-  ignore_errors: yes
+  ignore_errors: true

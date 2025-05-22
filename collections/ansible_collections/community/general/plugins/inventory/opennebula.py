@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2020, FELDSAM s.r.o. - FeldHost™ <support@feldhost.cz>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import annotations
 
-__metaclass__ = type
 
 DOCUMENTATION = r'''
     name: opennebula
@@ -16,9 +16,9 @@ DOCUMENTATION = r'''
         - constructed
     description:
         - Get inventory hosts from OpenNebula cloud.
-        - Uses an YAML configuration file ending with either I(opennebula.yml) or I(opennebula.yaml)
+        - Uses an YAML configuration file ending with either C(opennebula.yml) or C(opennebula.yaml)
           to set parameter values.
-        - Uses I(api_authfile), C(~/.one/one_auth), or C(ONE_AUTH) pointing to a OpenNebula credentials file.
+        - Uses O(api_authfile), C(~/.one/one_auth), or E(ONE_AUTH) pointing to a OpenNebula credentials file.
     options:
         plugin:
             description: Token that ensures this is a source file for the 'opennebula' plugin.
@@ -30,37 +30,37 @@ DOCUMENTATION = r'''
               - URL of the OpenNebula RPC server.
               - It is recommended to use HTTPS so that the username/password are not
                 transferred over the network unencrypted.
-              - If not set then the value of the C(ONE_URL) environment variable is used.
+              - If not set then the value of the E(ONE_URL) environment variable is used.
             env:
               - name: ONE_URL
-            required: True
+            required: true
             type: string
         api_username:
             description:
               - Name of the user to login into the OpenNebula RPC server. If not set
-                then the value of the C(ONE_USERNAME) environment variable is used.
+                then the value of the E(ONE_USERNAME) environment variable is used.
             env:
               - name: ONE_USERNAME
             type: string
         api_password:
             description:
               - Password or a token of the user to login into OpenNebula RPC server.
-              - If not set, the value of the C(ONE_PASSWORD) environment variable is used.
+              - If not set, the value of the E(ONE_PASSWORD) environment variable is used.
             env:
               - name: ONE_PASSWORD
-            required: False
+            required: false
             type: string
         api_authfile:
             description:
-              - If both I(api_username) or I(api_password) are not set, then it will try
+              - If both O(api_username) or O(api_password) are not set, then it will try
                 authenticate with ONE auth file. Default path is C(~/.one/one_auth).
-              - Set environment variable C(ONE_AUTH) to override this path.
+              - Set environment variable E(ONE_AUTH) to override this path.
             env:
               - name: ONE_AUTH
-            required: False
+            required: false
             type: string
         hostname:
-            description: Field to match the hostname. Note C(v4_first_ip) corresponds to the first IPv4 found on VM.
+            description: Field to match the hostname. Note V(v4_first_ip) corresponds to the first IPv4 found on VM.
             type: string
             default: v4_first_ip
             choices:
@@ -73,7 +73,7 @@ DOCUMENTATION = r'''
         group_by_labels:
             description: Create host groups by vm labels
             type: bool
-            default: True
+            default: true
 '''
 
 EXAMPLES = r'''
@@ -95,7 +95,8 @@ except ImportError:
 
 from ansible.errors import AnsibleError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
-from ansible.module_utils._text import to_native
+
+from ansible_collections.community.general.plugins.plugin_utils.unsafe import make_unsafe
 
 from collections import namedtuple
 import os
@@ -125,9 +126,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                     authstring = fp.read().rstrip()
                 username, password = authstring.split(":")
             except (OSError, IOError):
-                raise AnsibleError("Could not find or read ONE_AUTH file at '{e}'".format(e=authfile))
+                raise AnsibleError(f"Could not find or read ONE_AUTH file at '{authfile}'")
             except Exception:
-                raise AnsibleError("Error occurs when reading ONE_AUTH file at '{e}'".format(e=authfile))
+                raise AnsibleError(f"Error occurs when reading ONE_AUTH file at '{authfile}'")
 
         auth_params = namedtuple('auth', ('url', 'username', 'password'))
 
@@ -140,7 +141,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
             nic = [nic]
 
         for net in nic:
-            return net['IP']
+            if net.get('IP'):
+                return net['IP']
 
         return False
 
@@ -162,13 +164,13 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         if not (auth.username and auth.password):
             raise AnsibleError('API Credentials missing. Check OpenNebula inventory file.')
         else:
-            one_client = pyone.OneServer(auth.url, session=auth.username + ':' + auth.password)
+            one_client = pyone.OneServer(auth.url, session=f"{auth.username}:{auth.password}")
 
         # get hosts (VMs)
         try:
             vm_pool = one_client.vmpool.infoextended(-2, -1, -1, 3)
         except Exception as e:
-            raise AnsibleError("Something happened during XML-RPC call: {e}".format(e=to_native(e)))
+            raise AnsibleError(f"Something happened during XML-RPC call: {e}")
 
         return vm_pool
 
@@ -195,6 +197,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
                     continue
 
             server['name'] = vm.NAME
+            server['id'] = vm.ID
+            if hasattr(vm.HISTORY_RECORDS, 'HISTORY') and vm.HISTORY_RECORDS.HISTORY:
+                server['host'] = vm.HISTORY_RECORDS.HISTORY[-1].HOSTNAME
             server['LABELS'] = labels
             server['v4_first_ip'] = self._get_vm_ipv4(vm)
             server['v6_first_ip'] = self._get_vm_ipv6(vm)
@@ -206,28 +211,41 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
     def _populate(self):
         hostname_preference = self.get_option('hostname')
         group_by_labels = self.get_option('group_by_labels')
+        strict = self.get_option('strict')
 
         # Add a top group 'one'
         self.inventory.add_group(group='all')
 
         filter_by_label = self.get_option('filter_by_label')
-        for server in self._retrieve_servers(filter_by_label):
+        servers = self._retrieve_servers(filter_by_label)
+        for server in servers:
+            server = make_unsafe(server)
+            hostname = server['name']
             # check for labels
             if group_by_labels and server['LABELS']:
                 for label in server['LABELS']:
                     self.inventory.add_group(group=label)
-                    self.inventory.add_host(host=server['name'], group=label)
+                    self.inventory.add_host(host=hostname, group=label)
 
-            self.inventory.add_host(host=server['name'], group='all')
+            self.inventory.add_host(host=hostname, group='all')
 
             for attribute, value in server.items():
-                self.inventory.set_variable(server['name'], attribute, value)
+                self.inventory.set_variable(hostname, attribute, value)
 
             if hostname_preference != 'name':
-                self.inventory.set_variable(server['name'], 'ansible_host', server[hostname_preference])
+                self.inventory.set_variable(hostname, 'ansible_host', server[hostname_preference])
 
             if server.get('SSH_PORT'):
-                self.inventory.set_variable(server['name'], 'ansible_port', server['SSH_PORT'])
+                self.inventory.set_variable(hostname, 'ansible_port', server['SSH_PORT'])
+
+            # handle construcable implementation: get composed variables if any
+            self._set_composite_vars(self.get_option('compose'), server, hostname, strict=strict)
+
+            # groups based on jinja conditionals get added to specific groups
+            self._add_host_to_composed_groups(self.get_option('groups'), server, hostname, strict=strict)
+
+            # groups based on variables associated with them in the inventory
+            self._add_host_to_keyed_groups(self.get_option('keyed_groups'), server, hostname, strict=strict)
 
     def parse(self, inventory, loader, path, cache=True):
         if not HAS_PYONE:

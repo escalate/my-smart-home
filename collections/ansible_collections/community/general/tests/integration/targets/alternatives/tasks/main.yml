@@ -4,7 +4,8 @@
 ####################################################################
 
 # Copyright (c) 2017 Pierre-Louis Bonicoli <pierre-louis.bonicoli@libregerbil.fr>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: 'setup: create a dummy alternative'
   block:
@@ -18,8 +19,8 @@
 
   - include_tasks: tests.yml
     with_nested:
-        - [ True, False ] # with_link
-        - [ True, False ] # with_alternatives
+        - [ true, false ] # with_link
+        - [ true, false ] # with_alternatives
         - [ 'auto', 'manual' ] # mode
     loop_control:
       loop_var: test_conf
@@ -33,7 +34,7 @@
     - include_tasks: tests_set_priority.yml
       with_sequence: start=3 end=4
     vars:
-      with_alternatives: True
+      with_alternatives: true
       mode: auto
 
   - block:
@@ -43,12 +44,27 @@
     - include_tasks: tests_set_priority.yml
       with_sequence: start=3 end=4
     vars:
-      with_alternatives: False
+      with_alternatives: false
       mode: auto
 
   # Test that path is checked: alternatives must fail when path is nonexistent
   - import_tasks: path_is_checked.yml
 
+  # Test that subcommands commands work
+  - import_tasks: subcommands.yml
+
+  # Test operation of the 'state' parameter
+  - block:
+    - include_tasks: remove_links.yml
+    - include_tasks: tests_state.yml
+
+  # Test for the family parameter
+  - block:
+      - include_tasks: remove_links.yml
+      - include_tasks: tests_family.yml
+    when: ansible_os_family == 'RedHat'
+
+  # Cleanup
   always:
     - include_tasks: remove_links.yml
 
@@ -57,15 +73,27 @@
         state: absent
       with_items:
         - '{{ alternatives_dir }}/dummy'
+        - '{{ alternatives_dir }}/dummymain'
+        - '{{ alternatives_dir }}/dummysubcmd'
 
     - file:
         path: '/usr/bin/dummy{{ item }}'
         state: absent
       with_sequence: start=1 end=4
+
   # *Disable tests on Fedora 24*
   # Shippable Fedora 24 image provides chkconfig-1.7-2.fc24.x86_64 but not the
   # latest available version (chkconfig-1.8-1.fc24.x86_64). update-alternatives
   # in chkconfig-1.7-2 fails when /etc/alternatives/dummy link is missing,
   # error is: 'failed to read link /usr/bin/dummy: No such file or directory'.
   # Moreover Fedora 24 is no longer maintained.
-  when: ansible_distribution != 'Fedora' or ansible_distribution_major_version|int > 24
+  #
+  # *Disable tests on Arch Linux*
+  # TODO: figure out whether there is an alternatives tool for Arch Linux
+  #
+  # *Disable tests on Alpine*
+  # TODO: figure out whether there is an alternatives tool for Alpine
+  when:
+    - ansible_distribution != 'Fedora' or ansible_distribution_major_version|int > 24
+    - ansible_distribution != 'Archlinux'
+    - ansible_distribution != 'Alpine'

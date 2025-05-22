@@ -7,7 +7,8 @@
 #
 # Copyright (c) 2016 Thomas Krahn (@Nosmoht)
 #
-# Simplified BSD License (see licenses/simplified_bsd.txt or https://opensource.org/licenses/BSD-2-Clause)
+# Simplified BSD License (see LICENSES/BSD-2-Clause.txt or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -103,7 +104,7 @@ class IPAClient(object):
 
     def get_ipa_version(self):
         response = self.ping()['summary']
-        ipa_ver_regex = re.compile(r'IPA server version (\d\.\d\.\d).*')
+        ipa_ver_regex = re.compile(r'IPA server version (\d+\.\d+\.\d+).*')
         version_match = ipa_ver_regex.match(response)
         ipa_version = None
         if version_match:

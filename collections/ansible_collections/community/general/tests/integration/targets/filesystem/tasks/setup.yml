@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # By installing e2fsprogs on FreeBSD, we get a usable blkid command, but this
 # package conflicts with util-linux, that provides blkid too, but also wipefs
 # (required for filesystem state=absent).
@@ -12,6 +16,16 @@
     - e2fsprogs
     - xfsprogs
 
+- name: "Install bcachefs tools"
+  ansible.builtin.package:
+    name: bcachefs-tools
+    state: present
+  when:
+    # bcachefs only on Alpine > 3.18 and Arch Linux for now
+    # other distributions have too old versions of bcachefs-tools and/or util-linux (blkid for UUID tests)
+    - ansible_distribution == "Alpine" and ansible_distribution_version is version("3.18", ">")
+    - ansible_distribution == "Archlinux"
+
 - name: "Install btrfs progs"
   ansible.builtin.package:
     name: btrfs-progs
@@ -21,6 +35,7 @@
     - not (ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('16.04', '<='))
     - ansible_system != "FreeBSD"
     - not (ansible_facts.os_family == "RedHat" and ansible_facts.distribution_major_version is version('8', '>='))
+    - ansible_os_family != 'Archlinux'  # TODO
 
 - name: "Install btrfs tools (Ubuntu <= 16.04)"
   ansible.builtin.package:
@@ -60,7 +75,7 @@
     state: present
   when:
     - ansible_system == 'Linux'
-    - ansible_os_family not in ['Suse', 'RedHat']
+    - ansible_os_family not in ['Suse', 'RedHat', 'Alpine', 'Archlinux']
 
 - name: "Install reiserfs progs (FreeBSD)"
   ansible.builtin.package:
@@ -111,6 +126,7 @@
     - ansible_system == 'Linux'
     - ansible_os_family != 'Suse'
     - ansible_os_family != 'RedHat' or (ansible_distribution == 'CentOS' and ansible_distribution_version is version('7.0', '=='))
+    - ansible_os_family != 'Alpine'
   block:
     - name: "Install fatresize"
       ansible.builtin.package:

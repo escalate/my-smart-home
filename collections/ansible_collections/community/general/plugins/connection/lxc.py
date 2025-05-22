@@ -1,33 +1,36 @@
 # -*- coding: utf-8 -*-
 # (c) 2015, Joerg Thalheim <joerg@higgsboson.tk>
 # Copyright (c) 2017 Ansible Project
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
-DOCUMENTATION = '''
-    author: Joerg Thalheim (!UNKNOWN) <joerg@higgsboson.tk>
-    name: lxc
-    short_description: Run tasks in lxc containers via lxc python library
+DOCUMENTATION = r"""
+author: Joerg Thalheim (!UNKNOWN) <joerg@higgsboson.tk>
+name: lxc
+short_description: Run tasks in LXC containers using lxc python library
+description:
+  - Run commands or put/fetch files to an existing LXC container using lxc python library.
+options:
+  remote_addr:
     description:
-        - Run commands or put/fetch files to an existing lxc container using lxc python library
-    options:
-      remote_addr:
-        description:
-            - Container identifier
-        default: inventory_hostname
-        vars:
-            - name: ansible_host
-            - name: ansible_lxc_host
-      executable:
-        default: /bin/sh
-        description:
-            - Shell executable
-        vars:
-            - name: ansible_executable
-            - name: ansible_lxc_executable
-'''
+      - Container identifier.
+    type: string
+    default: inventory_hostname
+    vars:
+      - name: inventory_hostname
+      - name: ansible_host
+      - name: ansible_lxc_host
+  executable:
+    default: /bin/sh
+    description:
+      - Shell executable.
+    type: string
+    vars:
+      - name: ansible_executable
+      - name: ansible_lxc_executable
+"""
 
 import os
 import shutil
@@ -58,7 +61,7 @@ class Connection(ConnectionBase):
     def __init__(self, play_context, new_stdin, *args, **kwargs):
         super(Connection, self).__init__(play_context, new_stdin, *args, **kwargs)
 
-        self.container_name = self._play_context.remote_addr
+        self.container_name = None
         self.container = None
 
     def _connect(self):
@@ -66,16 +69,19 @@ class Connection(ConnectionBase):
         super(Connection, self)._connect()
 
         if not HAS_LIBLXC:
-            msg = "lxc bindings for python2 are not installed"
+            msg = "lxc python bindings are not installed"
             raise errors.AnsibleError(msg)
 
-        if self.container:
+        container_name = self.get_option('remote_addr')
+        if self.container and self.container_name == container_name:
             return
+
+        self.container_name = container_name
 
         self._display.vvv("THIS IS A LOCAL LXC DIR", host=self.container_name)
         self.container = _lxc.Container(self.container_name)
         if self.container.state == "STOPPED":
-            raise errors.AnsibleError("%s is not running" % self.container_name)
+            raise errors.AnsibleError(f"{self.container_name} is not running")
 
     @staticmethod
     def _communicate(pid, in_data, stdin, stdout, stderr):
@@ -116,7 +122,7 @@ class Connection(ConnectionBase):
         super(Connection, self).exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
         # python2-lxc needs bytes. python3-lxc needs text.
-        executable = to_native(self._play_context.executable, errors='surrogate_or_strict')
+        executable = to_native(self.get_option('executable'), errors='surrogate_or_strict')
         local_cmd = [executable, '-c', to_native(cmd, errors='surrogate_or_strict')]
 
         read_stdout, write_stdout = None, None
@@ -137,10 +143,10 @@ class Connection(ConnectionBase):
                 read_stdin, write_stdin = os.pipe()
                 kwargs['stdin'] = self._set_nonblocking(read_stdin)
 
-            self._display.vvv("EXEC %s" % (local_cmd), host=self.container_name)
+            self._display.vvv(f"EXEC {local_cmd}", host=self.container_name)
             pid = self.container.attach(_lxc.attach_run_command, local_cmd, **kwargs)
             if pid == -1:
-                msg = "failed to attach to container %s" % self.container_name
+                msg = f"failed to attach to container {self.container_name}"
                 raise errors.AnsibleError(msg)
 
             write_stdout = os.close(write_stdout)
@@ -167,18 +173,18 @@ class Connection(ConnectionBase):
     def put_file(self, in_path, out_path):
         ''' transfer a file from local to lxc '''
         super(Connection, self).put_file(in_path, out_path)
-        self._display.vvv("PUT %s TO %s" % (in_path, out_path), host=self.container_name)
+        self._display.vvv(f"PUT {in_path} TO {out_path}", host=self.container_name)
         in_path = to_bytes(in_path, errors='surrogate_or_strict')
         out_path = to_bytes(out_path, errors='surrogate_or_strict')
 
         if not os.path.exists(in_path):
-            msg = "file or module does not exist: %s" % in_path
+            msg = f"file or module does not exist: {in_path}"
             raise errors.AnsibleFileNotFound(msg)
         try:
             src_file = open(in_path, "rb")
         except IOError:
             traceback.print_exc()
-            raise errors.AnsibleError("failed to open input file to %s" % in_path)
+            raise errors.AnsibleError(f"failed to open input file to {in_path}")
         try:
             def write_file(args):
                 with open(out_path, 'wb+') as dst_file:
@@ -187,7 +193,7 @@ class Connection(ConnectionBase):
                 self.container.attach_wait(write_file, None)
             except IOError:
                 traceback.print_exc()
-                msg = "failed to transfer file to %s" % out_path
+                msg = f"failed to transfer file to {out_path}"
                 raise errors.AnsibleError(msg)
         finally:
             src_file.close()
@@ -195,7 +201,7 @@ class Connection(ConnectionBase):
     def fetch_file(self, in_path, out_path):
         ''' fetch a file from lxc to local '''
         super(Connection, self).fetch_file(in_path, out_path)
-        self._display.vvv("FETCH %s TO %s" % (in_path, out_path), host=self.container_name)
+        self._display.vvv(f"FETCH {in_path} TO {out_path}", host=self.container_name)
         in_path = to_bytes(in_path, errors='surrogate_or_strict')
         out_path = to_bytes(out_path, errors='surrogate_or_strict')
 
@@ -203,7 +209,7 @@ class Connection(ConnectionBase):
             dst_file = open(out_path, "wb")
         except IOError:
             traceback.print_exc()
-            msg = "failed to open output file %s" % out_path
+            msg = f"failed to open output file {out_path}"
             raise errors.AnsibleError(msg)
         try:
             def write_file(args):
@@ -218,7 +224,7 @@ class Connection(ConnectionBase):
                 self.container.attach_wait(write_file, None)
             except IOError:
                 traceback.print_exc()
-                msg = "failed to transfer file from %s to %s" % (in_path, out_path)
+                msg = f"failed to transfer file from {in_path} to {out_path}"
                 raise errors.AnsibleError(msg)
         finally:
             dst_file.close()

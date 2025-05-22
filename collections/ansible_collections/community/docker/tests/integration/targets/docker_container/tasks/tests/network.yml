@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Registering container name
   set_fact:
     cname: "{{ cname_prefix ~ '-network' }}"
@@ -16,11 +20,10 @@
     name: "{{ network_name }}"
     state: present
   loop:
-  - "{{ nname_1 }}"
-  - "{{ nname_2 }}"
+    - "{{ nname_1 }}"
+    - "{{ nname_2 }}"
   loop_control:
     loop_var: network_name
-  when: docker_py_version is version('1.10.0', '>=')
 
 - set_fact:
     subnet_ipv4_base: 10.{{ 16 + (240 | random) }}.{{ 16 + (240 | random) }}
@@ -52,12 +55,11 @@
 - name: Create network with fixed IPv4 and IPv6 subnets
   docker_network:
     name: "{{ nname_3 }}"
-    enable_ipv6: yes
+    enable_ipv6: true
     ipam_config:
       - subnet: "{{ subnet_ipv4 }}"
       - subnet: "{{ subnet_ipv6 }}"
     state: present
-  when: docker_py_version is version('1.10.0', '>=')
 
 ####################################################################
 ## network_mode ####################################################
@@ -88,7 +90,7 @@
     name: "{{ cname }}"
     state: started
     network_mode: none
-    force_kill: yes
+    force_kill: true
   register: network_mode_3
 
 - name: network_mode (container mode setup)
@@ -106,7 +108,7 @@
     name: "{{ cname }}"
     state: started
     network_mode: "container:{{ cname_h1_id.container.Id }}"
-    force_kill: yes
+    force_kill: true
   register: network_mode_4
 
 - name: network_mode (container mode idempotency)
@@ -122,130 +124,133 @@
   docker_container:
     name: "{{ container_name }}"
     state: absent
-    force_kill: yes
+    force_kill: true
   loop:
-  - "{{ cname }}"
-  - "{{ cname_h1 }}"
+    - "{{ cname }}"
+    - "{{ cname_h1 }}"
   loop_control:
     loop_var: container_name
-  diff: no
+  diff: false
 
 - assert:
     that:
-    - network_mode_1 is changed
-    - network_mode_1.container.HostConfig.NetworkMode == 'host'
-    - network_mode_2 is not changed
-    - network_mode_2.container.HostConfig.NetworkMode == 'host'
-    - network_mode_3 is changed
-    - network_mode_3.container.HostConfig.NetworkMode == 'none'
-    - network_mode_4 is changed
-    - network_mode_4.container.HostConfig.NetworkMode == 'container:' ~ cname_h1_id.container.Id
-    - network_mode_5 is not changed
-    - network_mode_5.container.HostConfig.NetworkMode == 'container:' ~ cname_h1_id.container.Id
+      - network_mode_1 is changed
+      - network_mode_1.container.HostConfig.NetworkMode == 'host'
+      - network_mode_2 is not changed
+      - network_mode_2.container.HostConfig.NetworkMode == 'host'
+      - network_mode_3 is changed
+      - network_mode_3.container.HostConfig.NetworkMode == 'none'
+      - network_mode_4 is changed
+      - network_mode_4.container.HostConfig.NetworkMode == ('container:' ~ cname_h1_id.container.Id)
+      - network_mode_5 is not changed
+      - network_mode_5.container.HostConfig.NetworkMode == ('container:' ~ cname_h1_id.container.Id)
 
 ####################################################################
 ## networks, purge_networks for networks_cli_compatible=no #########
 ####################################################################
 
-- block:
-  - name: networks_cli_compatible=no, networks w/o purge_networks
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: networks_cli_compatible=no, networks w/o purge_networks
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_1 }}"
       - name: "{{ nname_2 }}"
-      networks_cli_compatible: no
-    register: networks_1
+    networks_cli_compatible: false
+  register: networks_1
 
-  - name: networks_cli_compatible=no, networks w/o purge_networks
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: networks_cli_compatible=no, networks w/o purge_networks
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_1 }}"
       - name: "{{ nname_2 }}"
-      networks_cli_compatible: no
-    register: networks_2
+    networks_cli_compatible: false
+  register: networks_2
 
-  - name: networks_cli_compatible=no, networks, purge_networks
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      purge_networks: yes
-      networks:
+- name: networks_cli_compatible=no, networks, purge_networks
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    comparisons:
+      networks: strict
+    networks:
       - name: bridge
       - name: "{{ nname_1 }}"
-      networks_cli_compatible: no
-      force_kill: yes
-    register: networks_3
+    networks_cli_compatible: false
+    force_kill: true
+  register: networks_3
 
-  - name: networks_cli_compatible=no, networks, purge_networks (idempotency)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      purge_networks: yes
-      networks:
+- name: networks_cli_compatible=no, networks, purge_networks (idempotency)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    comparisons:
+      networks: strict
+    networks:
       - name: "{{ nname_1 }}"
       - name: bridge
-      networks_cli_compatible: no
-    register: networks_4
+    networks_cli_compatible: false
+  register: networks_4
 
-  - name: networks_cli_compatible=no, networks (less networks)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: networks_cli_compatible=no, networks (less networks)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: bridge
-      networks_cli_compatible: no
-    register: networks_5
+    networks_cli_compatible: false
+  register: networks_5
 
-  - name: networks_cli_compatible=no, networks, purge_networks (less networks)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      purge_networks: yes
-      networks:
+- name: networks_cli_compatible=no, networks, purge_networks (less networks)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    comparisons:
+      networks: strict
+    networks:
       - name: bridge
-      networks_cli_compatible: no
-      force_kill: yes
-    register: networks_6
+    networks_cli_compatible: false
+    force_kill: true
+  register: networks_6
 
-  - name: networks_cli_compatible=no, networks, purge_networks (more networks)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      purge_networks: yes
-      networks:
+- name: networks_cli_compatible=no, networks, purge_networks (more networks)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    comparisons:
+      networks: strict
+    networks:
       - name: bridge
       - name: "{{ nname_2 }}"
-      networks_cli_compatible: no
-      force_kill: yes
-    register: networks_7
+    networks_cli_compatible: false
+    force_kill: true
+  register: networks_7
 
-  - name: cleanup
-    docker_container:
-      name: "{{ cname }}"
-      state: absent
-      force_kill: yes
-    diff: no
+- name: cleanup
+  docker_container:
+    name: "{{ cname }}"
+    state: absent
+    force_kill: true
+  diff: false
 
-  - assert:
-      that:
+- assert:
+    that:
       # networks_1 has networks default, 'bridge', nname_1
       - networks_1 is changed
       - networks_1.container.NetworkSettings.Networks | length == 3
@@ -283,127 +288,127 @@
       - nname_2 in networks_7.container.NetworkSettings.Networks
       - "'default' in networks_7.container.NetworkSettings.Networks or 'bridge' in networks_7.container.NetworkSettings.Networks"
 
-  when: docker_py_version is version('1.10.0', '>=')
-
 ####################################################################
 ## networks for networks_cli_compatible=yes ########################
 ####################################################################
 
-- block:
-  - name: networks_cli_compatible=yes, networks specified
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: networks_cli_compatible=yes, networks specified
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_1 }}"
         aliases:
-        - alias1
-        - alias2
+          - alias1
+          - alias2
       - name: "{{ nname_2 }}"
-      networks_cli_compatible: yes
-    register: networks_1
+    networks_cli_compatible: true
+  register: networks_1
 
-  - name: networks_cli_compatible=yes, networks specified
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: networks_cli_compatible=yes, networks specified
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_1 }}"
       - name: "{{ nname_2 }}"
-      networks_cli_compatible: yes
-    register: networks_2
+    networks_cli_compatible: true
+  register: networks_2
 
-  - name: cleanup
-    docker_container:
-      name: "{{ cname }}"
-      state: absent
-      force_kill: yes
-    diff: no
+- name: cleanup
+  docker_container:
+    name: "{{ cname }}"
+    state: absent
+    force_kill: true
+  diff: false
 
-  - name: networks_cli_compatible=yes, empty networks list specified
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks: []
-      networks_cli_compatible: yes
-    register: networks_3
+- name: networks_cli_compatible=yes, empty networks list specified
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks: []
+    networks_cli_compatible: true
+  register: networks_3
 
-  - name: networks_cli_compatible=yes, empty networks list specified
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks: []
-      networks_cli_compatible: yes
-    register: networks_4
+- name: networks_cli_compatible=yes, empty networks list specified
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks: []
+    networks_cli_compatible: true
+  register: networks_4
 
-  - name: networks_cli_compatible=yes, empty networks list specified, purge_networks
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks: []
-      networks_cli_compatible: yes
-      purge_networks: yes
-      force_kill: yes
-    register: networks_5
+- name: networks_cli_compatible=yes, empty networks list specified, purge_networks
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks: []
+    networks_cli_compatible: true
+    comparisons:
+      networks: strict
+    force_kill: true
+  register: networks_5
 
-  - name: cleanup
-    docker_container:
-      name: "{{ cname }}"
-      state: absent
-      force_kill: yes
-    diff: no
+- name: cleanup
+  docker_container:
+    name: "{{ cname }}"
+    state: absent
+    force_kill: true
+  diff: false
 
-  - name: networks_cli_compatible=yes, networks not specified
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks_cli_compatible: yes
-      force_kill: yes
-    register: networks_6
+- name: networks_cli_compatible=yes, networks not specified
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks_cli_compatible: true
+    force_kill: true
+  register: networks_6
 
-  - name: networks_cli_compatible=yes, networks not specified
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks_cli_compatible: yes
-    register: networks_7
+- name: networks_cli_compatible=yes, networks not specified
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks_cli_compatible: true
+  register: networks_7
 
-  - name: networks_cli_compatible=yes, networks not specified, purge_networks
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks_cli_compatible: yes
-      purge_networks: yes
-      force_kill: yes
-    register: networks_8
+- name: networks_cli_compatible=yes, networks empty, purge_networks
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks_cli_compatible: true
+    comparisons:
+      networks: strict
+    networks: []
+    force_kill: true
+  register: networks_8
 
-  - name: cleanup
-    docker_container:
-      name: "{{ cname }}"
-      state: absent
-      force_kill: yes
-    diff: no
+- name: cleanup
+  docker_container:
+    name: "{{ cname }}"
+    state: absent
+    force_kill: true
+  diff: false
 
-  - debug: var=networks_3
+- debug: var=networks_3
 
-  - assert:
-      that:
+- assert:
+    that:
       # networks_1 has networks nname_1, nname_2
       - networks_1 is changed
       - networks_1.container.NetworkSettings.Networks | length == 2
@@ -437,113 +442,110 @@
       - networks_8 is changed
       - networks_8.container.NetworkSettings.Networks | length == 0
 
-  when: docker_py_version is version('1.10.0', '>=')
-
 ####################################################################
 ## networks with comparisons #######################################
 ####################################################################
 
-- block:
-  - name: create container with one network
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: create container with one network
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_1 }}"
-      networks_cli_compatible: yes
-    register: networks_1
+    networks_cli_compatible: true
+  register: networks_1
 
-  - name: different networks, comparisons=ignore
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: different networks, comparisons=ignore
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_2 }}"
-      networks_cli_compatible: yes
-      comparisons:
-        network_mode: ignore  # otherwise we'd have to set network_mode to nname_1
-        networks: ignore
-    register: networks_2
+    networks_cli_compatible: true
+    comparisons:
+      network_mode: ignore  # otherwise we'd have to set network_mode to nname_1
+      networks: ignore
+  register: networks_2
 
-  - name: less networks, comparisons=ignore
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks: []
-      networks_cli_compatible: yes
-      comparisons:
-        networks: ignore
-    register: networks_3
+- name: less networks, comparisons=ignore
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks: []
+    networks_cli_compatible: true
+    comparisons:
+      networks: ignore
+  register: networks_3
 
-  - name: less networks, comparisons=allow_more_present
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks: []
-      networks_cli_compatible: yes
-      comparisons:
-        networks: allow_more_present
-    register: networks_4
+- name: less networks, comparisons=allow_more_present
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks: []
+    networks_cli_compatible: true
+    comparisons:
+      networks: allow_more_present
+  register: networks_4
 
-  - name: different networks, comparisons=allow_more_present
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: different networks, comparisons=allow_more_present
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_2 }}"
-      networks_cli_compatible: yes
-      comparisons:
-        network_mode: ignore  # otherwise we'd have to set network_mode to nname_1
-        networks: allow_more_present
-      force_kill: yes
-    register: networks_5
+    networks_cli_compatible: true
+    comparisons:
+      network_mode: ignore  # otherwise we'd have to set network_mode to nname_1
+      networks: allow_more_present
+    force_kill: true
+  register: networks_5
 
-  - name: different networks, comparisons=strict
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: different networks, comparisons=strict
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_2 }}"
-      networks_cli_compatible: yes
-      comparisons:
-        networks: strict
-      force_kill: yes
-    register: networks_6
+    networks_cli_compatible: true
+    comparisons:
+      networks: strict
+    force_kill: true
+  register: networks_6
 
-  - name: less networks, comparisons=strict
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks: []
-      networks_cli_compatible: yes
-      comparisons:
-        networks: strict
-      force_kill: yes
-    register: networks_7
+- name: less networks, comparisons=strict
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks: []
+    networks_cli_compatible: true
+    comparisons:
+      networks: strict
+    force_kill: true
+  register: networks_7
 
-  - name: cleanup
-    docker_container:
-      name: "{{ cname }}"
-      state: absent
-      force_kill: yes
-    diff: no
+- name: cleanup
+  docker_container:
+    name: "{{ cname }}"
+    state: absent
+    force_kill: true
+  diff: false
 
-  - assert:
-      that:
+- assert:
+    that:
       # networks_1 has networks nname_1
       - networks_1 is changed
       - networks_1.container.NetworkSettings.Networks | length == 1
@@ -573,121 +575,118 @@
       - networks_7 is changed
       - networks_7.container.NetworkSettings.Networks | length == 0
 
-  when: docker_py_version is version('1.10.0', '>=')
-
 ####################################################################
 ## networks with IP address ########################################
 ####################################################################
 
-- block:
-  - name: create container (stopped) with one network and fixed IP
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: stopped
-      networks:
+- name: create container (stopped) with one network and fixed IP
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: stopped
+    networks:
       - name: "{{ nname_3 }}"
         ipv4_address: "{{ nname_3_ipv4_2 }}"
         ipv6_address: "{{ nname_3_ipv6_2 }}"
-      networks_cli_compatible: yes
-    register: networks_1
+    networks_cli_compatible: true
+  register: networks_1
 
-  - name: create container (stopped) with one network and fixed IP (idempotent)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: stopped
-      networks:
+- name: create container (stopped) with one network and fixed IP (idempotent)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: stopped
+    networks:
       - name: "{{ nname_3 }}"
         ipv4_address: "{{ nname_3_ipv4_2 }}"
         ipv6_address: "{{ nname_3_ipv6_2 }}"
-      networks_cli_compatible: yes
-    register: networks_2
+    networks_cli_compatible: true
+  register: networks_2
 
-  - name: create container (stopped) with one network and fixed IP (different IPv4)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: stopped
-      networks:
+- name: create container (stopped) with one network and fixed IP (different IPv4)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: stopped
+    networks:
       - name: "{{ nname_3 }}"
         ipv4_address: "{{ nname_3_ipv4_3 }}"
         ipv6_address: "{{ nname_3_ipv6_2 }}"
-      networks_cli_compatible: yes
-    register: networks_3
+    networks_cli_compatible: true
+  register: networks_3
 
-  - name: create container (stopped) with one network and fixed IP (different IPv6)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: stopped
-      networks:
+- name: create container (stopped) with one network and fixed IP (different IPv6)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: stopped
+    networks:
       - name: "{{ nname_3 }}"
         ipv4_address: "{{ nname_3_ipv4_3 }}"
         ipv6_address: "{{ nname_3_ipv6_3 }}"
-      networks_cli_compatible: yes
-    register: networks_4
+    networks_cli_compatible: true
+  register: networks_4
 
-  - name: create container (started) with one network and fixed IP
-    docker_container:
-      name: "{{ cname }}"
-      state: started
-    register: networks_5
+- name: create container (started) with one network and fixed IP
+  docker_container:
+    name: "{{ cname }}"
+    state: started
+  register: networks_5
 
-  - name: create container (started) with one network and fixed IP (different IPv4)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: create container (started) with one network and fixed IP (different IPv4)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_3 }}"
         ipv4_address: "{{ nname_3_ipv4_4 }}"
         ipv6_address: "{{ nname_3_ipv6_3 }}"
-      networks_cli_compatible: yes
-      force_kill: yes
-    register: networks_6
+    networks_cli_compatible: true
+    force_kill: true
+  register: networks_6
 
-  - name: create container (started) with one network and fixed IP (different IPv6)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: create container (started) with one network and fixed IP (different IPv6)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_3 }}"
         ipv4_address: "{{ nname_3_ipv4_4 }}"
         ipv6_address: "{{ nname_3_ipv6_4 }}"
-      networks_cli_compatible: yes
-      force_kill: yes
-    register: networks_7
+    networks_cli_compatible: true
+    force_kill: true
+  register: networks_7
 
-  - name: create container (started) with one network and fixed IP (idempotent)
-    docker_container:
-      image: "{{ docker_test_image_alpine }}"
-      command: '/bin/sh -c "sleep 10m"'
-      name: "{{ cname }}"
-      state: started
-      networks:
+- name: create container (started) with one network and fixed IP (idempotent)
+  docker_container:
+    image: "{{ docker_test_image_alpine }}"
+    command: '/bin/sh -c "sleep 10m"'
+    name: "{{ cname }}"
+    state: started
+    networks:
       - name: "{{ nname_3 }}"
         ipv4_address: "{{ nname_3_ipv4_4 }}"
         ipv6_address: "{{ nname_3_ipv6_4 }}"
-      networks_cli_compatible: yes
-    register: networks_8
+    networks_cli_compatible: true
+  register: networks_8
 
-  - name: cleanup
-    docker_container:
-      name: "{{ cname }}"
-      state: absent
-      force_kill: yes
-    diff: no
+- name: cleanup
+  docker_container:
+    name: "{{ cname }}"
+    state: absent
+    force_kill: true
+  diff: false
 
-  - assert:
-      that:
+- assert:
+    that:
       - networks_1 is changed
       - networks_1.container.NetworkSettings.Networks[nname_3].IPAMConfig.IPv4Address == nname_3_ipv4_2
       - networks_1.container.NetworkSettings.Networks[nname_3].IPAMConfig.IPv6Address | normalize_ipaddr == nname_3_ipv6_2 | normalize_ipaddr
@@ -729,8 +728,6 @@
       - networks_8.container.NetworkSettings.Networks[nname_3].IPAddress == nname_3_ipv4_4
       - networks_8.container.NetworkSettings.Networks[nname_3].GlobalIPv6Address | normalize_ipaddr == nname_3_ipv6_4 | normalize_ipaddr
 
-  when: docker_py_version is version('1.10.0', '>=')
-
 ####################################################################
 ####################################################################
 ####################################################################
@@ -739,11 +736,10 @@
   docker_network:
     name: "{{ network_name }}"
     state: absent
-    force: yes
+    force: true
   loop:
-  - "{{ nname_1 }}"
-  - "{{ nname_2 }}"
-  - "{{ nname_3 }}"
+    - "{{ nname_1 }}"
+    - "{{ nname_2 }}"
+    - "{{ nname_3 }}"
   loop_control:
     loop_var: network_name
-  when: docker_py_version is version('1.10.0', '>=')

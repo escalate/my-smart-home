@@ -1,14 +1,17 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - set_fact:
     image_names:
       - "{{ docker_test_image_hello_world }}"
-      - "{{ docker_test_image_alpine_different }}"
-      - "{{ docker_test_image_alpine }}"
+      - "{{ docker_test_image_simple_1 }}"
+      - "{{ docker_test_image_simple_2 }}"
 
 - name: Make sure images are there
-  docker_image:
+  docker_image_pull:
     name: "{{ item }}"
-    source: pull
   register: images
   loop: "{{ image_names }}"
 
@@ -18,7 +21,9 @@
     all_images: "{{ image_names + (images.results | map(attribute='image') | map(attribute='Id') | list) }}"
 
 - name: Create archives
-  command: docker save {{ item.images | join(' ') }} -o {{ remote_tmp_dir }}/{{ item.file }}
+  docker_image_export:
+    names: "{{ item.images }}"
+    path: "{{ remote_tmp_dir }}/{{ item.file }}"
   loop:
     - file: archive-1.tar
       images: "{{ image_names }}"
@@ -39,10 +44,9 @@
 # All images by IDs
 
 - name: Remove all images
-  docker_image:
+  docker_image_remove:
     name: "{{ item }}"
-    state: absent
-    force_absent: true
+    force: true
   loop: "{{ all_images }}"
   ignore_errors: true
   register: remove_all_images
@@ -63,10 +67,9 @@
   when: remove_all_images is failed
 
 - name: Remove all images (after pruning)
-  docker_image:
+  docker_image_remove:
     name: "{{ item }}"
-    state: absent
-    force_absent: true
+    force: true
   loop: "{{ all_images }}"
   when: remove_all_images is failed
 
@@ -103,9 +106,8 @@
 # Mixed images and IDs
 
 - name: Remove all images
-  docker_image:
+  docker_image_remove:
     name: "{{ item }}"
-    state: absent
   loop: "{{ all_images }}"
 
 - name: Load all images (mixed images and IDs)
@@ -133,9 +135,8 @@
 # Same image twice
 
 - name: Remove all images
-  docker_image:
+  docker_image_remove:
     name: "{{ item }}"
-    state: absent
   loop: "{{ all_images }}"
 
 - name: Load all images (same image twice)
@@ -158,9 +159,8 @@
 # Single image by ID
 
 - name: Remove all images
-  docker_image:
+  docker_image_remove:
     name: "{{ item }}"
-    state: absent
   loop: "{{ all_images }}"
 
 - name: Load all images (single image by ID)
@@ -193,9 +193,8 @@
 # All images by names
 
 - name: Remove all images
-  docker_image:
+  docker_image_remove:
     name: "{{ item }}"
-    state: absent
   loop: "{{ all_images }}"
 
 - name: Load all images (names)

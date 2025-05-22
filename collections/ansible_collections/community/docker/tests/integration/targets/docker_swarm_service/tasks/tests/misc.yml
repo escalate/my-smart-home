@@ -1,10 +1,14 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - block:
     - name: Create a swarm service without name
       register: output
       docker_swarm_service:
         state: present
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: assert failure when name not set
       assert:
@@ -29,7 +33,7 @@
         name: test_service
         endpoint_mode: dnsrr
         image: "{{ docker_test_image_busybox }}"
-        resolve_image: no
+        resolve_image: false
         args:
           - sleep
           - "3600"
@@ -44,7 +48,7 @@
       docker_swarm_service:
         name: test_service
         image: "{{ docker_test_image_busybox }}"
-        resolve_image: no
+        resolve_image: false
         args:
           - sleep
           - "1800"
@@ -59,7 +63,7 @@
       docker_swarm_service:
         name: test_service
         image: "{{ docker_test_image_busybox }}"
-        resolve_image: no
+        resolve_image: false
         endpoint_mode: vip
         mode: global
         args:
@@ -76,7 +80,7 @@
       docker_swarm_service:
         name: test_service
         image: "{{ docker_test_image_busybox }}"
-        resolve_image: no
+        resolve_image: false
         mode: global
         args:
           - sleep
@@ -110,4 +114,4 @@
         that:
           - output is success
           - output is changed
-  when: docker_api_version is version('1.24', '>=') and docker_py_version is version('3.0.0', '>=')
+  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('3.0.0', '>=')

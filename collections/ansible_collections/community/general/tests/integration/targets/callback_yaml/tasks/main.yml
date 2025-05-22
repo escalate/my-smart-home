@@ -4,6 +4,10 @@
 # and should not be used as examples of how to write Ansible roles #
 ####################################################################
 
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Run tests
   include_role:
     name: callback
@@ -63,7 +67,7 @@
           ANSIBLE_NOCOLOR: 'true'
           ANSIBLE_FORCE_COLOR: 'false'
           ANSIBLE_STDOUT_CALLBACK: community.general.yaml
-        playbook: |
+        playbook: !unsafe |
           - hosts: testhost
             gather_facts: false
             vars:
@@ -74,9 +78,7 @@
             tasks:
               - name: Test to_yaml
                 debug:
-                  msg: "{{ '{{' }}'{{ '{{' }}'{{ '}}' }} data | to_yaml {{ '{{' }}'{{ '}}' }}'{{ '}}' }}"
-        # The above should be:   msg: "{{ data | to_yaml }}"
-        # Unfortunately, the way Ansible handles templating, we need to do some funny 'escaping' tricks...
+                  msg: "{{ data | to_yaml }}"
         expected_output: [
           "",
           "PLAY [testhost] ****************************************************************",

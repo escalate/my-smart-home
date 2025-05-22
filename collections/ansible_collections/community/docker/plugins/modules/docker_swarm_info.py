@@ -1,96 +1,98 @@
 #!/usr/bin/python
 #
-# (c) 2019 Piotr Wojciechowski <piotr@it-playground.pl>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2019 Piotr Wojciechowski <piotr@it-playground.pl>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: docker_swarm_info
 
-short_description: Retrieves facts about Docker Swarm cluster.
+short_description: Retrieves facts about Docker Swarm cluster
 
 description:
   - Retrieves facts about a Docker Swarm.
   - Returns lists of swarm objects names for the services - nodes, services, tasks.
   - The output differs depending on API version available on docker host.
-  - Must be run on Swarm Manager node; otherwise module fails with error message.
-    It does return boolean flags in on both error and success which indicate whether
-    the docker daemon can be communicated with, whether it is in Swarm mode, and
+  - Must be run on Swarm Manager node; otherwise module fails with error message. It does return boolean flags in on both
+    error and success which indicate whether the docker daemon can be communicated with, whether it is in Swarm mode, and
     whether it is a Swarm Manager node.
-
-
 author:
-    - Piotr Wojciechowski (@WojciechowskiPiotr)
+  - Piotr Wojciechowski (@WojciechowskiPiotr)
+
+extends_documentation_fragment:
+  - community.docker.docker
+  - community.docker.docker.docker_py_1_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+  - community.docker.attributes.info_module
+  - community.docker.attributes.idempotent_not_modify_state
 
 options:
   nodes:
     description:
       - Whether to list swarm nodes.
     type: bool
-    default: no
+    default: false
   nodes_filters:
     description:
       - A dictionary of filter values used for selecting nodes to list.
-      - "For example, C(name: mynode)."
-      - See L(the docker documentation,https://docs.docker.com/engine/reference/commandline/node_ls/#filtering)
-        for more information on possible filters.
+      - 'For example, C(name: mynode).'
+      - See L(the docker documentation,https://docs.docker.com/engine/reference/commandline/node_ls/#filtering) for more information
+        on possible filters.
     type: dict
   services:
     description:
       - Whether to list swarm services.
     type: bool
-    default: no
+    default: false
   services_filters:
     description:
       - A dictionary of filter values used for selecting services to list.
-      - "For example, C(name: myservice)."
-      - See L(the docker documentation,https://docs.docker.com/engine/reference/commandline/service_ls/#filtering)
-        for more information on possible filters.
+      - 'For example, C(name: myservice).'
+      - See L(the docker documentation,https://docs.docker.com/engine/reference/commandline/service_ls/#filtering) for more
+        information on possible filters.
     type: dict
   tasks:
     description:
       - Whether to list containers.
     type: bool
-    default: no
+    default: false
   tasks_filters:
     description:
       - A dictionary of filter values used for selecting tasks to list.
-      - "For example, C(node: mynode-1)."
-      - See L(the docker documentation,https://docs.docker.com/engine/reference/commandline/service_ps/#filtering)
-        for more information on possible filters.
+      - 'For example, C(node: mynode-1).'
+      - See L(the docker documentation,https://docs.docker.com/engine/reference/commandline/service_ps/#filtering) for more
+        information on possible filters.
     type: dict
   unlock_key:
     description:
       - Whether to retrieve the swarm unlock key.
     type: bool
-    default: no
+    default: false
   verbose_output:
     description:
-      - When set to C(yes) and I(nodes), I(services) or I(tasks) is set to C(yes), then the module output will
-        contain verbose information about objects matching the full output of API method.
+      - When set to V(true) and O(nodes), O(services), or O(tasks) is set to V(true), then the module output will contain
+        verbose information about objects matching the full output of API method.
       - For details see the documentation of your version of Docker API at U(https://docs.docker.com/engine/api/).
-      - The verbose output in this module contains only subset of information returned by I(_info) module
-        for each type of the objects.
+      - The verbose output in this module contains only subset of information returned by this info module for each type of
+        the objects.
     type: bool
-    default: no
-extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_1_documentation
-
+    default: false
 
 requirements:
-    - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 1.10.0 (use L(docker-py,https://pypi.org/project/docker-py/) for Python 2.6)"
-    - "Docker API >= 1.24"
-'''
+  - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 1.10.0"
+  - "Docker API >= 1.25"
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
+---
 - name: Get info on Docker Swarm
   community.docker.docker_swarm_info:
-  ignore_errors: yes
+  ignore_errors: true
   register: result
 
 - name: Inform about basic flags
@@ -100,96 +102,89 @@ EXAMPLES = '''
       Docker in Swarm mode: {{ result.docker_swarm_active }}
       This is a Manager node: {{ result.docker_swarm_manager }}
 
-- block:
-
 - name: Get info on Docker Swarm and list of registered nodes
   community.docker.docker_swarm_info:
-    nodes: yes
+    nodes: true
   register: result
 
 - name: Get info on Docker Swarm and extended list of registered nodes
   community.docker.docker_swarm_info:
-    nodes: yes
-    verbose_output: yes
+    nodes: true
+    verbose_output: true
   register: result
 
 - name: Get info on Docker Swarm and filtered list of registered nodes
   community.docker.docker_swarm_info:
-    nodes: yes
+    nodes: true
     nodes_filters:
       name: mynode
   register: result
 
-- ansible.builtin.debug:
+- name: Show swarm facts
+  ansible.builtin.debug:
     var: result.swarm_facts
 
 - name: Get the swarm unlock key
   community.docker.docker_swarm_info:
-    unlock_key: yes
+    unlock_key: true
   register: result
 
-- ansible.builtin.debug:
+- name: Print swarm unlock key
+  ansible.builtin.debug:
     var: result.swarm_unlock_key
+"""
 
-'''
-
-RETURN = '''
+RETURN = r"""
 can_talk_to_docker:
-    description:
-      - Will be C(true) if the module can talk to the docker daemon.
-    returned: both on success and on error
-    type: bool
+  description:
+    - Will be V(true) if the module can talk to the docker daemon.
+  returned: both on success and on error
+  type: bool
 docker_swarm_active:
-    description:
-      - Will be C(true) if the module can talk to the docker daemon,
-        and the docker daemon is in Swarm mode.
-    returned: both on success and on error
-    type: bool
+  description:
+    - Will be V(true) if the module can talk to the docker daemon, and the docker daemon is in Swarm mode.
+  returned: both on success and on error
+  type: bool
 docker_swarm_manager:
-    description:
-      - Will be C(true) if the module can talk to the docker daemon,
-        the docker daemon is in Swarm mode, and the current node is
-        a manager node.
-      - Only if this one is C(true), the module will not fail.
-    returned: both on success and on error
-    type: bool
+  description:
+    - Will be V(true) if the module can talk to the docker daemon, the docker daemon is in Swarm mode, and the current node
+      is a manager node.
+    - Only if this one is V(true), the module will not fail.
+  returned: both on success and on error
+  type: bool
 swarm_facts:
-    description:
-      - Facts representing the basic state of the docker Swarm cluster.
-      - Contains tokens to connect to the Swarm
-    returned: always
-    type: dict
+  description:
+    - Facts representing the basic state of the docker Swarm cluster.
+    - Contains tokens to connect to the Swarm.
+  returned: always
+  type: dict
 swarm_unlock_key:
-    description:
-      - Contains the key needed to unlock the swarm.
-    returned: When I(unlock_key) is C(true).
-    type: str
+  description:
+    - Contains the key needed to unlock the swarm.
+  returned: When O(unlock_key=true).
+  type: str
 nodes:
-    description:
-      - List of dict objects containing the basic information about each volume.
-        Keys matches the C(docker node ls) output unless I(verbose_output=yes).
-        See description for I(verbose_output).
-    returned: When I(nodes) is C(yes)
-    type: list
-    elements: dict
+  description:
+    - List of dict objects containing the basic information about each volume. Keys matches the C(docker node ls) output unless
+      O(verbose_output=true). See description for O(verbose_output).
+  returned: When O(nodes=true)
+  type: list
+  elements: dict
 services:
-    description:
-      - List of dict objects containing the basic information about each volume.
-        Keys matches the C(docker service ls) output unless I(verbose_output=yes).
-        See description for I(verbose_output).
-    returned: When I(services) is C(yes)
-    type: list
-    elements: dict
+  description:
+    - List of dict objects containing the basic information about each volume. Keys matches the C(docker service ls) output
+      unless O(verbose_output=true). See description for O(verbose_output).
+  returned: When O(services=true)
+  type: list
+  elements: dict
 tasks:
-    description:
-      - List of dict objects containing the basic information about each volume.
-        Keys matches the C(docker service ps) output unless I(verbose_output=yes).
-        See description for I(verbose_output).
-    returned: When I(tasks) is C(yes)
-    type: list
-    elements: dict
-
-'''
+  description:
+    - List of dict objects containing the basic information about each volume. Keys matches the C(docker service ps) output
+      unless O(verbose_output=true). See description for O(verbose_output).
+  returned: When O(tasks=true)
+  type: list
+  elements: dict
+"""
 
 import traceback
 
@@ -202,10 +197,10 @@ except ImportError:
 from ansible.module_utils.common.text.converters import to_native
 
 from ansible_collections.community.docker.plugins.module_utils.swarm import AnsibleDockerSwarmClient
-from ansible_collections.community.docker.plugins.module_utils.common import (
+from ansible_collections.community.docker.plugins.module_utils.common import RequestException
+from ansible_collections.community.docker.plugins.module_utils.util import (
     DockerBaseClass,
     clean_dict_booleans_for_docker_api,
-    RequestException,
 )
 
 
@@ -267,7 +262,7 @@ class DockerSwarmManager(DockerBaseClass):
                 item_record = self.get_essential_facts_tasks(item)
             elif docker_object == 'services':
                 item_record = self.get_essential_facts_services(item)
-                if item_record['Mode'] == 'Global':
+                if item_record.get('Mode') == 'Global':
                     item_record['Replicas'] = len(items)
             items_list.append(item_record)
 
@@ -323,7 +318,7 @@ class DockerSwarmManager(DockerBaseClass):
             # Number of replicas have to be updated in calling method or may be left as None
             object_essentials['Replicas'] = None
         object_essentials['Image'] = item['Spec']['TaskTemplate']['ContainerSpec']['Image']
-        if 'Ports' in item['Spec']['EndpointSpec']:
+        if item['Spec'].get('EndpointSpec') and 'Ports' in item['Spec']['EndpointSpec']:
             object_essentials['Ports'] = item['Spec']['EndpointSpec']['Ports']
         else:
             object_essentials['Ports'] = []
@@ -347,14 +342,13 @@ def main():
         verbose_output=dict(type='bool', default=False),
     )
     option_minimal_versions = dict(
-        unlock_key=dict(docker_py_version='2.7.0', docker_api_version='1.25'),
+        unlock_key=dict(docker_py_version='2.7.0'),
     )
 
     client = AnsibleDockerSwarmClient(
         argument_spec=argument_spec,
         supports_check_mode=True,
         min_docker_version='1.10.0',
-        min_docker_api_version='1.24',
         option_minimal_versions=option_minimal_versions,
         fail_results=dict(
             can_talk_to_docker=False,
@@ -378,7 +372,7 @@ def main():
         client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when Docker SDK for Python tried to talk to the docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

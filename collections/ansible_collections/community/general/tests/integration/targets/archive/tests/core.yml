@@ -1,25 +1,14 @@
+---
 ####################################################################
 # WARNING: These are designed specifically for Ansible tests       #
 # and should not be used as examples of how to write Ansible roles #
 ####################################################################
 
 # Test code for the archive module.
-# (c) 2017, Abhijeet Kasurde <akasurde@redhat.com>
+# Copyright (c) 2017, Abhijeet Kasurde <akasurde@redhat.com>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 # Make sure we start fresh
 
 # Core functionality tests
@@ -40,7 +29,7 @@
     that:
       - archive_no_options is changed
       - "archive_no_options.dest_state == 'archive'"
-      - "{{ archive_no_options.archived | length }} == 3"
+      - "archive_no_options.archived | length == 3"
 
 - name: Remove the archive - no options ({{ format }})
   file:
@@ -65,7 +54,7 @@
     that:
       - archive_file_options_stat is not changed
       - "archive_file_options.mode == '0600'"
-      - "{{ archive_file_options.archived | length }} == 3"
+      - "archive_file_options.archived | length == 3"
 
 - name: Remove the archive - file options ({{ format }})
   file:
@@ -157,7 +146,7 @@
   assert:
     that:
       - archive_path_list is changed
-      - "{{ archive_path_list.archived | length }} == 3"
+      - "archive_path_list.archived | length == 3"
 
 - name: Remove archive - path list ({{ format }})
   file:
@@ -179,8 +168,8 @@
     that:
       - archive_missing_paths is changed
       - "archive_missing_paths.dest_state == 'incomplete'"
-      - "'{{ remote_tmp_dir }}/dne.txt' in archive_missing_paths.missing"
-      - "'{{ remote_tmp_dir }}/foo.txt' not in archive_missing_paths.missing"
+      - "(remote_tmp_dir ~ '/dne.txt') in archive_missing_paths.missing"
+      - "(remote_tmp_dir ~ '/foo.txt') not in archive_missing_paths.missing"
 
 - name: Remove archive - missing paths ({{ format }})
   file:

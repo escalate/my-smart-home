@@ -1,21 +1,37 @@
 #!/usr/bin/python
 # coding: utf-8
 #
-# Copyright: (c) 2021 Red Hat | Ansible Sakar Mehra<@sakarmehra100@gmail.com | @sakar97>
-# Copyright: (c) 2019, Vladimir Porshkevich (@porshkevich) <neosonic@mail.ru>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2021 Red Hat | Ansible Sakar Mehra<@sakarmehra100@gmail.com | @sakar97>
+# Copyright (c) 2019, Vladimir Porshkevich (@porshkevich) <neosonic@mail.ru>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: docker_plugin
 short_description: Manage Docker plugins
 version_added: 1.3.0
 description:
   - This module allows to install, delete, enable and disable Docker plugins.
   - Performs largely the same function as the C(docker plugin) CLI subcommand.
+notes:
+  - The C(--grant-all-permissions) CLI flag is true by default in this module.
+extends_documentation_fragment:
+  - community.docker.docker.api_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: full
+  diff_mode:
+    support: full
+  idempotent:
+    support: full
+
 options:
   plugin_name:
     description:
@@ -25,10 +41,10 @@ options:
 
   state:
     description:
-      - C(absent) remove the plugin.
-      - C(present) install the plugin, if it does not already exist.
-      - C(enable) enable the plugin.
-      - C(disable) disable the plugin.
+      - V(absent) remove the plugin.
+      - V(present) install the plugin, if it does not already exist.
+      - V(enable) enable the plugin.
+      - V(disable) disable the plugin.
     default: present
     choices:
       - absent
@@ -39,7 +55,7 @@ options:
 
   alias:
     description:
-     - Local name for plugin.
+      - Local name for plugin.
     type: str
     version_added: 1.8.0
 
@@ -47,11 +63,12 @@ options:
     description:
       - Dictionary of plugin settings.
     type: dict
+    default: {}
 
   force_remove:
     description:
       - Remove even if the plugin is enabled.
-    default: False
+    default: false
     type: bool
 
   enable_timeout:
@@ -60,21 +77,16 @@ options:
     type: int
     default: 0
 
-extends_documentation_fragment:
-  - community.docker.docker
-  - community.docker.docker.docker_py_2_documentation
-
 author:
   - Sakar Mehra (@sakar97)
   - Vladimir Porshkevich (@porshkevich)
 
 requirements:
-  - "python >= 2.7"
-  - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 2.6.0"
   - "Docker API >= 1.25"
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
+---
 - name: Install a plugin
   community.docker.docker_plugin:
     plugin_name: plugin_one
@@ -101,39 +113,38 @@ EXAMPLES = '''
     plugin_options:
       IPALLOC_RANGE: "10.32.0.0/12"
       WEAVE_PASSWORD: "PASSWORD"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 plugin:
-    description:
-      - Plugin inspection results for the affected plugin.
-    returned: success
-    type: dict
-    sample: {}
+  description:
+    - Plugin inspection results for the affected plugin.
+  returned: success
+  type: dict
+  sample: {}
 actions:
-    description:
-      - List of actions performed during task execution.
-    returned: when I(state!=absent)
-    type: list
-'''
+  description:
+    - List of actions performed during task execution.
+  returned: when O(state) is not V(absent)
+  type: list
+"""
 
 import traceback
 
 from ansible.module_utils.common.text.converters import to_native
 
-try:
-    from docker.errors import APIError, NotFound, DockerException
-    from docker import DockerClient
-except ImportError:
-    # missing docker-py handled in ansible.module_utils.docker_common
-    pass
-
-from ansible_collections.community.docker.plugins.module_utils.common import (
-    DockerBaseClass,
+from ansible_collections.community.docker.plugins.module_utils.common_api import (
     AnsibleDockerClient,
-    DifferenceTracker,
     RequestException
 )
+
+from ansible_collections.community.docker.plugins.module_utils.util import (
+    DockerBaseClass,
+    DifferenceTracker,
+)
+
+from ansible_collections.community.docker.plugins.module_utils._api import auth
+from ansible_collections.community.docker.plugins.module_utils._api.errors import APIError, DockerException, NotFound
 
 
 class TaskParameters(DockerBaseClass):
@@ -164,9 +175,6 @@ class DockerPluginManager(object):
     def __init__(self, client):
         self.client = client
 
-        self.dclient = DockerClient(**self.client._connect_params)
-        self.dclient.api = client
-
         self.parameters = TaskParameters(client)
         self.preferred_name = self.parameters.alias or self.parameters.plugin_name
         self.check_mode = self.client.check_mode
@@ -196,16 +204,11 @@ class DockerPluginManager(object):
 
     def get_existing_plugin(self):
         try:
-            plugin = self.dclient.plugins.get(self.preferred_name)
+            return self.client.get_json('/plugins/{0}/json', self.preferred_name)
         except NotFound:
             return None
         except APIError as e:
             self.client.fail(to_native(e))
-
-        if plugin is None:
-            return None
-        else:
-            return plugin
 
     def has_different_config(self):
         """
@@ -215,20 +218,19 @@ class DockerPluginManager(object):
         """
         differences = DifferenceTracker()
         if self.parameters.plugin_options:
-            if not self.existing_plugin.settings:
-                differences.add('plugin_options', parameters=self.parameters.plugin_options, active=self.existing_plugin.settings['Env'])
+            settings = self.existing_plugin.get('Settings')
+            if not settings:
+                differences.add('plugin_options', parameters=self.parameters.plugin_options, active=settings)
             else:
-                existing_options_list = self.existing_plugin.settings['Env']
-                existing_options = parse_options(existing_options_list)
+                existing_options = parse_options(settings.get('Env'))
 
                 for key, value in self.parameters.plugin_options.items():
-                    options_count = 0
                     if ((not existing_options.get(key) and value) or
                             not value or
                             value != existing_options[key]):
                         differences.add('plugin_options.%s' % key,
                                         parameter=value,
-                                        active=self.existing_plugin.settings['Env'][options_count])
+                                        active=existing_options.get(key))
 
         return differences
 
@@ -236,11 +238,28 @@ class DockerPluginManager(object):
         if not self.existing_plugin:
             if not self.check_mode:
                 try:
-                    self.existing_plugin = self.dclient.plugins.install(
-                        self.parameters.plugin_name, self.parameters.alias
-                    )
+                    # Get privileges
+                    headers = {}
+                    registry, repo_name = auth.resolve_repository_name(self.parameters.plugin_name)
+                    header = auth.get_config_header(self.client, registry)
+                    if header:
+                        headers['X-Registry-Auth'] = header
+                    privileges = self.client.get_json('/plugins/privileges', params={'remote': self.parameters.plugin_name}, headers=headers)
+                    # Pull plugin
+                    params = {
+                        'remote': self.parameters.plugin_name,
+                    }
+                    if self.parameters.alias:
+                        params['name'] = self.parameters.alias
+                    response = self.client._post_json(self.client._url('/plugins/pull'), params=params, headers=headers, data=privileges, stream=True)
+                    self.client._raise_for_status(response)
+                    for data in self.client._stream_helper(response, decode=True):
+                        pass
+                    # Inspect and configure plugin
+                    self.existing_plugin = self.client.get_json('/plugins/{0}/json', self.preferred_name)
                     if self.parameters.plugin_options:
-                        self.existing_plugin.configure(prepare_options(self.parameters.plugin_options))
+                        data = prepare_options(self.parameters.plugin_options)
+                        self.client.post_json('/plugins/{0}/set', self.preferred_name, data=data)
                 except APIError as e:
                     self.client.fail(to_native(e))
 
@@ -252,7 +271,7 @@ class DockerPluginManager(object):
         if self.existing_plugin:
             if not self.check_mode:
                 try:
-                    self.existing_plugin.remove(force)
+                    self.client.delete_call('/plugins/{0}', self.preferred_name, params={'force': force})
                 except APIError as e:
                     self.client.fail(to_native(e))
 
@@ -265,7 +284,8 @@ class DockerPluginManager(object):
             if not differences.empty:
                 if not self.check_mode:
                     try:
-                        self.existing_plugin.configure(prepare_options(self.parameters.plugin_options))
+                        data = prepare_options(self.parameters.plugin_options)
+                        self.client.post_json('/plugins/{0}/set', self.preferred_name, data=data)
                     except APIError as e:
                         self.client.fail(to_native(e))
                 self.actions.append("Updated plugin %s settings" % self.preferred_name)
@@ -297,10 +317,10 @@ class DockerPluginManager(object):
     def enable(self):
         timeout = self.parameters.enable_timeout
         if self.existing_plugin:
-            if not self.existing_plugin.enabled:
+            if not self.existing_plugin.get('Enabled'):
                 if not self.check_mode:
                     try:
-                        self.existing_plugin.enable(timeout)
+                        self.client.post_json('/plugins/{0}/enable', self.preferred_name, params={'timeout': timeout})
                     except APIError as e:
                         self.client.fail(to_native(e))
                 self.actions.append("Enabled plugin %s" % self.preferred_name)
@@ -309,7 +329,7 @@ class DockerPluginManager(object):
             self.install_plugin()
             if not self.check_mode:
                 try:
-                    self.existing_plugin.enable(timeout)
+                    self.client.post_json('/plugins/{0}/enable', self.preferred_name, params={'timeout': timeout})
                 except APIError as e:
                     self.client.fail(to_native(e))
             self.actions.append("Enabled plugin %s" % self.preferred_name)
@@ -317,10 +337,10 @@ class DockerPluginManager(object):
 
     def disable(self):
         if self.existing_plugin:
-            if self.existing_plugin.enabled:
+            if self.existing_plugin.get('Enabled'):
                 if not self.check_mode:
                     try:
-                        self.existing_plugin.disable()
+                        self.client.post_json('/plugins/{0}/disable', self.preferred_name)
                     except APIError as e:
                         self.client.fail(to_native(e))
                 self.actions.append("Disable plugin %s" % self.preferred_name)
@@ -330,11 +350,18 @@ class DockerPluginManager(object):
 
     @property
     def result(self):
+        plugin_data = {}
+        if self.parameters.state != 'absent':
+            try:
+                plugin_data = self.client.get_json('/plugins/{0}/json', self.preferred_name)
+            except NotFound:
+                # This can happen in check mode
+                pass
         result = {
             'actions': self.actions,
             'changed': self.changed,
             'diff': self.diff,
-            'plugin': self.client.inspect_plugin(self.preferred_name) if self.parameters.state != 'absent' else {}
+            'plugin': plugin_data,
         }
         return dict((k, v) for k, v in result.items() if v is not None)
 
@@ -352,8 +379,6 @@ def main():
     client = AnsibleDockerClient(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        min_docker_version='2.6.0',
-        min_docker_api_version='1.25',
     )
 
     try:
@@ -363,7 +388,7 @@ def main():
         client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when trying to talk to the Docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

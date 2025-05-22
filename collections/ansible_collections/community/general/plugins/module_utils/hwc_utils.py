@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c), Google Inc, 2017
-# Simplified BSD License (see licenses/simplified_bsd.txt or
-# https://opensource.org/licenses/BSD-2-Clause)
+# Simplified BSD License (see LICENSES/BSD-2-Clause.txt or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -203,7 +203,7 @@ class Config(object):
 
         if url == "":
             raise HwcClientException(
-                0, "Can not find the enpoint for %s" % service_type)
+                0, "Cannot find the endpoint for %s" % service_type)
 
         if url[-1] != "/":
             url += "/"
@@ -351,7 +351,7 @@ def wait_to_finish(target, pending, refresh, timeout, min_interval=1, delay=3):
 
             if pending and status not in pending:
                 raise HwcModuleException(
-                    "unexpect status(%s) occured" % status)
+                    "unexpected status(%s) occurred" % status)
 
         if not is_last_time:
             wait *= 2
@@ -362,7 +362,7 @@ def wait_to_finish(target, pending, refresh, timeout, min_interval=1, delay=3):
 
             time.sleep(wait)
 
-    raise HwcModuleException("asycn wait timeout after %d seconds" % timeout)
+    raise HwcModuleException("async wait timeout after %d seconds" % timeout)
 
 
 def navigate_value(data, index, array_index=None):

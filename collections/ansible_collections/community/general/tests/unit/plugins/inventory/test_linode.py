@@ -1,21 +1,7 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2018 Luke Murphy <lukewm@riseup.net>
-#
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -30,56 +16,46 @@ mandatory_py_version = pytest.mark.skipif(
 )
 
 
-from ansible.errors import AnsibleError, AnsibleParserError
+from ansible.errors import AnsibleError
+from ansible.parsing.dataloader import DataLoader
+from ansible.template import Templar
 from ansible_collections.community.general.plugins.inventory.linode import InventoryModule
 
 
 @pytest.fixture(scope="module")
 def inventory():
-    return InventoryModule()
+    plugin = InventoryModule()
+    plugin.templar = Templar(loader=DataLoader())
+    return plugin
 
 
-def test_access_token_lookup(inventory):
+def test_missing_access_token_lookup(inventory):
+    loader = DataLoader()
     inventory._options = {'access_token': None}
     with pytest.raises(AnsibleError) as error_message:
-        inventory._build_client()
+        inventory._build_client(loader)
         assert 'Could not retrieve Linode access token' in error_message
 
 
-def test_validate_option(inventory):
-    assert ['eu-west'] == inventory._validate_option('regions', list, 'eu-west')
-    assert ['eu-west'] == inventory._validate_option('regions', list, ['eu-west'])
-    assert 'api' == inventory._validate_option('ip_style', str, 'api')
-
-
-def test_validation_option_bad_option(inventory):
-    with pytest.raises(AnsibleParserError) as error_message:
-        inventory._validate_option('regions', dict, [])
-        assert "The option filters ([]) must be a <class 'dict'>" == error_message
-
-
-def test_empty_config_query_options(inventory):
-    regions, types, tags = inventory._get_query_options({})
-    assert regions == types == tags == []
-
-
-def test_config_query_options(inventory):
-    regions, types, tags = inventory._get_query_options({
-        'regions': ['eu-west', 'us-east'],
-        'types': ['g5-standard-2', 'g6-standard-2'],
-        'tags': ['web-server'],
-    })
-
-    assert regions == ['eu-west', 'us-east']
-    assert types == ['g5-standard-2', 'g6-standard-2']
-    assert tags == ['web-server']
-
-
-def test_verify_file(tmp_path, inventory):
+def test_verify_file_yml(tmp_path, inventory):
     file = tmp_path / "foobar.linode.yml"
     file.touch()
     assert inventory.verify_file(str(file)) is True
 
 
+def test_verify_file_yaml(tmp_path, inventory):
+    file = tmp_path / "foobar.linode.yaml"
+    file.touch()
+    assert inventory.verify_file(str(file)) is True
+
+
+def test_verify_file_bad_config_yml(inventory):
+    assert inventory.verify_file("foobar.linode.yml") is False
+
+
+def test_verify_file_bad_config_yaml(inventory):
+    assert inventory.verify_file("foobar.linode.yaml") is False
+
+
 def test_verify_file_bad_config(inventory):
-    assert inventory.verify_file('foobar.linode.yml') is False
+    assert inventory.verify_file("foobar.wrongcloud.yml") is False

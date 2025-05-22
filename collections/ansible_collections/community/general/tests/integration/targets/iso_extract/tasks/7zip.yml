@@ -1,25 +1,13 @@
+---
 # Test code for the iso_extract module.
-# (c) 2017, James Tanner <tanner.jc@gmail.com>
-# (c) 2017, Dag Wieers <dag@wieers.com>
-
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright (c) 2017, James Tanner <tanner.jc@gmail.com>
+# Copyright (c) 2017, Dag Wieers <dag@wieers.com>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Gather facts
   setup:
-  become: yes
+  become: true
 
 - name: Include distribution specific variables
   include_vars: "{{ lookup('first_found', params) }}"
@@ -57,10 +45,10 @@
       homebrew:
         name: p7zip
         state: present
-        update_homebrew: no
-      become: yes
+        update_homebrew: false
+      become: true
       become_user: "{{ brew_stat.stat.pw_name }}"
       # Newer versions of brew want to compile a package which takes a long time. Do not upgrade homebrew until a
       # proper solution can be found
       environment:
-        HOMEBREW_NO_AUTO_UPDATE: True
+        HOMEBREW_NO_AUTO_UPDATE: "True"

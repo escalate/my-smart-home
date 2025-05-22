@@ -1,12 +1,22 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 ###################################################
+- name: Make directory install_c
+  ansible.builtin.file:
+    path: "{{ remote_tmp_dir }}/install_c"
+    state: directory
+
 - name: Install collection netbox.netbox
   community.general.ansible_galaxy_install:
     type: collection
     name: netbox.netbox
+    dest: "{{ remote_tmp_dir }}/install_c"
   register: install_c0
 
-- name: Assert collection was installed
+- name: Assert collection netbox.netbox was installed
   assert:
     that:
     - install_c0 is changed
@@ -16,6 +26,7 @@
   community.general.ansible_galaxy_install:
     type: collection
     name: netbox.netbox
+    dest: "{{ remote_tmp_dir }}/install_c"
   register: install_c1
 
 - name: Assert collection was not installed
@@ -24,13 +35,19 @@
     - install_c1 is not changed
 
 ###################################################
+- name: Make directory install_r
+  ansible.builtin.file:
+    path: "{{ remote_tmp_dir }}/install_r"
+    state: directory
+
 - name: Install role ansistrano.deploy
   community.general.ansible_galaxy_install:
     type: role
     name: ansistrano.deploy
+    dest: "{{ remote_tmp_dir }}/install_r"
   register: install_r0
 
-- name: Assert collection was installed
+- name: Assert collection ansistrano.deploy was installed
   assert:
     that:
     - install_r0 is changed
@@ -40,6 +57,7 @@
   community.general.ansible_galaxy_install:
     type: role
     name: ansistrano.deploy
+    dest: "{{ remote_tmp_dir }}/install_r"
   register: install_r1
 
 - name: Assert role was not installed
@@ -48,7 +66,7 @@
     - install_r1 is not changed
 
 ###################################################
-- name:
+- name: Set requirements file path
   set_fact:
     reqs_file: '{{ remote_tmp_dir }}/reqs.yaml'
 
@@ -64,23 +82,12 @@
   register: install_rq0
   ignore_errors: true
 
-- name: Assert requirements file was installed (Ansible >2.9)
+- name: Assert requirements file was installed
   assert:
     that:
     - install_rq0 is changed
     - '"geerlingguy.java" in install_rq0.new_roles'
     - '"geerlingguy.php_roles" in install_rq0.new_collections'
-  when:
-    - (ansible_version.major != 2 or ansible_version.minor != 9)
-
-- name: Assert requirements file was installed (Ansible 2.9)
-  assert:
-    that:
-    - install_rq0 is failed
-    - install_rq0 is not changed
-  when:
-    - ansible_version.major == 2
-    - ansible_version.minor == 9
 
 - name: Install from requirements file (again)
   community.general.ansible_galaxy_install:
@@ -93,3 +100,44 @@
   assert:
     that:
     - install_rq1 is not changed
+
+###################################################
+- name: Make directory upgrade_c
+  ansible.builtin.file:
+    path: "{{ remote_tmp_dir }}/upgrade_c"
+    state: directory
+
+- name: Install collection netbox.netbox 3.17.0
+  community.general.ansible_galaxy_install:
+    type: collection
+    name: netbox.netbox:3.17.0
+    dest: "{{ remote_tmp_dir }}/upgrade_c"
+  register: upgrade_c0
+
+- name: Assert collection netbox.netbox was installed
+  assert:
+    that:
+    - upgrade_c0 is changed
+    - '"netbox.netbox" in upgrade_c0.new_collections'
+
+- name: Upgrade collection netbox.netbox
+  community.general.ansible_galaxy_install:
+    state: latest
+    type: collection
+    name: netbox.netbox
+    dest: "{{ remote_tmp_dir }}/upgrade_c"
+  register: upgrade_c1
+
+- name: Upgrade collection netbox.netbox (again)
+  community.general.ansible_galaxy_install:
+    state: latest
+    type: collection
+    name: netbox.netbox
+    dest: "{{ remote_tmp_dir }}/upgrade_c"
+  register: upgrade_c2
+
+- name: Assert collection was not installed
+  assert:
+    that:
+    - upgrade_c1 is changed
+    - upgrade_c2 is not changed

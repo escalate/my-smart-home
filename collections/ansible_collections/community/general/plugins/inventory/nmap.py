@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2017 Ansible Project
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
 DOCUMENTATION = '''
     author: Unknown (!UNKNOWN)
@@ -19,35 +19,109 @@ DOCUMENTATION = '''
     options:
         plugin:
             description: token that ensures this is a source file for the 'nmap' plugin.
-            required: True
+            type: string
+            required: true
             choices: ['nmap', 'community.general.nmap']
+        sudo:
+            description: Set to V(true) to execute a C(sudo nmap) plugin scan.
+            version_added: 4.8.0
+            default: false
+            type: boolean
         address:
             description: Network IP or range of IPs to scan, you can use a simple range (10.2.2.15-25) or CIDR notation.
-            required: True
+            type: string
+            required: true
+            env:
+                - name: ANSIBLE_NMAP_ADDRESS
+                  version_added: 6.6.0
         exclude:
-            description: list of addresses to exclude
+            description:
+              - List of addresses to exclude.
+              - For example V(10.2.2.15-25) or V(10.2.2.15,10.2.2.16).
             type: list
+            elements: string
+            env:
+                - name: ANSIBLE_NMAP_EXCLUDE
+                  version_added: 6.6.0
+        port:
+            description:
+                - Only scan specific port or port range (C(-p)).
+                - For example, you could pass V(22) for a single port, V(1-65535) for a range of ports,
+                  or V(U:53,137,T:21-25,139,8080,S:9) to check port 53 with UDP, ports 21-25 with TCP, port 9 with SCTP, and ports 137, 139, and 8080 with all.
+            type: string
+            version_added: 6.5.0
         ports:
-            description: Enable/disable scanning for open ports
+            description: Enable/disable scanning ports.
             type: boolean
-            default: True
+            default: true
         ipv4:
             description: use IPv4 type addresses
             type: boolean
-            default: True
+            default: true
         ipv6:
             description: use IPv6 type addresses
             type: boolean
-            default: True
+            default: true
+        udp_scan:
+            description:
+                - Scan via UDP.
+                - Depending on your system you might need O(sudo=true) for this to work.
+            type: boolean
+            default: false
+            version_added: 6.1.0
+        icmp_timestamp:
+            description:
+                - Scan via ICMP Timestamp (C(-PP)).
+                - Depending on your system you might need O(sudo=true) for this to work.
+            type: boolean
+            default: false
+            version_added: 6.1.0
+        open:
+            description: Only scan for open (or possibly open) ports.
+            type: boolean
+            default: false
+            version_added: 6.5.0
+        dns_resolve:
+            description: Whether to always (V(true)) or never (V(false)) do DNS resolution.
+            type: boolean
+            default: false
+            version_added: 6.1.0
+        dns_servers:
+            description: Specify which DNS servers to use for name resolution.
+            type: list
+            elements: string
+            version_added: 10.5.0
+        use_arp_ping:
+            description: Whether to always (V(true)) use the quick ARP ping or (V(false)) a slower but more reliable method.
+            type: boolean
+            default: true
+            version_added: 7.4.0
     notes:
-        - At least one of ipv4 or ipv6 is required to be True, both can be True, but they cannot both be False.
+        - At least one of O(ipv4) or O(ipv6) is required to be V(true); both can be V(true), but they cannot both be V(false).
         - 'TODO: add OS fingerprinting'
 '''
 EXAMPLES = '''
+---
 # inventory.config file in YAML format
 plugin: community.general.nmap
-strict: False
+strict: false
 address: 192.168.0.0/24
+
+---
+# a sudo nmap scan to fully use nmap scan power.
+plugin: community.general.nmap
+sudo: true
+strict: false
+address: 192.168.0.0/24
+
+---
+# an nmap scan specifying ports and classifying results to an inventory group
+plugin: community.general.nmap
+address: 192.168.0.0/24
+exclude: 192.168.0.1, web.example.com
+port: 22, 443
+groups:
+  web_servers: "ports | selectattr('port', 'equalto', '443')"
 '''
 
 import os
@@ -60,6 +134,8 @@ from ansible.errors import AnsibleParserError
 from ansible.module_utils.common.text.converters import to_native, to_text
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
 from ansible.module_utils.common.process import get_bin_path
+
+from ansible_collections.community.general.plugins.plugin_utils.unsafe import make_unsafe
 
 
 class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
@@ -77,6 +153,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         strict = self.get_option('strict')
 
         for host in hosts:
+            host = make_unsafe(host)
             hostname = host['name']
             self.inventory.add_host(hostname)
             for var, value in host.items():
@@ -107,7 +184,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         try:
             self._nmap = get_bin_path('nmap')
         except ValueError as e:
-            raise AnsibleParserError('nmap inventory plugin requires the nmap cli tool to work: {0}'.format(to_native(e)))
+            raise AnsibleParserError(f'nmap inventory plugin requires the nmap cli tool to work: {e}')
 
         super(InventoryModule, self).parse(inventory, loader, path, cache=cache)
 
@@ -134,27 +211,54 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if not user_cache_setting or cache_needs_update:
             # setup command
             cmd = [self._nmap]
-            if not self._options['ports']:
+
+            if self.get_option('sudo'):
+                cmd.insert(0, 'sudo')
+
+            if self.get_option('port'):
+                cmd.append('-p')
+                cmd.append(self.get_option('port'))
+
+            if not self.get_option('ports'):
                 cmd.append('-sP')
 
-            if self._options['ipv4'] and not self._options['ipv6']:
+            if self.get_option('ipv4') and not self.get_option('ipv6'):
                 cmd.append('-4')
-            elif self._options['ipv6'] and not self._options['ipv4']:
+            elif self.get_option('ipv6') and not self.get_option('ipv4'):
                 cmd.append('-6')
-            elif not self._options['ipv6'] and not self._options['ipv4']:
+            elif not self.get_option('ipv6') and not self.get_option('ipv4'):
                 raise AnsibleParserError('One of ipv4 or ipv6 must be enabled for this plugin')
 
-            if self._options['exclude']:
+            if self.get_option('exclude'):
                 cmd.append('--exclude')
-                cmd.append(','.join(self._options['exclude']))
+                cmd.append(','.join(self.get_option('exclude')))
 
-            cmd.append(self._options['address'])
+            if self.get_option('dns_resolve'):
+                cmd.append('-n')
+
+            if self.get_option('dns_servers'):
+                cmd.append('--dns-servers')
+                cmd.append(','.join(self.get_option('dns_servers')))
+
+            if self.get_option('udp_scan'):
+                cmd.append('-sU')
+
+            if self.get_option('icmp_timestamp'):
+                cmd.append('-PP')
+
+            if self.get_option('open'):
+                cmd.append('--open')
+
+            if not self.get_option('use_arp_ping'):
+                cmd.append('--disable-arp-ping')
+
+            cmd.append(self.get_option('address'))
             try:
                 # execute
                 p = Popen(cmd, stdout=PIPE, stderr=PIPE)
                 stdout, stderr = p.communicate()
                 if p.returncode != 0:
-                    raise AnsibleParserError('Failed to run nmap, rc=%s: %s' % (p.returncode, to_native(stderr)))
+                    raise AnsibleParserError(f'Failed to run nmap, rc={p.returncode}: {to_native(stderr)}')
 
                 # parse results
                 host = None
@@ -165,7 +269,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 try:
                     t_stdout = to_text(stdout, errors='surrogate_or_strict')
                 except UnicodeError as e:
-                    raise AnsibleParserError('Invalid (non unicode) input returned: %s' % to_native(e))
+                    raise AnsibleParserError(f'Invalid (non unicode) input returned: {e}')
 
                 for line in t_stdout.splitlines():
                     hits = self.find_host.match(line)
@@ -206,7 +310,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                     results[-1]['ports'] = ports
 
             except Exception as e:
-                raise AnsibleParserError("failed to parse %s: %s " % (to_native(path), to_native(e)))
+                raise AnsibleParserError(f"failed to parse {to_native(path)}: {e} ")
 
         if cache_needs_update:
             self._cache[cache_key] = results

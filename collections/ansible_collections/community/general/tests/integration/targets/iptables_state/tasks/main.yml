@@ -4,11 +4,15 @@
 # and should not be used as examples of how to write Ansible roles #
 ####################################################################
 
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: ensure iptables package is installed
   package:
     name:
       - iptables
-  become: yes
+  become: true
 
 
 - name: include tasks
@@ -25,10 +29,16 @@
       when:
         - xtables_lock is undefined
 
+    - name: include tasks to test partial restore files
+      include_tasks: tests/02-partial-restore.yml
+      when:
+        - xtables_lock is undefined
+
+
     - name: include tasks to test rollbacks
       include_tasks: tests/10-rollback.yml
       when:
         - xtables_lock is undefined
         - ansible_connection in ['ssh', 'paramiko', 'smart']
 
-  become: yes
+  become: true

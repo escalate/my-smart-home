@@ -2,7 +2,8 @@
 #
 # Copyright (c) 2016 Dimension Data
 #
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # Authors:
 #   - Aimon Bustardo <aimon.bustardo@dimensiondata.com>
@@ -18,15 +19,16 @@ import os
 import re
 import traceback
 
-from ansible.module_utils.basic import AnsibleModule, missing_required_lib
+# (TODO: remove AnsibleModule from next line!)
+from ansible.module_utils.basic import AnsibleModule, missing_required_lib  # noqa: F401, pylint: disable=unused-import
 from ansible.module_utils.six.moves import configparser
 from os.path import expanduser
 from uuid import UUID
 
 LIBCLOUD_IMP_ERR = None
 try:
-    from libcloud.common.dimensiondata import API_ENDPOINTS, DimensionDataAPIException, DimensionDataStatus
-    from libcloud.compute.base import Node, NodeLocation
+    from libcloud.common.dimensiondata import API_ENDPOINTS, DimensionDataAPIException, DimensionDataStatus  # noqa: F401, pylint: disable=unused-import
+    from libcloud.compute.base import Node, NodeLocation  # noqa: F401, pylint: disable=unused-import
     from libcloud.compute.providers import get_driver
     from libcloud.compute.types import Provider
 
@@ -37,7 +39,7 @@ except ImportError:
     LIBCLOUD_IMP_ERR = traceback.format_exc()
     HAS_LIBCLOUD = False
 
-# MCP 2.x version patten for location (datacenter) names.
+# MCP 2.x version pattern for location (datacenter) names.
 #
 # Note that this is not a totally reliable way of determining MCP version.
 # Unfortunately, libcloud's NodeLocation currently makes no provision for extended properties.

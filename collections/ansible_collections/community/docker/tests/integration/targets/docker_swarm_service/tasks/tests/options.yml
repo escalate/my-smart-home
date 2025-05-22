@@ -1,4 +1,7 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Registering service name
   set_fact:
@@ -16,7 +19,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     args:
       - sleep
       - "3600"
@@ -26,7 +29,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     args:
       - sleep
       - "3600"
@@ -36,7 +39,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     args:
       - sleep
       - "3400"
@@ -46,7 +49,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     args: []
   register: args_4
 
@@ -54,7 +57,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     args: []
   register: args_5
 
@@ -62,7 +65,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -80,7 +83,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
   register: command_1
 
@@ -88,7 +91,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
   register: command_2
 
@@ -96,7 +99,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -c "sleep 10m"'
   register: command_3
 
@@ -104,7 +107,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command:
       - "/bin/sh"
       - "-c"
@@ -115,7 +118,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: []
   register: command_5
 
@@ -123,7 +126,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: []
   register: command_6
 
@@ -131,27 +134,27 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
-    command: yes
+    resolve_image: false
+    command: true
   register: command_7
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: command (list failure)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command:
       - "/bin/sh"
-      - yes
+      - true
   register: command_8
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -172,7 +175,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     container_labels:
       test_1: "1"
@@ -183,7 +186,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     container_labels:
       test_1: "1"
@@ -194,7 +197,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     container_labels:
       test_1: "1"
@@ -205,7 +208,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     container_labels: {}
   register: container_labels_4
@@ -214,7 +217,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     container_labels: {}
   register: container_labels_5
@@ -223,7 +226,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -241,75 +244,75 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns:
       - 1.1.1.1
       - 8.8.8.8
   register: dns_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns:
       - 1.1.1.1
       - 8.8.8.8
   register: dns_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_servers (changed order)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns:
       - 8.8.8.8
       - 1.1.1.1
   register: dns_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_servers (changed elements)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns:
       - 8.8.8.8
       - 9.9.9.9
   register: dns_4
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_servers (empty)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns: []
   register: dns_5
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_servers (empty idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns: []
   register: dns_6
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -319,12 +322,12 @@
       - dns_4 is changed
       - dns_5 is changed
       - dns_6 is not changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('2.6.0', '>=')
+  when: docker_py_version is version('2.6.0', '>=')
 - assert:
     that:
-    - dns_1 is failed
-    - "'Minimum version required' in dns_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('2.6.0', '<')
+      - dns_1 is failed
+      - "'Minimum version required' in dns_1.msg"
+  when: docker_py_version is version('2.6.0', '<')
 
 ####################################################################
 ## dns_options #####################################################
@@ -334,75 +337,75 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_options:
       - "timeout:10"
       - rotate
   register: dns_options_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_options (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_options:
       - "timeout:10"
       - rotate
   register: dns_options_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_options (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_options:
       - "timeout:10"
       - no-check-names
   register: dns_options_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_options (order idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_options:
       - no-check-names
       - "timeout:10"
   register: dns_options_4
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_options (empty)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_options: []
   register: dns_options_5
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_options (empty idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_options: []
   register: dns_options_6
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -412,12 +415,12 @@
       - dns_options_4 is not changed
       - dns_options_5 is changed
       - dns_options_6 is not changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('2.6.0', '>=')
+  when: docker_py_version is version('2.6.0', '>=')
 - assert:
     that:
-    - dns_options_1 is failed
-    - "'Minimum version required' in dns_options_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('2.6.0', '<')
+      - dns_options_1 is failed
+      - "'Minimum version required' in dns_options_1.msg"
+  when: docker_py_version is version('2.6.0', '<')
 
 ####################################################################
 ## dns_search ######################################################
@@ -427,75 +430,75 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_search:
       - example.com
       - example.org
   register: dns_search_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_search (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_search:
       - example.com
       - example.org
   register: dns_search_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_search (different order)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_search:
       - example.org
       - example.com
   register: dns_search_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_search (changed elements)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_search:
       - ansible.com
       - example.com
   register: dns_search_4
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_search (empty)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_search: []
   register: dns_search_5
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: dns_search (empty idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     dns_search: []
   register: dns_search_6
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -505,12 +508,12 @@
       - dns_search_4 is changed
       - dns_search_5 is changed
       - dns_search_6 is not changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('2.6.0', '>=')
+  when: docker_py_version is version('2.6.0', '>=')
 - assert:
     that:
-    - dns_search_1 is failed
-    - "'Minimum version required' in dns_search_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('2.6.0', '<')
+      - dns_search_1 is failed
+      - "'Minimum version required' in dns_search_1.msg"
+  when: docker_py_version is version('2.6.0', '<')
 
 ####################################################################
 ## endpoint_mode ###################################################
@@ -520,49 +523,49 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     endpoint_mode: "dnsrr"
   register: endpoint_mode_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: endpoint_mode (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     endpoint_mode: "dnsrr"
   register: endpoint_mode_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: endpoint_mode (changes)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     endpoint_mode: "vip"
   register: endpoint_mode_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
       - endpoint_mode_1 is changed
       - endpoint_mode_2 is not changed
       - endpoint_mode_3 is changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('3.0.0', '>=')
+  when: docker_py_version is version('3.0.0', '>=')
 - assert:
     that:
-    - endpoint_mode_1 is failed
-    - "'Minimum version required' in endpoint_mode_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('3.0.0', '<')
+      - endpoint_mode_1 is failed
+      - "'Minimum version required' in endpoint_mode_1.msg"
+  when: docker_py_version is version('3.0.0', '<')
 
 ####################################################################
 ## env #############################################################
@@ -572,7 +575,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     env:
       - "TEST1=val1"
@@ -583,7 +586,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     env:
       TEST1: val1
@@ -594,7 +597,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     env:
       - "TEST1=val1"
@@ -605,7 +608,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     env:
       - "TEST2=val3"
@@ -616,7 +619,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     env: []
   register: env_5
@@ -625,7 +628,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     env: []
   register: env_6
@@ -634,28 +637,28 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     env:
       TEST1: true
   register: env_7
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: env (fail invalid formatted string)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     env:
       - "TEST1=val3"
       - "TEST2"
   register: env_8
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -684,7 +687,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     env_files:
       - "{{ remote_tmp_dir }}/env-file-1"
   register: env_file_1
@@ -693,7 +696,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     env_files:
       - "{{ remote_tmp_dir }}/env-file-1"
   register: env_file_2
@@ -702,7 +705,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     env_files:
       - "{{ remote_tmp_dir }}/env-file-1"
       - "{{ remote_tmp_dir }}/env-file-2"
@@ -712,7 +715,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     env_files:
       - "{{ remote_tmp_dir }}/env-file-2"
       - "{{ remote_tmp_dir }}/env-file-1"
@@ -722,7 +725,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     env_files:
       - "{{ remote_tmp_dir }}/env-file-2"
       - "{{ remote_tmp_dir }}/env-file-1"
@@ -732,7 +735,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     env_files: []
   register: env_file_6
 
@@ -740,7 +743,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     env_files: []
   register: env_file_7
 
@@ -748,17 +751,17 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
-    - env_file_1 is changed
-    - env_file_2 is not changed
-    - env_file_3 is changed
-    - env_file_4 is changed
-    - env_file_5 is not changed
-    - env_file_6 is changed
-    - env_file_7 is not changed
+      - env_file_1 is changed
+      - env_file_2 is not changed
+      - env_file_3 is changed
+      - env_file_4 is changed
+      - env_file_5 is not changed
+      - env_file_6 is changed
+      - env_file_7 is not changed
 
 ###################################################################
 ## force_update ###################################################
@@ -768,44 +771,44 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     args:
       - sleep
       - "3600"
-    force_update: yes
+    force_update: true
   register: force_update_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: force_update (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     args:
       - sleep
       - "3600"
-    force_update: yes
+    force_update: true
   register: force_update_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
       - force_update_1 is changed
       - force_update_2 is changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('2.1.0', '>=')
+  when: docker_py_version is version('2.1.0', '>=')
 - assert:
     that:
-    - force_update_1 is failed
-    - "'Minimum version required' in force_update_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('2.1.0', '<')
+      - force_update_1 is failed
+      - "'Minimum version required' in force_update_1.msg"
+  when: docker_py_version is version('2.1.0', '<')
 
 ####################################################################
 ## groups ##########################################################
@@ -815,89 +818,89 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     groups:
       - "1234"
       - "5678"
   register: groups_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: groups (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     groups:
       - "1234"
       - "5678"
   register: groups_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: groups (order idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     groups:
       - "5678"
       - "1234"
   register: groups_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: groups (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     groups:
       - "1234"
   register: groups_4
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: groups (empty)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     groups: []
   register: groups_5
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: groups (empty idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     groups: []
   register: groups_6
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
-    - groups_1 is changed
-    - groups_2 is not changed
-    - groups_3 is not changed
-    - groups_4 is changed
-    - groups_5 is changed
-    - groups_6 is not changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('2.6.0', '>=')
+      - groups_1 is changed
+      - groups_2 is not changed
+      - groups_3 is not changed
+      - groups_4 is changed
+      - groups_5 is changed
+      - groups_6 is not changed
+  when: docker_py_version is version('2.6.0', '>=')
 - assert:
     that:
-    - groups_1 is failed
-    - "'Minimum version required' in groups_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('2.6.0', '<')
+      - groups_1 is failed
+      - "'Minimum version required' in groups_1.msg"
+  when: docker_py_version is version('2.6.0', '<')
 
 ####################################################################
 ## healthcheck #####################################################
@@ -907,7 +910,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     healthcheck:
       test:
@@ -919,13 +922,13 @@
       retries: 2
       start_period: 20s
   register: healthcheck_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: healthcheck (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     healthcheck:
       test:
@@ -937,13 +940,13 @@
       retries: 2
       start_period: 20s
   register: healthcheck_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: healthcheck (changed)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     healthcheck:
       test:
@@ -954,96 +957,96 @@
       interval: 0h1m2s3ms4us
       retries: 3
   register: healthcheck_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: healthcheck (disabled)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     healthcheck:
       test:
         - NONE
   register: healthcheck_4
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: healthcheck (disabled, idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     healthcheck:
       test:
         - NONE
   register: healthcheck_5
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: healthcheck (string in healthcheck test, changed)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     healthcheck:
       test: "sleep 1"
   register: healthcheck_6
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: healthcheck (string in healthcheck test, idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     healthcheck:
       test: "sleep 1"
   register: healthcheck_7
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: healthcheck (empty)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     healthcheck: {}
   register: healthcheck_8
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: healthcheck (empty idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     healthcheck: {}
   register: healthcheck_9
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
-    - healthcheck_1 is changed
-    - healthcheck_2 is not changed
-    - healthcheck_3 is changed
-    - healthcheck_4 is changed
-    - healthcheck_5 is not changed
-    - healthcheck_6 is changed
-    - healthcheck_7 is not changed
-    - healthcheck_8 is changed
-    - healthcheck_9 is not changed
+      - healthcheck_1 is changed
+      - healthcheck_2 is not changed
+      - healthcheck_3 is changed
+      - healthcheck_4 is changed
+      - healthcheck_5 is not changed
+      - healthcheck_6 is changed
+      - healthcheck_7 is not changed
+      - healthcheck_8 is changed
+      - healthcheck_9 is not changed
   when: docker_api_version is version('1.29', '>=') and docker_py_version is version('2.6.0', '>=')
 - assert:
     that:
-    - healthcheck_1 is failed
-    - "'Minimum version required' in healthcheck_1.msg"
+      - healthcheck_1 is failed
+      - "'Minimum version required' in healthcheck_1.msg"
   when: docker_api_version is version('1.29', '<') or docker_py_version is version('2.6.0', '<')
 
 ###################################################################
@@ -1054,49 +1057,49 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     hostname: me.example.com
   register: hostname_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: hostname (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     hostname: me.example.com
   register: hostname_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: hostname (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     hostname: me.example.org
   register: hostname_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
       - hostname_1 is changed
       - hostname_2 is not changed
       - hostname_3 is changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('2.2.0', '>=')
+  when: docker_py_version is version('2.2.0', '>=')
 - assert:
     that:
-    - hostname_1 is failed
-    - "'Minimum version required' in hostname_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('2.2.0', '<')
+      - hostname_1 is failed
+      - "'Minimum version required' in hostname_1.msg"
+  when: docker_py_version is version('2.2.0', '<')
 
 ###################################################################
 ## hosts ##########################################################
@@ -1106,54 +1109,54 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     hosts:
       example.com: 1.2.3.4
       example.org: 4.3.2.1
   register: hosts_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: hosts (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     hosts:
       example.com: 1.2.3.4
       example.org: 4.3.2.1
   register: hosts_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: hosts (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     hosts:
       example.com: 1.2.3.4
   register: hosts_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
       - hosts_1 is changed
       - hosts_2 is not changed
       - hosts_3 is changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('2.6.0', '>=')
+  when: docker_py_version is version('2.6.0', '>=')
 - assert:
     that:
-    - hosts_1 is failed
-    - "'Minimum version required' in hosts_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('2.6.0', '<')
+      - hosts_1 is failed
+      - "'Minimum version required' in hosts_1.msg"
+  when: docker_py_version is version('2.6.0', '<')
 
 
 ###################################################################
@@ -1164,7 +1167,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
   register: image_1
 
@@ -1172,7 +1175,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
   register: image_2
 
@@ -1186,7 +1189,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -1202,7 +1205,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     labels:
       test_1: "1"
@@ -1213,7 +1216,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     labels:
       test_1: "1"
@@ -1224,7 +1227,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     labels:
       test_1: "1"
@@ -1236,7 +1239,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     labels: {}
   register: labels_4
@@ -1245,7 +1248,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     labels: {}
   register: labels_5
@@ -1254,7 +1257,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -1272,7 +1275,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     mode: "replicated"
     replicas: 1
@@ -1282,7 +1285,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     mode: "replicated"
     replicas: 1
@@ -1292,7 +1295,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     mode: "global"
     replicas: 1
@@ -1302,7 +1305,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -1318,7 +1321,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     stop_grace_period: 60s
   register: stop_grace_period_1
@@ -1327,7 +1330,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     stop_grace_period: 60s
   register: stop_grace_period_2
@@ -1336,7 +1339,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     stop_grace_period: 1m30s
   register: stop_grace_period_3
@@ -1345,13 +1348,13 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
-    - stop_grace_period_1 is changed
-    - stop_grace_period_2 is not changed
-    - stop_grace_period_3 is changed
+      - stop_grace_period_1 is changed
+      - stop_grace_period_2 is not changed
+      - stop_grace_period_3 is changed
 
 ####################################################################
 ## stop_signal #####################################################
@@ -1361,48 +1364,48 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     stop_signal: "30"
   register: stop_signal_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: stop_signal (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     stop_signal: "30"
   register: stop_signal_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: stop_signal (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     stop_signal: "9"
   register: stop_signal_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
-    - stop_signal_1 is changed
-    - stop_signal_2 is not changed
-    - stop_signal_3 is changed
+      - stop_signal_1 is changed
+      - stop_signal_2 is not changed
+      - stop_signal_3 is changed
   when: docker_api_version is version('1.28', '>=') and docker_py_version is version('2.6.0', '>=')
 - assert:
     that:
-    - stop_signal_1 is failed
-    - "'Minimum version required' in stop_signal_1.msg"
+      - stop_signal_1 is failed
+      - "'Minimum version required' in stop_signal_1.msg"
   when: docker_api_version is version('1.28', '<') or docker_py_version is version('2.6.0', '<')
 
 ####################################################################
@@ -1413,7 +1416,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish:
       - protocol: tcp
@@ -1423,13 +1426,13 @@
         published_port: 60002
         target_port: 60002
   register: publish_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: publish (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish:
       - protocol: udp
@@ -1438,13 +1441,13 @@
       - published_port: 60001
         target_port: 60001
   register: publish_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: publish (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish:
       - protocol: tcp
@@ -1454,13 +1457,13 @@
         published_port: 60001
         target_port: 60001
   register: publish_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: publish (mode)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish:
       - protocol: tcp
@@ -1472,13 +1475,13 @@
         target_port: 60001
         mode: host
   register: publish_4
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: publish (mode idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish:
       - protocol: udp
@@ -1490,33 +1493,33 @@
         target_port: 60003
         mode: host
   register: publish_5
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: publish (empty)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish: []
   register: publish_6
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: publish (empty idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish: []
   register: publish_7
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: publish (publishes the same port with both protocols)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish:
       - protocol: udp
@@ -1528,7 +1531,7 @@
         target_port: 60001
         mode: host
   register: publish_8
-  ignore_errors: yes
+  ignore_errors: true
 - name: gather service info
   docker_swarm_service_info:
     name: "{{ service_name }}"
@@ -1538,14 +1541,14 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish:
       - protocol: udp
         target_port: 60001
         mode: host
   register: publish_9
-  ignore_errors: yes
+  ignore_errors: true
 - name: gather service info
   docker_swarm_service_info:
     name: "{{ service_name }}"
@@ -1555,14 +1558,14 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     publish:
       - protocol: udp
         target_port: 60001
         mode: host
   register: publish_10
-  ignore_errors: yes
+  ignore_errors: true
 - name: gather service info
   docker_swarm_service_info:
     name: "{{ service_name }}"
@@ -1572,7 +1575,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -1587,12 +1590,12 @@
       - (publish_8_info.service.Endpoint.Ports | length) == 2
       - publish_9 is changed
       - publish_10 is not changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('3.0.0', '>=')
+  when: docker_py_version is version('3.0.0', '>=')
 - assert:
     that:
-    - publish_1 is failed
-    - "'Minimum version required' in publish_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('3.0.0', '<')
+      - publish_1 is failed
+      - "'Minimum version required' in publish_1.msg"
+  when: docker_py_version is version('3.0.0', '<')
 
 ###################################################################
 ## read_only ######################################################
@@ -1602,37 +1605,37 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     read_only: true
   register: read_only_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: read_only (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     read_only: true
   register: read_only_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: read_only (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     read_only: false
   register: read_only_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -1642,8 +1645,8 @@
   when: docker_api_version is version('1.28', '>=') and docker_py_version is version('2.6.0', '>=')
 - assert:
     that:
-    - read_only_1 is failed
-    - "'Minimum version required' in read_only_1.msg"
+      - read_only_1 is failed
+      - "'Minimum version required' in read_only_1.msg"
   when: docker_api_version is version('1.28', '<') or docker_py_version is version('2.6.0', '<')
 
 ###################################################################
@@ -1654,7 +1657,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     replicas: 2
   register: replicas_1
@@ -1663,7 +1666,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     replicas: 2
   register: replicas_2
@@ -1672,7 +1675,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     replicas: 3
   register: replicas_3
@@ -1681,7 +1684,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -1716,13 +1719,13 @@
     command: '/bin/sh -v -c "sleep 10m"'
     resolve_image: true
   register: resolve_image_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -1747,49 +1750,49 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
-    tty: yes
+    tty: true
   register: tty_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: tty (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
-    tty: yes
+    tty: true
   register: tty_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: tty (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
-    tty: no
+    tty: false
   register: tty_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
       - tty_1 is changed
       - tty_2 is not changed
       - tty_3 is changed
-  when: docker_api_version is version('1.25', '>=') and docker_py_version is version('2.4.0', '>=')
+  when: docker_py_version is version('2.4.0', '>=')
 - assert:
     that:
-    - tty_1 is failed
-    - "'Minimum version required' in tty_1.msg"
-  when: docker_api_version is version('1.25', '<') or docker_py_version is version('2.4.0', '<')
+      - tty_1 is failed
+      - "'Minimum version required' in tty_1.msg"
+  when: docker_py_version is version('2.4.0', '<')
 
 ###################################################################
 ## user ###########################################################
@@ -1799,7 +1802,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     user: "operator"
   register: user_1
@@ -1808,7 +1811,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     user: "operator"
   register: user_2
@@ -1817,7 +1820,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     user: "root"
   register: user_3
@@ -1826,7 +1829,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -1842,7 +1845,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     working_dir: /tmp
   register: working_dir_1
 
@@ -1850,7 +1853,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     working_dir: /tmp
   register: working_dir_2
 
@@ -1858,7 +1861,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     working_dir: /
   register: working_dir_3
 
@@ -1866,13 +1869,13 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
-    - working_dir_1 is changed
-    - working_dir_2 is not changed
-    - working_dir_3 is changed
+      - working_dir_1 is changed
+      - working_dir_2 is not changed
+      - working_dir_3 is changed
 
 ####################################################################
 ## init ############################################################
@@ -1882,7 +1885,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     init: true
   register: init_1
 
@@ -1890,7 +1893,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     init: true
   register: init_2
 
@@ -1898,7 +1901,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     init: false
   register: init_3
 
@@ -1906,7 +1909,7 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -1917,6 +1920,86 @@
 
 - assert:
     that:
-    - init_1 is failed
-    - "('version is ' ~ docker_api_version ~'. Minimum version required is 1.37') in hosts_1.msg"
+      - init_1 is failed
+      - "('version is ' ~ docker_api_version ~'. Minimum version required is 1.37') in hosts_1.msg"
   when: docker_api_version is version('1.37', '<')
+
+####################################################################
+## cap_drop, capabilities ##########################################
+####################################################################
+
+- name: capabilities, cap_drop
+  docker_swarm_service:
+    name: "{{ service_name }}"
+    image: "{{ docker_test_image_alpine }}"
+    resolve_image: false
+    init: true
+    cap_add:
+      - sys_time
+    cap_drop:
+      - all
+  register: capabilities_1
+  ignore_errors: true
+
+- name: capabilities, cap_drop (idempotency)
+  docker_swarm_service:
+    name: "{{ service_name }}"
+    image: "{{ docker_test_image_alpine }}"
+    resolve_image: false
+    init: true
+    cap_add:
+      - sys_time
+    cap_drop:
+      - all
+  register: capabilities_2
+  ignore_errors: true
+  diff: true
+
+- name: capabilities, cap_drop (less)
+  docker_swarm_service:
+    name: "{{ service_name }}"
+    image: "{{ docker_test_image_alpine }}"
+    resolve_image: false
+    init: true
+    cap_add: []
+    cap_drop:
+      - all
+  register: capabilities_3
+  ignore_errors: true
+  diff: true
+
+- name: capabilities, cap_drop (changed)
+  docker_swarm_service:
+    name: "{{ service_name }}"
+    image: "{{ docker_test_image_alpine }}"
+    resolve_image: false
+    init: true
+    cap_add:
+      - setgid
+    cap_drop:
+      - all
+  register: capabilities_4
+  ignore_errors: true
+  diff: true
+
+- name: cleanup
+  docker_swarm_service:
+    name: "{{ service_name }}"
+    state: absent
+  diff: false
+
+- assert:
+    that:
+      - capabilities_1 is changed
+      - capabilities_2 is not changed
+      - capabilities_3 is changed
+      - capabilities_4 is changed
+  when: docker_api_version is version('1.41', '>=') and docker_py_version is version('5.0.3', '>=')
+
+- assert:
+    that:
+      - capabilities_1 is failed
+      - >
+        (('version is ' ~ docker_py_version ~ ' ') in capabilities_1.msg and 'Minimum version required is 5.0.3 ' in capabilities_1.msg)
+        or (('Docker API version is ' ~ docker_api_version ~ '. ') in capabilities_1.msg and 'Minimum version required is 1.41 ' in capabilities_1.msg)
+  when: docker_api_version is version('1.41', '<') or docker_py_version is version('5.0.3', '<')

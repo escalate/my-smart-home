@@ -4,6 +4,10 @@
 # and should not be used as examples of how to write Ansible roles #
 ####################################################################
 
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Install required libs
   pip:
     name: python-gitlab
@@ -14,7 +18,7 @@
     api_url: "{{ gitlab_host }}"
     api_token: "{{ gitlab_login_token }}"
     group: "{{ gitlab_group_name }}"
-    purge: True
+    purge: true
 
 - name: add a variable value in check_mode
   gitlab_group_variable:
@@ -23,7 +27,7 @@
     group: "{{ gitlab_group_name }}"
     vars:
       ACCESS_KEY_ID: checkmode
-  check_mode: yes
+  check_mode: true
   register: gitlab_group_variable_state
 
 - name: check_mode state must be changed
@@ -36,8 +40,9 @@
     api_url: "{{ gitlab_host }}"
     api_token: "{{ gitlab_login_token }}"
     group: "{{ gitlab_group_name }}"
-    vars:
-      ACCESS_KEY_ID: checkmode
+    variables:
+      - name: ACCESS_KEY_ID
+        value: checkmode
   register: gitlab_group_variable_state
 
 - name: state must be changed
@@ -68,7 +73,7 @@
     vars:
       ACCESS_KEY_ID:
         value: checkmode
-        protected: True
+        protected: true
   register: gitlab_group_variable_state
 
 - name: state must be changed
@@ -84,7 +89,7 @@
     vars:
       ACCESS_KEY_ID:
         value: checkmode
-        protected: False
+        protected: false
   register: gitlab_group_variable_state
 
 - name: state must be changed
@@ -100,7 +105,7 @@
     vars:
       ACCESS_KEY_ID:
         value: checkmode
-        masked: True
+        masked: true
   register: gitlab_group_variable_state
 
 - name: state must be changed
@@ -146,8 +151,8 @@
     vars:
       ACCESS_KEY_ID:
         value: checkmode
-        masked: True
-        protected: True
+        masked: true
+        protected: true
         variable_type: env_var
   register: gitlab_group_variable_state
 
@@ -164,8 +169,8 @@
     vars:
       ACCESS_KEY_ID:
         value: checkmode
-        masked: True
-        protected: True
+        masked: true
+        protected: true
         variable_type: env_var
   register: gitlab_group_variable_state
 
@@ -182,7 +187,7 @@
     vars:
       ACCESS_KEY_ID:
         value: checkmode
-        protected: False
+        protected: false
   register: gitlab_group_variable_state
 
 - name: state must be changed
@@ -197,7 +202,7 @@
     group: "{{ gitlab_group_name }}"
     vars:
       ACCESS_KEY_ID: checkmode
-  check_mode: yes
+  check_mode: true
   register: gitlab_group_variable_state
 
 - name: check_mode state must not be changed
@@ -219,12 +224,48 @@
     that:
       - gitlab_group_variable_state is not changed
 
+- name: change environment scope
+  gitlab_group_variable:
+    api_url: "{{ gitlab_host }}"
+    api_token: "{{ gitlab_login_token }}"
+    group: "{{ gitlab_group_name }}"
+    vars:
+      ACCESS_KEY_ID:
+        environment_scope: testing
+        value: checkmode
+  register: gitlab_group_variable_state
+  when: gitlab_premium_tests is defined
+
+- name: state must be changed
+  assert:
+    that:
+      - gitlab_group_variable_state is changed
+  when: gitlab_premium_tests is defined
+
+- name: apply again the environment scope change 
+  gitlab_group_variable:
+    api_url: "{{ gitlab_host }}"
+    api_token: "{{ gitlab_login_token }}"
+    group: "{{ gitlab_group_name }}"
+    vars:
+      ACCESS_KEY_ID:
+        environment_scope: testing
+        value: checkmode
+  register: gitlab_group_variable_state
+  when: gitlab_premium_tests is defined
+
+- name: state must not be changed
+  assert:
+    that:
+      - gitlab_group_variable_state is not changed
+  when: gitlab_premium_tests is defined
+
 - name: purge all variables at the beginning
   gitlab_group_variable:
     api_url: "{{ gitlab_host }}"
     api_token: "{{ gitlab_login_token }}"
     group: "{{ gitlab_group_name }}"
-    purge: True
+    purge: true
 
 - name: set two test variables
   gitlab_group_variable:
@@ -271,7 +312,7 @@
     group: "{{ gitlab_group_name }}"
     vars:
       ACCESS_KEY_ID: changed
-    purge: False
+    purge: false
   register: gitlab_group_variable_state
 
 - name: edit one variable state must be changed
@@ -291,7 +332,7 @@
     group: "{{ gitlab_group_name }}"
     vars:
       some: value
-    purge: False
+    purge: false
   register: gitlab_group_variable_state
 
 - name: append one variable state must be changed
@@ -331,7 +372,7 @@
     group: "{{ gitlab_group_name }}"
     vars:
       some: value
-    purge: True
+    purge: true
   register: gitlab_group_variable_state
 
 - name: set one variables and purge all others state must be changed
@@ -350,7 +391,7 @@
     group: "{{ gitlab_group_name }}"
     vars:
       some: value
-    purge: False
+    purge: false
   register: gitlab_group_variable_state
 
 - name: only one variable is left state must not be changed
@@ -370,7 +411,7 @@
     group: "{{ gitlab_group_name }}"
     vars:
       some: 42
-    purge: False
+    purge: false
   register: gitlab_group_variable_state
 
 - name: only one variable is left state must be changed
@@ -389,7 +430,7 @@
     group: "{{ gitlab_group_name }}"
     vars:
       some: 42.23
-    purge: False
+    purge: false
   register: gitlab_group_variable_state
 
 - name: only one variable is left state must be changed
@@ -426,11 +467,11 @@
     api_url: "{{ gitlab_host }}"
     api_token: "{{ gitlab_login_token }}"
     group: "{{ gitlab_group_name }}"
-    vars:
-      my_test_var:
+    variables:
+      - name: my_test_var
         value: my_test_value
         variable_type: file
-    purge: False
+    purge: false
   register: gitlab_group_variable_state
 
 - name: append one variable state must be changed
@@ -521,7 +562,7 @@
       page1_var18: value
       page1_var19: value
       page1_var20: value
-    purge: True
+    purge: true
   register: gitlab_group_variable_state
 
 - name: complete page added state must be changed
@@ -557,7 +598,7 @@
       page2_var18: value
       page2_var19: value
       page2_var20: value
-    purge: False
+    purge: false
   register: gitlab_group_variable_state
 
 - name: existing page untouched state must be changed
@@ -572,7 +613,7 @@
     api_url: "{{ gitlab_host }}"
     api_token: "{{ gitlab_login_token }}"
     group: "{{ gitlab_group_name }}"
-    purge: True
+    purge: true
   register: gitlab_group_variable_state
 
 - name: check that no variables are untouched state must be changed
@@ -583,3 +624,83 @@
       - gitlab_group_variable_state.group_variable.untouched|length == 0
       - gitlab_group_variable_state.group_variable.removed|length == 40
       - gitlab_group_variable_state.group_variable.updated|length == 0
+
+- name: same vars, diff scope
+  gitlab_group_variable:
+    api_url: "{{ gitlab_host }}"
+    api_token: "{{ gitlab_login_token }}"
+    group: "{{ gitlab_group_name }}"
+    purge: true
+    variables:
+      - name: SECRET_ACCESS_KEY
+        value: 3214cbad
+        masked: true
+        protected: true
+        variable_type: env_var
+        environment_scope: production
+      - name: SECRET_ACCESS_KEY
+        value: hello_world
+        masked: true
+        protected: true
+        variable_type: env_var
+        environment_scope: development
+  register: gitlab_group_variable_state
+  when: gitlab_premium_tests is defined
+
+- name: verify two vars
+  assert:
+    that:
+      - gitlab_group_variable_state.changed
+      - gitlab_group_variable_state.group_variable.added|length == 2
+      - gitlab_group_variable_state.group_variable.untouched|length == 0
+      - gitlab_group_variable_state.group_variable.removed|length == 0
+      - gitlab_group_variable_state.group_variable.updated|length == 0
+  when: gitlab_premium_tests is defined
+
+- name: throw error when state is present but no value is given
+  gitlab_group_variable:
+    api_url: "{{ gitlab_host }}"
+    api_token: "{{ gitlab_login_token }}"
+    group: "{{ gitlab_group_name }}"
+    variables:
+      - name: delete_me
+  register: gitlab_group_variable_state
+  ignore_errors: true
+
+- name: verify fail
+  assert:
+    that:
+      - gitlab_group_variable_state.failed
+      - gitlab_group_variable_state is not changed
+
+- name: set a new variable to delete it later
+  gitlab_group_variable:
+    api_url: "{{ gitlab_host }}"
+    api_token: "{{ gitlab_login_token }}"
+    group: "{{ gitlab_group_name }}"
+    purge: true
+    variables:
+      - name: delete_me
+        value: ansible
+  register: gitlab_group_variable_state
+
+- name: verify the change
+  assert:
+    that:
+      - gitlab_group_variable_state.changed
+
+- name: delete variable without referencing its value
+  gitlab_group_variable:
+    api_url: "{{ gitlab_host }}"
+    api_token: "{{ gitlab_login_token }}"
+    group: "{{ gitlab_group_name }}"
+    state: absent
+    variables:
+      - name: delete_me
+  register: gitlab_group_variable_state
+
+- name: verify deletion
+  assert:
+    that:
+      - gitlab_group_variable_state.changed
+      - gitlab_group_variable_state.group_variable.removed|length == 1

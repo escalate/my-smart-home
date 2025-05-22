@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# (c) 2021, Alexei Znamensky <russoz@gmail.com>
+# Copyright (c) 2021, Alexei Znamensky <russoz@gmail.com>
 #
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
@@ -29,11 +30,11 @@ EXAMPLES = ""
 
 RETURN = ""
 
+from ansible_collections.community.general.plugins.module_utils import deps
 from ansible_collections.community.general.plugins.module_utils.module_helper import ModuleHelper
-from ansible.module_utils.basic import missing_required_lib
 
-with ModuleHelper.dependency("nopackagewiththisname", missing_required_lib("nopackagewiththisname")):
-    import nopackagewiththisname
+with deps.declare("nopackagewiththisname"):
+    import nopackagewiththisname  # noqa: F401, pylint: disable=unused-import
 
 
 class MSimple(ModuleHelper):
@@ -49,6 +50,7 @@ class MSimple(ModuleHelper):
     def __init_module__(self):
         self.vars.set('value', None)
         self.vars.set('abc', "abc", diff=True)
+        deps.validate(self.module)
 
     def __run__(self):
         if (0 if self.vars.a is None else self.vars.a) >= 100:

@@ -1,14 +1,14 @@
 #!/usr/bin/python
 #
 # Copyright (c) 2021, Felix Fontein <felix@fontein.de>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: docker_container_exec
 
 short_description: Execute command in a docker container
@@ -17,6 +17,20 @@ version_added: 1.5.0
 
 description:
   - Executes a command in a Docker container.
+extends_documentation_fragment:
+  - community.docker.docker.api_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: none
+  diff_mode:
+    support: none
+  idempotent:
+    support: N/A
+    details:
+      - Whether the executed command is idempotent depends on the command.
 
 options:
   container:
@@ -30,21 +44,20 @@ options:
     description:
       - The command to execute.
       - Since this is a list of arguments, no quoting is needed.
-      - Exactly one of I(argv) and I(command) must be specified.
+      - Exactly one of O(argv) or O(command) must be specified.
   command:
     type: str
     description:
       - The command to execute.
-      - Exactly one of I(argv) and I(command) must be specified.
+      - Exactly one of O(argv) or O(command) must be specified.
   chdir:
     type: str
     description:
       - The directory to run the command in.
   detach:
     description:
-      - Whether to run the command synchronously (I(detach=false), default) or asynchronously (I(detach=true)).
-      - If set to C(true), I(stdin) cannot be provided, and the return values C(stdout), C(stderr) and
-        C(rc) are not returned.
+      - Whether to run the command synchronously (O(detach=false), default) or asynchronously (O(detach=true)).
+      - If set to V(true), O(stdin) cannot be provided, and the return values RV(stdout), RV(stderr), and RV(rc) are not returned.
     type: bool
     default: false
     version_added: 2.1.0
@@ -56,12 +69,12 @@ options:
     type: str
     description:
       - Set the stdin of the command directly to the specified value.
-      - Can only be used if I(detach=false).
+      - Can only be used if O(detach=false).
   stdin_add_newline:
     type: bool
     default: true
     description:
-      - If set to C(true), appends a newline to I(stdin).
+      - If set to V(true), appends a newline to O(stdin).
   strip_empty_ends:
     type: bool
     default: true
@@ -75,26 +88,30 @@ options:
   env:
     description:
       - Dictionary of environment variables with their respective values to be passed to the command ran inside the container.
-      - Values which might be parsed as numbers, booleans or other types by the YAML parser must be quoted (for example C("true")) in order to avoid data loss.
-      - Please note that if you are passing values in with Jinja2 templates, like C("{{ value }}"), you need to add C(| string) to prevent Ansible to
-        convert strings such as C("true") back to booleans. The correct way is to use C("{{ value | string }}").
+      - Values which might be parsed as numbers, booleans or other types by the YAML parser must be quoted (for example V("true"))
+        in order to avoid data loss.
+      - Please note that if you are passing values in with Jinja2 templates, like V("{{ value }}"), you need to add V(| string)
+        to prevent Ansible to convert strings such as V("true") back to booleans. The correct way is to use V("{{ value |
+        string }}").
     type: dict
     version_added: 2.1.0
 
-extends_documentation_fragment:
-  - community.docker.docker
-  - community.docker.docker.docker_py_1_documentation
 notes:
-  - Does not support C(check_mode).
+  - Does B(not work with TCP TLS sockets) when using O(stdin). This is caused by the inability to send C(close_notify) without
+    closing the connection with Python's C(SSLSocket)s. See U(https://github.com/ansible-collections/community.docker/issues/605)
+    for more information.
+  - If you need to evaluate environment variables of the container in O(command) or O(argv), you need to pass the command
+    through a shell, like O(command=/bin/sh -c "echo $ENV_VARIABLE"). The same needs to be done in case you want to use glob patterns
+    or other shell features such as redirects.
 author:
   - "Felix Fontein (@felixfontein)"
 
 requirements:
-  - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 1.8.0 (use L(docker-py,https://pypi.org/project/docker-py/) for Python 2.6)"
-  - "Docker API >= 1.20"
-'''
+  - "Docker API >= 1.25"
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
+---
 - name: Run a simple command (command)
   community.docker.docker_container_exec:
     container: foo
@@ -103,7 +120,7 @@ EXAMPLES = '''
   register: result
 
 - name: Print stdout
-  debug:
+  ansible.builtin.debug:
     var: result.stdout
 
 - name: Run a simple command (argv)
@@ -117,35 +134,35 @@ EXAMPLES = '''
   register: result
 
 - name: Print stderr lines
-  debug:
+  ansible.builtin.debug:
     var: result.stderr_lines
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 stdout:
-    type: str
-    returned: success and I(detach=false)
-    description:
-      - The standard output of the container command.
+  type: str
+  returned: success and O(detach=false)
+  description:
+    - The standard output of the container command.
 stderr:
-    type: str
-    returned: success and I(detach=false)
-    description:
-      - The standard error output of the container command.
+  type: str
+  returned: success and O(detach=false)
+  description:
+    - The standard error output of the container command.
 rc:
-    type: int
-    returned: success and I(detach=false)
-    sample: 0
-    description:
-      - The exit code of the command.
+  type: int
+  returned: success and O(detach=false)
+  sample: 0
+  description:
+    - The exit code of the command.
 exec_id:
-    type: str
-    returned: success and I(detach=true)
-    sample: 249d9e3075655baf705ed8f40488c5e9434049cf3431976f1bfdb73741c574c5
-    description:
-      - The execution ID of the command.
-    version_added: 2.1.0
-'''
+  type: str
+  returned: success and O(detach=true)
+  sample: 249d9e3075655baf705ed8f40488c5e9434049cf3431976f1bfdb73741c574c5
+  description:
+    - The execution ID of the command.
+  version_added: 2.1.0
+"""
 
 import shlex
 import traceback
@@ -153,26 +170,23 @@ import traceback
 from ansible.module_utils.common.text.converters import to_text, to_bytes, to_native
 from ansible.module_utils.six import string_types
 
-from ansible_collections.community.docker.plugins.module_utils.common import (
+from ansible_collections.community.docker.plugins.module_utils.common_api import (
     AnsibleDockerClient,
     RequestException,
 )
 
-from ansible_collections.community.docker.plugins.module_utils.socket_helper import (
-    shutdown_writing,
-    write_to_socket,
-)
+from ansible_collections.community.docker.plugins.module_utils.selectors import selectors
 
 from ansible_collections.community.docker.plugins.module_utils.socket_handler import (
-    find_selectors,
     DockerSocketHandlerModule,
 )
 
-try:
-    from docker.errors import DockerException, APIError, NotFound
-except Exception:
-    # missing Docker SDK for Python handled in ansible.module_utils.docker.common
-    pass
+from ansible_collections.community.docker.plugins.module_utils._api.errors import (
+    APIError,
+    DockerException,
+    NotFound,
+)
+from ansible_collections.community.docker.plugins.module_utils._api.utils.utils import format_environment
 
 
 def main():
@@ -191,14 +205,12 @@ def main():
     )
 
     option_minimal_versions = dict(
-        chdir=dict(docker_py_version='3.0.0', docker_api_version='1.35'),
-        env=dict(docker_py_version='2.3.0', docker_api_version='1.25'),
+        chdir=dict(docker_api_version='1.35'),
     )
 
     client = AnsibleDockerClient(
         argument_spec=argument_spec,
         option_minimal_versions=option_minimal_versions,
-        min_docker_api_version='1.20',
         mutually_exclusive=[('argv', 'command')],
         required_one_of=[('argv', 'command')],
     )
@@ -231,39 +243,35 @@ def main():
     if stdin is not None and client.module.params['stdin_add_newline']:
         stdin += '\n'
 
-    selectors = None
-    if stdin and not detach:
-        selectors = find_selectors(client.module)
-
     try:
-        kwargs = {}
+        data = {
+            'Container': container,
+            'User': user or '',
+            'Privileged': False,
+            'Tty': False,
+            'AttachStdin': bool(stdin),
+            'AttachStdout': True,
+            'AttachStderr': True,
+            'Cmd': argv,
+            'Env': format_environment(env) if env is not None else None,
+        }
         if chdir is not None:
-            kwargs['workdir'] = chdir
-        if env is not None:
-            kwargs['environment'] = env
-        exec_data = client.exec_create(
-            container,
-            argv,
-            stdout=True,
-            stderr=True,
-            stdin=bool(stdin),
-            user=user or '',
-            **kwargs
-        )
+            data['WorkingDir'] = chdir
+
+        exec_data = client.post_json_to_json('/containers/{0}/exec', container, data=data)
         exec_id = exec_data['Id']
 
+        data = {
+            'Tty': tty,
+            'Detach': detach,
+        }
         if detach:
-            client.exec_start(exec_id, tty=tty, detach=True)
+            client.post_json_to_text('/exec/{0}/start', exec_id, data=data)
             client.module.exit_json(changed=True, exec_id=exec_id)
 
         else:
-            if selectors:
-                exec_socket = client.exec_start(
-                    exec_id,
-                    tty=tty,
-                    detach=False,
-                    socket=True,
-                )
+            if stdin and not detach:
+                exec_socket = client.post_json_to_stream_socket('/exec/{0}/start', exec_id, data=data)
                 try:
                     with DockerSocketHandlerModule(exec_socket, client.module, selectors) as exec_socket_handler:
                         if stdin:
@@ -273,16 +281,9 @@ def main():
                 finally:
                     exec_socket.close()
             else:
-                stdout, stderr = client.exec_start(
-                    exec_id,
-                    tty=tty,
-                    detach=False,
-                    stream=False,
-                    socket=False,
-                    demux=True,
-                )
+                stdout, stderr = client.post_json_to_stream('/exec/{0}/start', exec_id, data=data, stream=False, tty=tty, demux=True)
 
-            result = client.exec_inspect(exec_id)
+            result = client.get_json('/exec/{0}/json', exec_id)
 
             stdout = to_text(stdout or b'')
             stderr = to_text(stderr or b'')
@@ -299,14 +300,14 @@ def main():
     except NotFound:
         client.fail('Could not find container "{0}"'.format(container))
     except APIError as e:
-        if e.response and e.response.status_code == 409:
+        if e.response is not None and e.response.status_code == 409:
             client.fail('The container "{0}" has been paused ({1})'.format(container, to_native(e)))
-        client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
+        client.fail('An unexpected Docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except DockerException as e:
-        client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
+        client.fail('An unexpected Docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when trying to talk to the Docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

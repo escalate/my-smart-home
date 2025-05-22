@@ -1,13 +1,13 @@
 #!/usr/bin/python
 #
-# (c) 2017, Dario Zanzico (git@dariozanzico.com)
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2017, Dario Zanzico (git@dariozanzico.com)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: docker_swarm_service
 author:
   - "Dario Zanzico (@dariko)"
@@ -16,7 +16,22 @@ author:
   - "Piotr Wojciechowski (@wojciechowskipiotr)"
 short_description: docker swarm service
 description:
-  - Manages docker services via a swarm manager node.
+  - Manages docker services through a swarm manager node.
+  - This modules does not support updating services in a stack.
+extends_documentation_fragment:
+  - community.docker.docker
+  - community.docker.docker.docker_py_2_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: full
+  diff_mode:
+    support: full
+  idempotent:
+    support: full
+
 options:
   args:
     description:
@@ -46,10 +61,10 @@ options:
         description:
           - Config's name as defined at its creation.
         type: str
-        required: yes
+        required: true
       filename:
         description:
-          - Name of the file containing the config. Defaults to the I(config_name) if not specified.
+          - Name of the file containing the config. Defaults to the O(configs[].config_name) if not specified.
         type: str
       uid:
         description:
@@ -61,39 +76,40 @@ options:
         type: str
       mode:
         description:
-          - File access mode inside the container. Must be an octal number (like C(0644) or C(0444)).
+          - File access mode inside the container. Must be an octal number (like V(0644) or V(0444)).
         type: int
   container_labels:
     description:
       - Dictionary of key value pairs.
       - Corresponds to the C(--container-label) option of C(docker service create).
     type: dict
+  sysctls:
+    description:
+      - Dictionary of key, value pairs.
+    version_added: 3.10.0
+    type: dict
   dns:
     description:
       - List of custom DNS servers.
       - Corresponds to the C(--dns) option of C(docker service create).
-      - Requires API version >= 1.25.
     type: list
     elements: str
   dns_search:
     description:
       - List of custom DNS search domains.
       - Corresponds to the C(--dns-search) option of C(docker service create).
-      - Requires API version >= 1.25.
     type: list
     elements: str
   dns_options:
     description:
       - List of custom DNS options.
       - Corresponds to the C(--dns-option) option of C(docker service create).
-      - Requires API version >= 1.25.
     type: list
     elements: str
   endpoint_mode:
     description:
       - Service endpoint mode.
       - Corresponds to the C(--endpoint-mode) option of C(docker service create).
-      - Requires API version >= 1.25.
     type: str
     choices:
       - vip
@@ -102,47 +118,43 @@ options:
     description:
       - List or dictionary of the service environment variables.
       - If passed a list each items need to be in the format of C(KEY=VALUE).
-      - If passed a dictionary values which might be parsed as numbers,
-        booleans or other types by the YAML parser must be quoted (e.g. C("true"))
-        in order to avoid data loss.
+      - If passed a dictionary values which might be parsed as numbers, booleans or other types by the YAML parser must be
+        quoted (for example V("true")) in order to avoid data loss.
       - Corresponds to the C(--env) option of C(docker service create).
     type: raw
   env_files:
     description:
       - List of paths to files, present on the target, containing environment variables C(FOO=BAR).
-      - The order of the list is significant in determining the value assigned to a
-        variable that shows up more than once.
-      - If variable also present in I(env), then I(env) value will override.
+      - The order of the list is significant in determining the value assigned to a variable that shows up more than once.
+      - If variable also present in O(env), then O(env) value will override.
     type: list
     elements: path
   force_update:
     description:
       - Force update even if no changes require it.
       - Corresponds to the C(--force) option of C(docker service update).
-      - Requires API version >= 1.25.
     type: bool
-    default: no
+    default: false
   groups:
     description:
       - List of additional group names and/or IDs that the container process will run as.
       - Corresponds to the C(--group) option of C(docker service update).
-      - Requires API version >= 1.25.
     type: list
     elements: str
   healthcheck:
     description:
-      - Configure a check that is run to determine whether or not containers for this service are "healthy".
-        See the docs for the L(HEALTHCHECK Dockerfile instruction,https://docs.docker.com/engine/reference/builder/#healthcheck)
-        for details on how healthchecks work.
-      - "I(interval), I(timeout) and I(start_period) are specified as durations. They accept duration as a string in a format
-        that look like: C(5h34m56s), C(1m30s) etc. The supported units are C(us), C(ms), C(s), C(m) and C(h)."
-      - Requires API version >= 1.25.
+      - Configure a check that is run to determine whether or not containers for this service are "healthy". See the docs
+        for the L(HEALTHCHECK Dockerfile instruction,https://docs.docker.com/engine/reference/builder/#healthcheck) for details
+        on how healthchecks work.
+      - 'O(healthcheck.interval), O(healthcheck.timeout), and O(healthcheck.start_period) are specified as durations. They
+        accept duration as a string in a format that look like: V(5h34m56s), V(1m30s), and so on. The supported units are
+        V(us), V(ms), V(s), V(m) and V(h).'
     type: dict
     suboptions:
       test:
         description:
           - Command to run to check health.
-          - Must be either a string or a list. If it is a list, the first item must be one of C(NONE), C(CMD) or C(CMD-SHELL).
+          - Must be either a string or a list. If it is a list, the first item must be one of V(NONE), V(CMD) or V(CMD-SHELL).
         type: raw
       interval:
         description:
@@ -164,14 +176,12 @@ options:
     description:
       - Container hostname.
       - Corresponds to the C(--hostname) option of C(docker service create).
-      - Requires API version >= 1.25.
     type: str
   hosts:
     description:
-      - Dict of host-to-IP mappings, where each host name is a key in the dictionary.
-        Each host name will be added to the container's /etc/hosts file.
+      - Dict of host-to-IP mappings, where each host name is a key in the dictionary. Each host name will be added to the
+        container's /etc/hosts file.
       - Corresponds to the C(--host) option of C(docker service create).
-      - Requires API version >= 1.25.
     type: dict
   image:
     description:
@@ -195,22 +205,21 @@ options:
     suboptions:
       cpus:
         description:
-          - Service CPU limit. C(0) equals no limit.
+          - Service CPU limit. V(0) equals no limit.
           - Corresponds to the C(--limit-cpu) option of C(docker service create).
         type: float
       memory:
         description:
-          - "Service memory limit in format C(<number>[<unit>]). Number is a positive integer.
-            Unit can be C(B) (byte), C(K) (kibibyte, 1024B), C(M) (mebibyte), C(G) (gibibyte),
-            C(T) (tebibyte), or C(P) (pebibyte)."
-          - C(0) equals no limit.
+          - Service memory limit in format C(<number>[<unit>]). Number is a positive integer. Unit can be V(B) (byte), V(K)
+            (kibibyte, 1024B), V(M) (mebibyte), V(G) (gibibyte), V(T) (tebibyte), or V(P) (pebibyte).
+          - V(0) equals no limit.
           - Omitting the unit defaults to bytes.
           - Corresponds to the C(--limit-memory) option of C(docker service create).
         type: str
     type: dict
   logging:
     description:
-      - "Logging configuration for the service."
+      - Logging configuration for the service.
     suboptions:
       driver:
         description:
@@ -242,18 +251,18 @@ options:
     suboptions:
       source:
         description:
-          - Mount source (e.g. a volume name or a host path).
-          - Must be specified if I(type) is not C(tmpfs).
+          - Mount source (for example a volume name or a host path).
+          - Must be specified if O(mounts[].type) is not V(tmpfs).
         type: str
       target:
         description:
           - Container path.
         type: str
-        required: yes
+        required: true
       type:
         description:
           - The mount type.
-          - Note that C(npipe) is only supported by Docker for Windows. Also note that C(npipe) was added in Ansible 2.9.
+          - Note that V(npipe) is only supported by Docker for Windows. Also note that V(npipe) was added in Ansible 2.9.
         type: str
         default: bind
         choices:
@@ -272,7 +281,7 @@ options:
       propagation:
         description:
           - The propagation mode to use.
-          - Can only be used when I(type) is C(bind).
+          - Can only be used when O(mounts[].type=bind).
         type: str
         choices:
           - shared
@@ -284,12 +293,12 @@ options:
       no_copy:
         description:
           - Disable copying of data from a container when a volume is created.
-          - Can only be used when I(type) is C(volume).
+          - Can only be used when O(mounts[].type=volume).
         type: bool
       driver_config:
         description:
           - Volume driver configuration.
-          - Can only be used when I(type) is C(volume).
+          - Can only be used when O(mounts[].type=volume).
         suboptions:
           name:
             description:
@@ -302,29 +311,27 @@ options:
         type: dict
       tmpfs_size:
         description:
-          - "Size of the tmpfs mount in format C(<number>[<unit>]). Number is a positive integer.
-            Unit can be C(B) (byte), C(K) (kibibyte, 1024B), C(M) (mebibyte), C(G) (gibibyte),
-            C(T) (tebibyte), or C(P) (pebibyte)."
-          - Can only be used when I(type) is C(tmpfs).
+          - Size of the tmpfs mount in format C(<number>[<unit>]). Number is a positive integer. Unit can be V(B) (byte),
+            V(K) (kibibyte, 1024B), V(M) (mebibyte), V(G) (gibibyte), V(T) (tebibyte), or V(P) (pebibyte).
+          - Can only be used when O(mounts[].type=tmpfs).
         type: str
       tmpfs_mode:
         description:
           - File mode of the tmpfs in octal.
-          - Can only be used when I(type) is C(tmpfs).
+          - Can only be used when O(mounts[].type=tmpfs).
         type: int
   name:
     description:
       - Service name.
       - Corresponds to the C(--name) option of C(docker service create).
     type: str
-    required: yes
+    required: true
   networks:
     description:
       - List of the service networks names or dictionaries.
-      - When passed dictionaries valid sub-options are I(name), which is required, and
-        I(aliases) and I(options).
-      - Prior to API version 1.29, updating and removing networks is not supported.
-        If changes are made the service will then be removed and recreated.
+      - When passed dictionaries valid sub-options are C(name), which is required, and C(aliases) and C(options).
+      - Prior to API version 1.29, updating and removing networks is not supported. If changes are made the service will then
+        be removed and recreated.
       - Corresponds to the C(--network) option of C(docker service create).
     type: list
     elements: raw
@@ -349,7 +356,7 @@ options:
         description:
           - Maximum number of tasks per node.
           - Corresponds to the C(--replicas_max_per_node) option of C(docker service create).
-          - Requires API version >= 1.40
+          - Requires API version >= 1.40.
         type: int
         version_added: 1.3.0
     type: dict
@@ -357,7 +364,6 @@ options:
     description:
       - List of dictionaries describing the service published ports.
       - Corresponds to the C(--publish) option of C(docker service create).
-      - Requires API version >= 1.25.
     type: list
     elements: dict
     suboptions:
@@ -365,12 +371,12 @@ options:
         description:
           - The port to make externally available.
         type: int
-        required: no
+        required: false
       target_port:
         description:
           - The port inside the container to expose.
         type: int
-        required: yes
+        required: true
       protocol:
         description:
           - What protocol to use.
@@ -394,9 +400,9 @@ options:
     type: bool
   replicas:
     description:
-      - Number of containers instantiated in the service. Valid only if I(mode) is C(replicated).
-      - If set to C(-1), and service is not present, service replicas will be set to C(1).
-      - If set to C(-1), and service is present, service replicas will be unchanged.
+      - Number of containers instantiated in the service. Valid only if O(mode=replicated).
+      - If set to V(-1), and service is not present, service replicas will be set to V(1).
+      - If set to V(-1), and service is present, service replicas will be unchanged.
       - Corresponds to the C(--replicas) option of C(docker service create).
     type: int
     default: -1
@@ -406,15 +412,14 @@ options:
     suboptions:
       cpus:
         description:
-          - Service CPU reservation. C(0) equals no reservation.
+          - Service CPU reservation. V(0) equals no reservation.
           - Corresponds to the C(--reserve-cpu) option of C(docker service create).
         type: float
       memory:
         description:
-          - "Service memory reservation in format C(<number>[<unit>]). Number is a positive integer.
-            Unit can be C(B) (byte), C(K) (kibibyte, 1024B), C(M) (mebibyte), C(G) (gibibyte),
-            C(T) (tebibyte), or C(P) (pebibyte)."
-          - C(0) equals no reservation.
+          - Service memory reservation in format C(<number>[<unit>]). Number is a positive integer. Unit can be V(B) (byte),
+            V(K) (kibibyte, 1024B), V(M) (mebibyte), V(G) (gibibyte), V(T) (tebibyte), or V(P) (pebibyte).
+          - V(0) equals no reservation.
           - Omitting the unit defaults to bytes.
           - Corresponds to the C(--reserve-memory) option of C(docker service create).
         type: str
@@ -424,7 +429,7 @@ options:
       - If the current image digest should be resolved from registry and updated if changed.
       - Requires API version >= 1.30.
     type: bool
-    default: no
+    default: false
   restart_config:
     description:
       - Configures if and how to restart containers when they exit.
@@ -441,8 +446,8 @@ options:
       delay:
         description:
           - Delay between restarts.
-          - "Accepts a a string in a format that look like:
-            C(5h34m56s), C(1m30s) etc. The supported units are C(us), C(ms), C(s), C(m) and C(h)."
+          - 'Accepts a a string in a format that look like: V(5h34m56s), V(1m30s), and so on. The supported units are V(us), V(ms),
+            V(s), V(m) and V(h).'
           - Corresponds to the C(--restart-delay) option of C(docker service create).
         type: str
       max_attempts:
@@ -453,8 +458,8 @@ options:
       window:
         description:
           - Restart policy evaluation window.
-          - "Accepts a string in a format that look like:
-            C(5h34m56s), C(1m30s) etc. The supported units are C(us), C(ms), C(s), C(m) and C(h)."
+          - 'Accepts a string in a format that look like: V(5h34m56s), V(1m30s), and so on. The supported units are V(us), V(ms),
+            V(s), V(m) and V(h).'
           - Corresponds to the C(--restart-window) option of C(docker service create).
         type: str
     type: dict
@@ -471,8 +476,8 @@ options:
       delay:
         description:
           - Delay between task rollbacks.
-          - "Accepts a string in a format that look like:
-            C(5h34m56s), C(1m30s) etc. The supported units are C(us), C(ms), C(s), C(m) and C(h)."
+          - 'Accepts a string in a format that look like: V(5h34m56s), V(1m30s), and so on. The supported units are V(us), V(ms),
+            V(s), V(m) and V(h).'
           - Corresponds to the C(--rollback-delay) option of C(docker service create).
           - Requires API version >= 1.28.
         type: str
@@ -488,8 +493,8 @@ options:
       monitor:
         description:
           - Duration after each task rollback to monitor for failure.
-          - "Accepts a string in a format that look like:
-            C(5h34m56s), C(1m30s) etc. The supported units are C(us), C(ms), C(s), C(m) and C(h)."
+          - 'Accepts a string in a format that look like: V(5h34m56s), V(1m30s), and so on. The supported units are V(us), V(ms),
+            V(s), V(m) and V(h).'
           - Corresponds to the C(--rollback-monitor) option of C(docker service create).
           - Requires API version >= 1.28.
         type: str
@@ -510,7 +515,6 @@ options:
     description:
       - List of dictionaries describing the service secrets.
       - Corresponds to the C(--secret) option of C(docker service create).
-      - Requires API version >= 1.25.
     type: list
     elements: dict
     suboptions:
@@ -522,10 +526,10 @@ options:
         description:
           - Secret's name as defined at its creation.
         type: str
-        required: yes
+        required: true
       filename:
         description:
-          - Name of the file containing the secret. Defaults to the I(secret_name) if not specified.
+          - Name of the file containing the secret. Defaults to the O(secrets[].secret_name) if not specified.
           - Corresponds to the C(target) key of C(docker service create --secret).
         type: str
       uid:
@@ -538,13 +542,13 @@ options:
         type: str
       mode:
         description:
-          - File access mode inside the container. Must be an octal number (like C(0644) or C(0444)).
+          - File access mode inside the container. Must be an octal number (like V(0644) or V(0444)).
         type: int
   state:
     description:
-      - C(absent) - A service matching the specified name will be removed and have its tasks stopped.
-      - C(present) - Asserts the existence of a service matching the name and provided configuration parameters.
-        Unspecified configuration parameters will be set to docker defaults.
+      - V(absent) - A service matching the specified name will be removed and have its tasks stopped.
+      - V(present) - Asserts the existence of a service matching the name and provided configuration parameters. Unspecified
+        configuration parameters will be set to docker defaults.
     type: str
     default: present
     choices:
@@ -553,8 +557,8 @@ options:
   stop_grace_period:
     description:
       - Time to wait before force killing a container.
-      - "Accepts a duration as a string in a format that look like:
-        C(5h34m56s), C(1m30s) etc. The supported units are C(us), C(ms), C(s), C(m) and C(h)."
+      - 'Accepts a duration as a string in a format that look like: V(5h34m56s), V(1m30s), and so on. The supported units are V(us),
+        V(ms), V(s), V(m) and V(h).'
       - Corresponds to the C(--stop-grace-period) option of C(docker service create).
     type: str
   stop_signal:
@@ -566,7 +570,6 @@ options:
     description:
       - Allocate a pseudo-TTY.
       - Corresponds to the C(--tty) option of C(docker service create).
-      - Requires API version >= 1.25.
     type: bool
   update_config:
     description:
@@ -580,15 +583,15 @@ options:
       delay:
         description:
           - Rolling update delay.
-          - "Accepts a string in a format that look like:
-            C(5h34m56s), C(1m30s) etc. The supported units are C(us), C(ms), C(s), C(m) and C(h)."
+          - 'Accepts a string in a format that look like: V(5h34m56s), V(1m30s), and so on. The supported units are V(us), V(ms),
+            V(s), V(m) and V(h).'
           - Corresponds to the C(--update-delay) option of C(docker service create).
         type: str
       failure_action:
         description:
           - Action to take in case of container failure.
           - Corresponds to the C(--update-failure-action) option of C(docker service create).
-          - Usage of I(rollback) requires API version >= 1.29.
+          - Usage of V(rollback) requires API version >= 1.29.
         type: str
         choices:
           - continue
@@ -597,16 +600,14 @@ options:
       monitor:
         description:
           - Time to monitor updated tasks for failures.
-          - "Accepts a string in a format that look like:
-            C(5h34m56s), C(1m30s) etc. The supported units are C(us), C(ms), C(s), C(m) and C(h)."
+          - 'Accepts a string in a format that look like: V(5h34m56s), V(1m30s), and so on. The supported units are V(us), V(ms),
+            V(s), V(m) and V(h).'
           - Corresponds to the C(--update-monitor) option of C(docker service create).
-          - Requires API version >= 1.25.
         type: str
       max_failure_ratio:
         description:
           - Fraction of tasks that may fail during an update before the failure action is invoked.
           - Corresponds to the C(--update-max-failure-ratio) option of C(docker service create).
-          - Requires API version >= 1.25.
         type: float
       order:
         description:
@@ -618,7 +619,7 @@ options:
   user:
     description:
       - Sets the username or UID used for the specified command.
-      - Before Ansible 2.8, the default value for this option was C(root).
+      - Before Ansible 2.8, the default value for this option was V(root).
       - The default has been removed so that the user defined in the image is used if no user is specified here.
       - Corresponds to the C(--user) option of C(docker service create).
     type: str
@@ -627,125 +628,56 @@ options:
       - Path to the working directory.
       - Corresponds to the C(--workdir) option of C(docker service create).
     type: str
-extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_2_documentation
+  cap_add:
+    description:
+      - List of capabilities to add to the container.
+      - Requires API version >= 1.41.
+    type: list
+    elements: str
+    version_added: 2.2.0
+  cap_drop:
+    description:
+      - List of capabilities to drop from the container.
+      - Requires API version >= 1.41.
+    type: list
+    elements: str
+    version_added: 2.2.0
 
 requirements:
   - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 2.0.2"
-  - "Docker API >= 1.24"
+  - "Docker API >= 1.25"
 notes:
-  - "Images will only resolve to the latest digest when using Docker API >= 1.30 and Docker SDK for Python >= 3.2.0.
-     When using older versions use C(force_update: true) to trigger the swarm to resolve a new image."
-'''
+  - Images will only resolve to the latest digest when using Docker API >= 1.30 and Docker SDK for Python >= 3.2.0. When using
+    older versions use O(force_update=true) to trigger the swarm to resolve a new image.
+"""
 
-RETURN = '''
+RETURN = r"""
 swarm_service:
   returned: always
   type: dict
   description:
-    - Dictionary of variables representing the current state of the service.
-      Matches the module parameters format.
+    - Dictionary of variables representing the current state of the service. Matches the module parameters format.
     - Note that facts are not part of registered vars but accessible directly.
-    - Note that before Ansible 2.7.9, the return variable was documented as C(ansible_swarm_service),
-      while the module actually returned a variable called C(ansible_docker_service). The variable
-      was renamed to C(swarm_service) in both code and documentation for Ansible 2.7.9 and Ansible 2.8.0.
-      In Ansible 2.7.x, the old name C(ansible_docker_service) can still be used.
-  sample: '{
-    "args": [
-      "3600"
-    ],
-    "command": [
-      "sleep"
-    ],
-    "configs": null,
-    "constraints": [
-      "node.role == manager",
-      "engine.labels.operatingsystem == ubuntu 14.04"
-    ],
-    "container_labels": null,
-    "dns": null,
-    "dns_options": null,
-    "dns_search": null,
-    "endpoint_mode": null,
-    "env": [
-       "ENVVAR1=envvar1",
-       "ENVVAR2=envvar2"
-    ],
-    "force_update": null,
-    "groups": null,
-    "healthcheck": {
-      "interval": 90000000000,
-      "retries": 3,
-      "start_period": 30000000000,
-      "test": [
-        "CMD",
-        "curl",
-        "--fail",
-        "http://nginx.host.com"
-      ],
-      "timeout": 10000000000
-    },
-    "healthcheck_disabled": false,
-    "hostname": null,
-    "hosts": null,
-    "image": "alpine:latest@sha256:b3dbf31b77fd99d9c08f780ce6f5282aba076d70a513a8be859d8d3a4d0c92b8",
-    "labels": {
-      "com.example.department": "Finance",
-      "com.example.description": "Accounting webapp"
-    },
-    "limit_cpu": 0.5,
-    "limit_memory": 52428800,
-    "log_driver": "fluentd",
-    "log_driver_options": {
-      "fluentd-address": "127.0.0.1:24224",
-      "fluentd-async-connect": "true",
-      "tag": "myservice"
-    },
-    "mode": "replicated",
-    "mounts": [
-      {
-        "readonly": false,
-        "source": "/tmp/",
-        "target": "/remote_tmp/",
-        "type": "bind",
-        "labels": null,
-        "propagation": null,
-        "no_copy": null,
-        "driver_config": null,
-        "tmpfs_size": null,
-        "tmpfs_mode": null
-      }
-    ],
-    "networks": null,
-    "placement_preferences": [
-      {
-        "spread": "node.labels.mylabel"
-      }
-    ],
-    "publish": null,
-    "read_only": null,
-    "replicas": 1,
-    "replicas_max_per_node": 1,
-    "reserve_cpu": 0.25,
-    "reserve_memory": 20971520,
-    "restart_policy": "on-failure",
-    "restart_policy_attempts": 3,
-    "restart_policy_delay": 5000000000,
-    "restart_policy_window": 120000000000,
-    "secrets": null,
-    "stop_grace_period": null,
-    "stop_signal": null,
-    "tty": null,
-    "update_delay": 10000000000,
-    "update_failure_action": null,
-    "update_max_failure_ratio": null,
-    "update_monitor": null,
-    "update_order": "stop-first",
-    "update_parallelism": 2,
-    "user": null,
-    "working_dir": null
-  }'
+    - Note that before Ansible 2.7.9, the return variable was documented as C(ansible_swarm_service), while the module actually
+      returned a variable called C(ansible_docker_service). The variable was renamed to RV(swarm_service) in both code and
+      documentation for Ansible 2.7.9 and Ansible 2.8.0. In Ansible 2.7.x, the old name C(ansible_docker_service) can still
+      be used.
+  sample: '{ "args": [ "3600" ], "cap_add": null, "cap_drop": [ "ALL" ], "command": [ "sleep" ], "configs": null, "constraints":
+    [ "node.role == manager", "engine.labels.operatingsystem == ubuntu 14.04" ], "container_labels": null, "sysctls": null,
+    "dns": null, "dns_options": null, "dns_search": null, "endpoint_mode": null, "env": [ "ENVVAR1=envvar1", "ENVVAR2=envvar2"
+    ], "force_update": null, "groups": null, "healthcheck": { "interval": 90000000000, "retries": 3, "start_period": 30000000000,
+    "test": [ "CMD", "curl", "--fail", "http://nginx.host.com" ], "timeout": 10000000000 }, "healthcheck_disabled": false,
+    "hostname": null, "hosts": null, "image": "alpine:latest@sha256:b3dbf31b77fd99d9c08f780ce6f5282aba076d70a513a8be859d8d3a4d0c92b8",
+    "labels": { "com.example.department": "Finance", "com.example.description": "Accounting webapp" }, "limit_cpu": 0.5, "limit_memory":
+    52428800, "log_driver": "fluentd", "log_driver_options": { "fluentd-address": "127.0.0.1:24224", "fluentd-async-connect":
+    "true", "tag": "myservice" }, "mode": "replicated", "mounts": [ { "readonly": false, "source": "/tmp/", "target": "/remote_tmp/",
+    "type": "bind", "labels": null, "propagation": null, "no_copy": null, "driver_config": null, "tmpfs_size": null, "tmpfs_mode":
+    null } ], "networks": null, "placement_preferences": [ { "spread": "node.labels.mylabel" } ], "publish": null, "read_only":
+    null, "replicas": 1, "replicas_max_per_node": 1, "reserve_cpu": 0.25, "reserve_memory": 20971520, "restart_policy": "on-failure",
+    "restart_policy_attempts": 3, "restart_policy_delay": 5000000000, "restart_policy_window": 120000000000, "secrets": null,
+    "stop_grace_period": null, "stop_signal": null, "tty": null, "update_delay": 10000000000, "update_failure_action": null,
+    "update_max_failure_ratio": null, "update_monitor": null, "update_order": "stop-first", "update_parallelism": 2, "user":
+    null, "working_dir": null }'
 changes:
   returned: always
   description:
@@ -756,12 +688,13 @@ changes:
 rebuilt:
   returned: always
   description:
-    - True if the service has been recreated (removed and created)
+    - True if the service has been recreated (removed and created).
   type: bool
-  sample: True
-'''
+  sample: true
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
+---
 - name: Set command and arguments
   community.docker.docker_swarm_service:
     name: myservice
@@ -913,7 +846,7 @@ EXAMPLES = '''
   community.docker.docker_swarm_service:
     name: myservice
     state: absent
-'''
+"""
 
 import shlex
 import time
@@ -923,12 +856,15 @@ from ansible_collections.community.docker.plugins.module_utils.version import Lo
 
 from ansible_collections.community.docker.plugins.module_utils.common import (
     AnsibleDockerClient,
+    RequestException,
+)
+from ansible_collections.community.docker.plugins.module_utils.util import (
     DifferenceTracker,
     DockerBaseClass,
     convert_duration_to_nanosecond,
     parse_healthcheck,
     clean_dict_booleans_for_docker_api,
-    RequestException,
+    sanitize_labels,
 )
 
 from ansible.module_utils.basic import human_to_bytes
@@ -1130,7 +1066,7 @@ def has_list_changed(new_list, old_list, sort_lists=True, sort_key=None):
     else:
         zip_data = zip(new_list, old_list)
     for new_item, old_item in zip_data:
-        is_same_type = type(new_item) == type(old_item)
+        is_same_type = type(new_item) == type(old_item)  # noqa: E721, pylint: disable=unidiomatic-typecheck
         if not is_same_type:
             if isinstance(new_item, string_types) and isinstance(old_item, string_types):
                 # Even though the types are different between these items,
@@ -1207,6 +1143,7 @@ class DockerService(DockerBaseClass):
         self.log_driver_options = None
         self.labels = None
         self.container_labels = None
+        self.sysctls = None
         self.limit_cpu = None
         self.limit_memory = None
         self.reserve_cpu = None
@@ -1240,6 +1177,8 @@ class DockerService(DockerBaseClass):
         self.update_order = None
         self.working_dir = None
         self.init = None
+        self.cap_add = None
+        self.cap_drop = None
 
         self.docker_api_version = docker_api_version
         self.docker_py_version = docker_py_version
@@ -1271,6 +1210,7 @@ class DockerService(DockerBaseClass):
             'placement_preferences': self.placement_preferences,
             'labels': self.labels,
             'container_labels': self.container_labels,
+            'sysctls': self.sysctls,
             'mode': self.mode,
             'replicas': self.replicas,
             'endpoint_mode': self.endpoint_mode,
@@ -1296,6 +1236,8 @@ class DockerService(DockerBaseClass):
             'user': self.user,
             'working_dir': self.working_dir,
             'init': self.init,
+            'cap_add': self.cap_add,
+            'cap_drop': self.cap_drop,
         }
 
     @property
@@ -1309,10 +1251,7 @@ class DockerService(DockerBaseClass):
     @property
     def can_use_task_template_networks(self):
         # In Docker API 1.25 attaching networks to TaskTemplate is preferred over Spec
-        return (
-            self.docker_api_version >= LooseVersion('1.25') and
-            self.docker_py_version >= LooseVersion('2.7')
-        )
+        return self.docker_py_version >= LooseVersion('2.7')
 
     @staticmethod
     def get_restart_config_from_ansible_params(params):
@@ -1503,10 +1442,9 @@ class DockerService(DockerBaseClass):
         secret_ids,
         config_ids,
         network_ids,
-        docker_api_version,
-        docker_py_version,
+        client,
     ):
-        s = DockerService(docker_api_version, docker_py_version)
+        s = DockerService(client.docker_api_version, client.docker_py_version)
         s.image = image_digest
         s.args = ap['args']
         s.endpoint_mode = ap['endpoint_mode']
@@ -1518,13 +1456,18 @@ class DockerService(DockerBaseClass):
         s.hosts = ap['hosts']
         s.tty = ap['tty']
         s.labels = ap['labels']
+        sanitize_labels(s.labels, 'labels', client)
         s.container_labels = ap['container_labels']
+        sanitize_labels(s.container_labels, 'container_labels', client)
+        s.sysctls = ap['sysctls']
         s.mode = ap['mode']
         s.stop_signal = ap['stop_signal']
         s.user = ap['user']
         s.working_dir = ap['working_dir']
         s.read_only = ap['read_only']
         s.init = ap['init']
+        s.cap_add = ap['cap_add']
+        s.cap_drop = ap['cap_drop']
 
         s.networks = get_docker_networks(ap['networks'], network_ids)
 
@@ -1718,6 +1661,8 @@ class DockerService(DockerBaseClass):
             differences.add('reserve_memory', parameter=self.reserve_memory, active=os.reserve_memory)
         if self.container_labels is not None and self.container_labels != (os.container_labels or {}):
             differences.add('container_labels', parameter=self.container_labels, active=os.container_labels)
+        if self.sysctls is not None and self.sysctls != (os.sysctls or {}):
+            differences.add('sysctls', parameter=self.sysctls, active=os.sysctls)
         if self.stop_signal is not None and self.stop_signal != os.stop_signal:
             differences.add('stop_signal', parameter=self.stop_signal, active=os.stop_signal)
         if self.stop_grace_period is not None and self.stop_grace_period != os.stop_grace_period:
@@ -1773,6 +1718,10 @@ class DockerService(DockerBaseClass):
             force_update = True
         if self.init is not None and self.init != os.init:
             differences.add('init', parameter=self.init, active=os.init)
+        if has_list_changed(self.cap_add, os.cap_add):
+            differences.add('cap_add', parameter=self.cap_add, active=os.cap_add)
+        if has_list_changed(self.cap_drop, os.cap_drop):
+            differences.add('cap_drop', parameter=self.cap_drop, active=os.cap_drop)
         return not differences.empty or force_update, differences, needs_rebuild, force_update
 
     def has_healthcheck_changed(self, old_publish):
@@ -1908,6 +1857,8 @@ class DockerService(DockerBaseClass):
             container_spec_args['user'] = self.user
         if self.container_labels is not None:
             container_spec_args['labels'] = self.container_labels
+        if self.sysctls is not None:
+            container_spec_args['sysctls'] = self.sysctls
         if self.healthcheck is not None:
             container_spec_args['healthcheck'] = types.Healthcheck(**self.healthcheck)
         elif self.healthcheck_disabled:
@@ -1938,6 +1889,10 @@ class DockerService(DockerBaseClass):
             container_spec_args['configs'] = configs
         if self.init is not None:
             container_spec_args['init'] = self.init
+        if self.cap_add is not None:
+            container_spec_args['cap_add'] = self.cap_add
+        if self.cap_drop is not None:
+            container_spec_args['cap_drop'] = self.cap_drop
 
         return types.ContainerSpec(self.image, **container_spec_args)
 
@@ -2131,6 +2086,9 @@ class DockerServiceManager(object):
         ds.stop_signal = task_template_data['ContainerSpec'].get('StopSignal')
         ds.working_dir = task_template_data['ContainerSpec'].get('Dir')
         ds.read_only = task_template_data['ContainerSpec'].get('ReadOnly')
+        ds.cap_add = task_template_data['ContainerSpec'].get('CapabilityAdd')
+        ds.cap_drop = task_template_data['ContainerSpec'].get('CapabilityDrop')
+        ds.sysctls = task_template_data['ContainerSpec'].get('Sysctls')
 
         healthcheck_data = task_template_data['ContainerSpec'].get('Healthcheck')
         if healthcheck_data:
@@ -2442,8 +2400,7 @@ class DockerServiceManager(object):
                 secret_ids,
                 config_ids,
                 network_ids,
-                self.client.docker_api_version,
-                self.client.docker_py_version
+                self.client,
             )
         except Exception as e:
             return self.client.fail(
@@ -2644,6 +2601,7 @@ def main():
         hosts=dict(type='dict'),
         labels=dict(type='dict'),
         container_labels=dict(type='dict'),
+        sysctls=dict(type='dict'),
         mode=dict(
             type='str',
             default='replicated',
@@ -2694,31 +2652,35 @@ def main():
         user=dict(type='str'),
         working_dir=dict(type='str'),
         init=dict(type='bool'),
+        cap_add=dict(type='list', elements='str'),
+        cap_drop=dict(type='list', elements='str'),
     )
 
     option_minimal_versions = dict(
-        dns=dict(docker_py_version='2.6.0', docker_api_version='1.25'),
-        dns_options=dict(docker_py_version='2.6.0', docker_api_version='1.25'),
-        dns_search=dict(docker_py_version='2.6.0', docker_api_version='1.25'),
-        endpoint_mode=dict(docker_py_version='3.0.0', docker_api_version='1.25'),
-        force_update=dict(docker_py_version='2.1.0', docker_api_version='1.25'),
-        healthcheck=dict(docker_py_version='2.6.0', docker_api_version='1.25'),
-        hostname=dict(docker_py_version='2.2.0', docker_api_version='1.25'),
-        hosts=dict(docker_py_version='2.6.0', docker_api_version='1.25'),
-        groups=dict(docker_py_version='2.6.0', docker_api_version='1.25'),
-        tty=dict(docker_py_version='2.4.0', docker_api_version='1.25'),
-        secrets=dict(docker_py_version='2.4.0', docker_api_version='1.25'),
+        dns=dict(docker_py_version='2.6.0'),
+        dns_options=dict(docker_py_version='2.6.0'),
+        dns_search=dict(docker_py_version='2.6.0'),
+        endpoint_mode=dict(docker_py_version='3.0.0'),
+        force_update=dict(docker_py_version='2.1.0'),
+        healthcheck=dict(docker_py_version='2.6.0'),
+        hostname=dict(docker_py_version='2.2.0'),
+        hosts=dict(docker_py_version='2.6.0'),
+        groups=dict(docker_py_version='2.6.0'),
+        tty=dict(docker_py_version='2.4.0'),
+        secrets=dict(docker_py_version='2.4.0'),
         configs=dict(docker_py_version='2.6.0', docker_api_version='1.30'),
         stop_signal=dict(docker_py_version='2.6.0', docker_api_version='1.28'),
-        publish=dict(docker_py_version='3.0.0', docker_api_version='1.25'),
+        publish=dict(docker_py_version='3.0.0'),
         read_only=dict(docker_py_version='2.6.0', docker_api_version='1.28'),
         resolve_image=dict(docker_api_version='1.30', docker_py_version='3.2.0'),
         rollback_config=dict(docker_py_version='3.5.0', docker_api_version='1.28'),
         init=dict(docker_py_version='4.0.0', docker_api_version='1.37'),
+        cap_add=dict(docker_py_version='5.0.3', docker_api_version='1.41'),
+        cap_drop=dict(docker_py_version='5.0.3', docker_api_version='1.41'),
+        sysctls=dict(docker_py_version='6.0.0', docker_api_version='1.40'),
         # specials
         publish_mode=dict(
             docker_py_version='3.0.0',
-            docker_api_version='1.25',
             detect_usage=_detect_publish_mode_usage,
             usage_msg='set publish.mode'
         ),
@@ -2730,7 +2692,6 @@ def main():
         ),
         update_config_max_failure_ratio=dict(
             docker_py_version='2.1.0',
-            docker_api_version='1.25',
             detect_usage=lambda c: (c.module.params['update_config'] or {}).get(
                 'max_failure_ratio'
             ) is not None,
@@ -2744,7 +2705,6 @@ def main():
         ),
         update_config_monitor=dict(
             docker_py_version='2.1.0',
-            docker_api_version='1.25',
             detect_usage=lambda c: (c.module.params['update_config'] or {}).get(
                 'monitor'
             ) is not None,
@@ -2803,7 +2763,6 @@ def main():
         required_if=required_if,
         supports_check_mode=True,
         min_docker_version='2.0.2',
-        min_docker_api_version='1.24',
         option_minimal_versions=option_minimal_versions,
     )
 
@@ -2827,7 +2786,7 @@ def main():
         client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when Docker SDK for Python tried to talk to the docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

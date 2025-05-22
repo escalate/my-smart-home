@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 url: http://localhost:8080/auth
 admin_realm: master
 admin_user: admin
@@ -20,7 +24,7 @@ redirect_uris1:
   - "http://example.b.com/"
   - "http://example.a.com/"
 
-client_attributes1: {"backchannel.logout.session.required": true, "backchannel.logout.revoke.offline.tokens": false}
+client_attributes1: {"backchannel.logout.session.required": true, "backchannel.logout.revoke.offline.tokens": false, "client.secret.creation.time": 0}
 
 protocol_mappers1:
   - name: 'email'
@@ -30,9 +34,9 @@ protocol_mappers1:
       "claim.name": "email"
       "user.attribute": "email"
       "jsonType.label": "String"
-      "id.token.claim": "true"
-      "access.token.claim": "true"
-      "userinfo.token.claim": "true"
+      "id.token.claim": true
+      "access.token.claim": true
+      "userinfo.token.claim": true
 
   - name: 'email_verified'
     protocol: 'openid-connect'
@@ -41,9 +45,9 @@ protocol_mappers1:
       "claim.name": "email_verified"
       "user.attribute": "emailVerified"
       "jsonType.label": "boolean"
-      "id.token.claim": "true"
-      "access.token.claim": "true"
-      "userinfo.token.claim": "true"
+      "id.token.claim": true
+      "access.token.claim": true
+      "userinfo.token.claim": true
 
   - name: 'family_name'
     protocol: 'openid-connect'

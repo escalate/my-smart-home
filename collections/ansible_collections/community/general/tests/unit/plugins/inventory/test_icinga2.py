@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2021, Cliff Hults <cliff.hlts@gmail.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # The API responses used in these tests were recorded from PVE version 6.2.
 
@@ -76,16 +77,33 @@ def query_hosts(hosts=None, attrs=None, joins=None, host_filter=None):
     return json_host_data
 
 
+def get_option(option):
+    if option == 'groups':
+        return {}
+    elif option == 'keyed_groups':
+        return []
+    elif option == 'compose':
+        return {}
+    elif option == 'strict':
+        return False
+    elif option == 'group_by_hostgroups':
+        return True
+    else:
+        return None
+
+
 def test_populate(inventory, mocker):
     # module settings
     inventory.icinga2_user = 'ansible'
     inventory.icinga2_password = 'password'
     inventory.icinga2_url = 'https://localhost:5665' + '/v1'
     inventory.inventory_attr = "address"
+    inventory.group_by_hostgroups = True
 
     # bypass authentication and API fetch calls
     inventory._check_api = mocker.MagicMock(side_effect=check_api)
     inventory._query_hosts = mocker.MagicMock(side_effect=query_hosts)
+    inventory.get_option = mocker.MagicMock(side_effect=get_option)
     inventory._populate()
 
     # get different hosts

@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Register plugin name and alias
   set_fact:
     plugin_name: "{{ name_prefix }}"
@@ -62,14 +66,14 @@
 
 - assert:
     that:
-    - create_1 is changed
-    - create_2 is not changed
-    - create_3 is changed
-    - create_4 is not changed
-    - absent_1 is changed
-    - absent_2 is not changed
-    - absent_3 is changed
-    - absent_4 is not changed
+      - create_1 is changed
+      - create_2 is not changed
+      - create_3 is changed
+      - create_4 is not changed
+      - absent_1 is changed
+      - absent_2 is not changed
+      - absent_3 is changed
+      - absent_4 is not changed
 
 - name: Cleanup plugin with an alias
   docker_plugin:

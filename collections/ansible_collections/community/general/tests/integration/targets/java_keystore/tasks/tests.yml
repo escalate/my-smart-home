@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Create test directory
   ansible.builtin.file:
     path: "{{ remote_tmp_dir }}"
@@ -22,7 +26,7 @@
 
 - name: Read certificate keys
   slurp:
-    src: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | d(item.name)) ~ '.key' }}"
+    src: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | default(item.name)) ~ '.key' }}"
   loop: "{{ java_keystore_certs }}"
   when: not remote_cert
   register: certificate_keys
@@ -30,19 +34,19 @@
 - name: Create a Java keystore for the given ({{ 'remote' if remote_cert else 'local' }}) certificates (check mode)
   community.general.java_keystore: &java_keystore_params
     name: example
-    dest: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | d(item.name)) ~ '.jks' }}"
+    dest: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | default(item.name)) ~ '.jks' }}"
     certificate: "{{ omit if remote_cert else (certificates.results[loop_index].content | b64decode) }}"
     private_key: "{{ omit if remote_cert else (certificate_keys.results[loop_index].content | b64decode) }}"
     certificate_path: "{{ omit if not remote_cert else remote_tmp_dir ~ '/' ~ item.name ~ '.pem' }}"
-    private_key_path: "{{ omit if not remote_cert else remote_tmp_dir ~ '/' ~ (item.keyname | d(item.name)) ~ '.key' }}"
-    private_key_passphrase: "{{ item.passphrase | d(omit) }}"
+    private_key_path: "{{ omit if not remote_cert else remote_tmp_dir ~ '/' ~ (item.keyname | default(item.name)) ~ '.key' }}"
+    private_key_passphrase: "{{ item.passphrase | default(omit) }}"
     password: changeit
     ssl_backend: "{{ ssl_backend }}"
-    keystore_type: "{{ item.keystore_type | d(omit) }}"
+    keystore_type: "{{ item.keystore_type | default(omit) }}"
   loop: "{{ java_keystore_certs }}"
   loop_control:
     index_var: loop_index
-  check_mode: yes
+  check_mode: true
   register: result_check
 
 - name: Create a Java keystore for the given certificates
@@ -58,7 +62,7 @@
   loop: "{{ java_keystore_certs }}"
   loop_control:
     index_var: loop_index
-  check_mode: yes
+  check_mode: true
   register: result_idem_check
 
 - name: Create a Java keystore for the given certificates (idempotency)
@@ -78,7 +82,7 @@
 
 - name: Read certificate keys (new)
   slurp:
-    src: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | d(item.name)) ~ '.key' }}"
+    src: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | default(item.name)) ~ '.key' }}"
   loop: "{{ java_keystore_new_certs }}"
   when: not remote_cert
   register: certificate_keys_new
@@ -86,19 +90,19 @@
 - name: Create a Java keystore for the given certificates (certificate changed, check mode)
   community.general.java_keystore: &java_keystore_params_new_certs
     name: example
-    dest: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | d(item.name)) ~ '.jks' }}"
+    dest: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | default(item.name)) ~ '.jks' }}"
     certificate: "{{ omit if remote_cert else (certificates_new.results[loop_index].content | b64decode) }}"
     private_key: "{{ omit if remote_cert else (certificate_keys_new.results[loop_index].content | b64decode) }}"
     certificate_path: "{{ omit if not remote_cert else remote_tmp_dir ~ '/' ~ item.name ~ '.pem' }}"
-    private_key_path: "{{ omit if not remote_cert else remote_tmp_dir ~ '/' ~ (item.keyname | d(item.name)) ~ '.key' }}"
-    private_key_passphrase: "{{ item.passphrase | d(omit) }}"
+    private_key_path: "{{ omit if not remote_cert else remote_tmp_dir ~ '/' ~ (item.keyname | default(item.name)) ~ '.key' }}"
+    private_key_passphrase: "{{ item.passphrase | default(omit) }}"
     password: changeit
     ssl_backend: "{{ ssl_backend }}"
-    keystore_type: "{{ item.keystore_type | d(omit) }}"
+    keystore_type: "{{ item.keystore_type | default(omit) }}"
   loop: "{{ java_keystore_new_certs }}"
   loop_control:
     index_var: loop_index
-  check_mode: yes
+  check_mode: true
   register: result_change_check
 
 - name: Create a Java keystore for the given certificates (certificate changed)
@@ -116,7 +120,7 @@
   loop: "{{ java_keystore_new_certs }}"
   loop_control:
     index_var: loop_index
-  check_mode: yes
+  check_mode: true
   register: result_alias_change_check
 
 - name: Create a Java keystore for the given certificates (alias changed)
@@ -137,7 +141,7 @@
   loop: "{{ java_keystore_new_certs }}"
   loop_control:
     index_var: loop_index
-  check_mode: yes
+  check_mode: true
   register: result_pw_change_check
 
 - name: Create a Java keystore for the given certificates (password changed)
@@ -160,7 +164,7 @@
   loop: "{{ java_keystore_new_certs }}"
   loop_control:
     index_var: loop_index
-  check_mode: yes
+  check_mode: true
   register: result_type_pkcs12_check
 
 - name: Create a Java keystore for the given certificates (force keystore type jks, check mode)
@@ -172,7 +176,7 @@
   loop: "{{ java_keystore_new_certs }}"
   loop_control:
     index_var: loop_index
-  check_mode: yes
+  check_mode: true
   register: result_type_jks_check
 
 - name: Create a Java keystore for the given certificates (force keystore type jks)
@@ -189,7 +193,7 @@
 
 - name: Stat keystore (before failure)
   ansible.builtin.stat:
-    path: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | d(item.name)) ~ '.jks' }}"
+    path: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | default(item.name)) ~ '.jks' }}"
   loop: "{{ java_keystore_new_certs }}"
   register: result_stat_before
 
@@ -207,7 +211,7 @@
 
 - name: Stat keystore (after failure)
   ansible.builtin.stat:
-    path: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | d(item.name)) ~ '.jks' }}"
+    path: "{{ remote_tmp_dir ~ '/' ~ (item.keyname | default(item.name)) ~ '.jks' }}"
   loop: "{{ java_keystore_new_certs }}"
   register: result_stat_after
 
@@ -221,7 +225,7 @@
   loop: "{{ java_keystore_new_certs }}"
   loop_control:
     index_var: loop_index
-  check_mode: yes
+  check_mode: true
   register: result_type_change_check
 
 - name: Create a Java keystore for the given certificates (keystore type changed)
@@ -244,7 +248,7 @@
   loop: "{{ java_keystore_new_certs }}"
   loop_control:
     index_var: loop_index
-  check_mode: yes
+  check_mode: true
   register: result_type_omit_check
 
 - name: Create a Java keystore for the given certificates (omit keystore type)

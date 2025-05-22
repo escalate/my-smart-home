@@ -1,43 +1,63 @@
 #!/usr/bin/python
 #
 # Copyright 2016 Red Hat | Ansible
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: docker_image
 
 short_description: Manage docker images
 
-
 description:
-  - Build, load or pull an image, making the image available for creating containers. Also supports tagging
-    an image, pushing an image, and archiving an image to a C(.tar) file.
+  - Build, load or pull an image, making the image available for creating containers. Also supports tagging an image, pushing
+    an image, and archiving an image to a C(.tar) file.
+  - We recommend to use the individual modules M(community.docker.docker_image_build), M(community.docker.docker_image_export),
+    M(community.docker.docker_image_load), M(community.docker.docker_image_pull), M(community.docker.docker_image_push),
+    M(community.docker.docker_image_remove), and M(community.docker.docker_image_tag) instead of this module.
+notes:
+  - Building images is done using Docker daemon's API. It is not possible to use BuildKit / buildx this way. Use M(community.docker.docker_image_build)
+    to build images with BuildKit.
+extends_documentation_fragment:
+  - community.docker.docker.api_documentation
+  - community.docker.attributes
+  - community.docker.attributes.actiongroup_docker
+
+attributes:
+  check_mode:
+    support: partial
+    details:
+      - When trying to pull an image, the module assumes this is always changed in check mode.
+  diff_mode:
+    support: none
+  idempotent:
+    support: partial
+    details:
+      - Whether the module is idempotent depends on the exact parameters, in particular of O(force_source) and O(force_tag).
+      # TODO: improve idempotent details!
 
 options:
   source:
     description:
-      - "Determines where the module will try to retrieve the image from."
-      - "Use C(build) to build the image from a C(Dockerfile). I(build.path) must
-         be specified when this value is used."
-      - "Use C(load) to load the image from a C(.tar) file. I(load_path) must
-         be specified when this value is used."
-      - "Use C(pull) to pull the image from a registry."
-      - "Use C(local) to make sure that the image is already available on the local
-         docker daemon, i.e. do not try to build, pull or load the image."
+      - Determines where the module will try to retrieve the image from.
+      - Use V(build) to build the image from a C(Dockerfile). O(build.path) must be specified when this value is used.
+      - Use V(load) to load the image from a C(.tar) file. O(load_path) must be specified when this value is used.
+      - Use V(pull) to pull the image from a registry.
+      - Use V(local) to make sure that the image is already available on the local docker daemon. This means that the module
+        does not try to build, pull or load the image.
     type: str
     choices:
-    - build
-    - load
-    - pull
-    - local
+      - build
+      - load
+      - pull
+      - local
   build:
     description:
-      - "Specifies options used for building images."
+      - Specifies options used for building images.
     type: dict
     suboptions:
       cache_from:
@@ -47,8 +67,9 @@ options:
         elements: str
       dockerfile:
         description:
-          - Use with state C(present) and source C(build) to provide an alternate name for the Dockerfile to use when building an image.
-          - This can also include a relative path (relative to I(path)).
+          - Use with O(state=present) and O(source=build) to provide an alternate name for the Dockerfile to use when building
+            an image.
+          - This can also include a relative path (relative to O(build.path)).
         type: str
       http_timeout:
         description:
@@ -57,20 +78,20 @@ options:
         type: int
       path:
         description:
-          - Use with state 'present' to build an image. Will be the path to a directory containing the context and
-            Dockerfile for building an image.
+          - Use with state 'present' to build an image. Will be the path to a directory containing the context and Dockerfile
+            for building an image.
         type: path
-        required: yes
+        required: true
       pull:
         description:
           - When building an image downloads any updates to the FROM image in Dockerfile.
         type: bool
-        default: no
+        default: false
       rm:
         description:
           - Remove intermediate containers after build.
         type: bool
-        default: yes
+        default: true
       network:
         description:
           - The network to use for C(RUN) build instructions.
@@ -79,16 +100,17 @@ options:
         description:
           - Do not use cache when building an image.
         type: bool
-        default: no
+        default: false
       etc_hosts:
         description:
           - Extra hosts to add to C(/etc/hosts) in building containers, as a mapping of hostname to IP address.
+          - Instead of an IP address, the special value V(host-gateway) can also be used, which resolves to the host's gateway
+            IP and allows building containers to connect to services running on the host.
         type: dict
       args:
         description:
           - Provide a dictionary of C(key:value) build arguments that map to Dockerfile ARG directive.
           - Docker expects the value to be a string. For convenience any non-string values will be converted to strings.
-          - Requires Docker API >= 1.21.
         type: dict
       container_limits:
         description:
@@ -97,101 +119,118 @@ options:
         suboptions:
           memory:
             description:
-              - Set memory limit for build.
-            type: int
+              - Memory limit for build in format C(<number>[<unit>]). Number is a positive integer. Unit can be V(B) (byte),
+                V(K) (kibibyte, 1024B), V(M) (mebibyte), V(G) (gibibyte), V(T) (tebibyte), or V(P) (pebibyte).
+              - Omitting the unit defaults to bytes.
+              - Before community.docker 3.6.0, no units were allowed.
+            type: str
           memswap:
             description:
-              - Total memory (memory + swap), -1 to disable swap.
-            type: int
+              - Total memory limit (memory + swap) for build in format C(<number>[<unit>]), or the special values V(unlimited)
+                or V(-1) for unlimited swap usage. Number is a positive integer. Unit can be V(B) (byte), V(K) (kibibyte,
+                1024B), V(M) (mebibyte), V(G) (gibibyte), V(T) (tebibyte), or V(P) (pebibyte).
+              - Omitting the unit defaults to bytes.
+              - Before community.docker 3.6.0, no units were allowed, and neither was the special value V(unlimited).
+            type: str
           cpushares:
             description:
               - CPU shares (relative weight).
             type: int
           cpusetcpus:
             description:
-              - CPUs in which to allow execution, e.g., "0-3", "0,1".
+              - CPUs in which to allow execution.
+              - For example, V(0-3) or V(0,1).
             type: str
       use_config_proxy:
         description:
-          - If set to C(yes) and a proxy configuration is specified in the docker client configuration
-            (by default C($HOME/.docker/config.json)), the corresponding environment variables will
-            be set in the container being built.
-          - Needs Docker SDK for Python >= 3.7.0.
+          - If set to V(true) and a proxy configuration is specified in the docker client configuration (by default C($HOME/.docker/config.json)),
+            the corresponding environment variables will be set in the container being built.
         type: bool
       target:
         description:
-          - When building an image specifies an intermediate build stage by
-            name as a final stage for the resulting image.
+          - When building an image specifies an intermediate build stage by name as a final stage for the resulting image.
         type: str
       platform:
         description:
           - Platform in the format C(os[/arch[/variant]]).
         type: str
         version_added: 1.1.0
+      shm_size:
+        description:
+          - Size of C(/dev/shm) in format C(<number>[<unit>]). Number is positive integer. Unit can be V(B) (byte), V(K) (kibibyte,
+            1024B), V(M) (mebibyte), V(G) (gibibyte), V(T) (tebibyte), or V(P) (pebibyte).
+          - Omitting the unit defaults to bytes. If you omit the size entirely, Docker daemon uses V(64M).
+        type: str
+        version_added: 3.6.0
+      labels:
+        description:
+          - Dictionary of key value pairs.
+        type: dict
+        version_added: 3.6.0
   archive_path:
     description:
-      - Use with state C(present) to archive an image to a .tar file.
+      - Use with O(state=present) to archive an image to a C(.tar) file.
     type: path
   load_path:
     description:
-      - Use with state C(present) to load an image from a .tar file.
-      - Set I(source) to C(load) if you want to load the image.
+      - Use with O(state=present) to load an image from a C(.tar) file.
+      - Set O(source=load) if you want to load the image.
     type: path
   force_source:
     description:
-      - Use with state C(present) to build, load or pull an image (depending on the
-        value of the I(source) option) when the image already exists.
+      - Use with O(state=present) to build, load or pull an image (depending on the value of the O(source) option) when the
+        image already exists.
     type: bool
     default: false
   force_absent:
     description:
-      - Use with state I(absent) to un-tag and remove all images matching the specified name.
+      - Use with O(state=absent) to un-tag and remove all images matching the specified name.
     type: bool
     default: false
   force_tag:
     description:
-      - Use with state C(present) to force tagging an image.
+      - Use with O(state=present) to force tagging an image.
     type: bool
     default: false
   name:
     description:
-      - "Image name. Name format will be one of: C(name), C(repository/name), C(registry_server:port/name).
-        When pushing or pulling an image the name can optionally include the tag by appending C(:tag_name)."
-      - Note that image IDs (hashes) are only supported for I(state=absent), for I(state=present) with I(source=load),
-        and for I(state=present) with I(source=local).
+      - 'Image name. Name format will be one of: C(name), C(repository/name), C(registry_server:port/name). When pushing or
+        pulling an image the name can optionally include the tag by appending C(:tag_name).'
+      - Note that image IDs (hashes) are only supported for O(state=absent), for O(state=present) with O(source=load), and
+        for O(state=present) with O(source=local).
     type: str
-    required: yes
+    required: true
   pull:
     description:
-      - "Specifies options used for pulling images."
+      - Specifies options used for pulling images.
     type: dict
     version_added: 1.3.0
     suboptions:
       platform:
         description:
           - When pulling an image, ask for this specific platform.
-          - Note that this value is not used to determine whether the image needs to be pulled. This might change
-            in the future in a minor release, though.
+          - Note that this value is not used to determine whether the image needs to be pulled. This might change in the future
+            in a minor release, though.
         type: str
   push:
     description:
-      - Push the image to the registry. Specify the registry as part of the I(name) or I(repository) parameter.
+      - Push the image to the registry. Specify the registry as part of the O(name) or O(repository) parameter.
     type: bool
-    default: no
+    default: false
   repository:
     description:
-      - Use with state C(present) to tag the image.
-      - Expects format C(repository:tag). If no tag is provided, will use the value of the I(tag) parameter or C(latest).
-      - If I(push=true), I(repository) must either include a registry, or will be assumed to belong to the default
-        registry (Docker Hub).
+      - Use with O(state=present) to tag the image.
+      - Expects format C(repository:tag). If no tag is provided, will use the value of the O(tag) parameter or V(latest).
+      - If O(push=true), O(repository) must either include a registry, or will be assumed to belong to the default registry
+        (Docker Hub).
     type: str
   state:
     description:
       - Make assertions about the state of an image.
-      - When C(absent) an image will be removed. Use the force option to un-tag and remove all images
-        matching the provided name.
-      - When C(present) check if an image exists using the provided name and tag. If the image is not found or the
-        force option is used, the image will either be pulled, built or loaded, depending on the I(source) option.
+      - When V(absent) an image will be removed. Use the force option to un-tag and remove all images matching the provided
+        name.
+      - When V(present) check if an image exists using the provided name and tag. If the image is not found or the force option
+        is used, the image will either be pulled, built or loaded, depending on the O(source) option.
     type: str
     default: present
     choices:
@@ -199,35 +238,37 @@ options:
       - present
   tag:
     description:
-      - Used to select an image when pulling. Will be added to the image when pushing, tagging or building. Defaults to
-        I(latest).
-      - If I(name) parameter format is I(name:tag), then tag value from I(name) will take precedence.
+      - Used to select an image when pulling. Will be added to the image when pushing, tagging or building. Defaults to V(latest).
+      - If O(name) parameter format is C(name:tag), then tag value from O(name) will take precedence.
     type: str
     default: latest
 
-extends_documentation_fragment:
-- community.docker.docker
-- community.docker.docker.docker_py_1_documentation
-
-
 requirements:
-  - "L(Docker SDK for Python,https://docker-py.readthedocs.io/en/stable/) >= 1.8.0 (use L(docker-py,https://pypi.org/project/docker-py/) for Python 2.6)"
-  - "Docker API >= 1.20"
+  - "Docker API >= 1.25"
 
 author:
   - Pavel Antonov (@softzilla)
   - Chris Houseknecht (@chouseknecht)
   - Sorin Sbarnea (@ssbarnea)
 
-'''
+seealso:
+  - module: community.docker.docker_image_build
+  - module: community.docker.docker_image_export
+  - module: community.docker.docker_image_info
+  - module: community.docker.docker_image_load
+  - module: community.docker.docker_image_pull
+  - module: community.docker.docker_image_push
+  - module: community.docker.docker_image_remove
+  - module: community.docker.docker_image_tag
+"""
 
-EXAMPLES = '''
-
+EXAMPLES = r"""
+---
 - name: Pull an image
   community.docker.docker_image:
     name: pacur/centos-7
     source: pull
-    # Select platform for pulling. If not specified, will pull whatever docker prefers.
+  # Select platform for pulling. If not specified, will pull whatever docker prefers.
     pull:
       platform: amd64
 
@@ -235,25 +276,25 @@ EXAMPLES = '''
   community.docker.docker_image:
     name: pacur/centos-7:56
     repository: dcoppenhagan/myimage:7.56
-    push: yes
+    push: true
     source: local
 
 - name: Tag and push to local registry
   community.docker.docker_image:
-    # Image will be centos:7
+  # Image will be centos:7
     name: centos
-    # Will be pushed to localhost:5000/centos:7
+  # Will be pushed to localhost:5000/centos:7
     repository: localhost:5000/centos
     tag: 7
-    push: yes
+    push: true
     source: local
 
 - name: Add tag latest to image
   community.docker.docker_image:
     name: myimage:7.1.2
     repository: myimage:latest
-    # As 'latest' usually already is present, we need to enable overwriting of existing tags:
-    force_tag: yes
+  # As 'latest' usually already is present, we need to enable overwriting of existing tags:
+    force_tag: true
     source: local
 
 - name: Remove image
@@ -268,7 +309,7 @@ EXAMPLES = '''
       path: ./sinatra
     name: registry.ansible.com/chouseknecht/sinatra
     tag: v1
-    push: yes
+    push: true
     source: build
 
 - name: Archive image
@@ -282,7 +323,7 @@ EXAMPLES = '''
   community.docker.docker_image:
     name: localhost:5000/myimages/sinatra
     tag: v1
-    push: yes
+    push: true
     load_path: my_sinatra.tar
     source: load
 
@@ -301,60 +342,95 @@ EXAMPLES = '''
     name: myimage:latest
     build:
       path: /path/to/build/dir
-      # Use as cache source for building myimage
+    # Use as cache source for building myimage
       cache_from:
         - nginx:latest
         - alpine:3.8
     source: build
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 image:
-    description: Image inspection results for the affected image.
-    returned: success
-    type: dict
-    sample: {}
+  description: Image inspection results for the affected image.
+  returned: success
+  type: dict
+  sample: {}
 stdout:
-    description: Docker build output when building an image.
-    returned: success
-    type: str
-    sample: ""
-    version_added: 1.0.0
-'''
+  description: Docker build output when building an image.
+  returned: success
+  type: str
+  sample: ""
+  version_added: 1.0.0
+"""
 
 import errno
+import json
 import os
 import traceback
 
-from ansible_collections.community.docker.plugins.module_utils.common import (
-    clean_dict_booleans_for_docker_api,
-    docker_version,
+from ansible.module_utils.common.text.converters import to_native
+from ansible.module_utils.common.text.formatters import human_to_bytes
+
+from ansible_collections.community.docker.plugins.module_utils.common_api import (
     AnsibleDockerClient,
+    RequestException,
+)
+
+from ansible_collections.community.docker.plugins.module_utils.image_archive import (
+    archived_image_manifest,
+    api_image_id,
+    ImageArchiveInvalidException,
+)
+
+from ansible_collections.community.docker.plugins.module_utils.util import (
+    clean_dict_booleans_for_docker_api,
     DockerBaseClass,
     is_image_name_id,
     is_valid_tag,
-    RequestException,
 )
-from ansible.module_utils.common.text.converters import to_native
-
 from ansible_collections.community.docker.plugins.module_utils.version import LooseVersion
 
-if docker_version is not None:
+from ansible_collections.community.docker.plugins.module_utils._api.auth import (
+    get_config_header,
+    resolve_repository_name,
+)
+from ansible_collections.community.docker.plugins.module_utils._api.constants import (
+    DEFAULT_DATA_CHUNK_SIZE,
+    CONTAINER_LIMITS_KEYS,
+)
+from ansible_collections.community.docker.plugins.module_utils._api.errors import DockerException, NotFound
+from ansible_collections.community.docker.plugins.module_utils._api.utils.build import (
+    process_dockerfile,
+    tar,
+)
+from ansible_collections.community.docker.plugins.module_utils._api.utils.utils import (
+    format_extra_hosts,
+    parse_repository_tag,
+)
+
+
+def convert_to_bytes(value, module, name, unlimited_value=None):
+    if value is None:
+        return value
     try:
-        if LooseVersion(docker_version) >= LooseVersion('2.0.0'):
-            from docker.auth import resolve_repository_name
-        else:
-            from docker.auth.auth import resolve_repository_name
-        from docker.utils.utils import parse_repository_tag
-        from docker.errors import DockerException, NotFound
-    except ImportError:
-        # missing Docker SDK for Python handled in module_utils.docker.common
-        pass
+        if unlimited_value is not None and value in ('unlimited', str(unlimited_value)):
+            return unlimited_value
+        return human_to_bytes(value)
+    except ValueError as exc:
+        module.fail_json(msg='Failed to convert %s to bytes: %s' % (name, to_native(exc)))
 
 
 class ImageManager(DockerBaseClass):
 
     def __init__(self, client, results):
+        '''
+        Configure a docker_image task.
+
+        :param client: Ansible Docker Client wrapper over Docker client
+        :type client: AnsibleDockerClient
+        :param results: This task adds its output values to this dictionary
+        :type results: dict
+        '''
 
         super(ImageManager, self).__init__()
 
@@ -369,6 +445,12 @@ class ImageManager(DockerBaseClass):
         self.archive_path = parameters['archive_path']
         self.cache_from = build.get('cache_from')
         self.container_limits = build.get('container_limits')
+        if self.container_limits and 'memory' in self.container_limits:
+            self.container_limits['memory'] = convert_to_bytes(
+                self.container_limits['memory'], self.client.module, 'build.container_limits.memory')
+        if self.container_limits and 'memswap' in self.container_limits:
+            self.container_limits['memswap'] = convert_to_bytes(
+                self.container_limits['memswap'], self.client.module, 'build.container_limits.memswap', unlimited_value=-1)
         self.dockerfile = build.get('dockerfile')
         self.force_source = parameters['force_source']
         self.force_absent = parameters['force_absent']
@@ -391,6 +473,8 @@ class ImageManager(DockerBaseClass):
         self.buildargs = build.get('args')
         self.build_platform = build.get('platform')
         self.use_config_proxy = build.get('use_config_proxy')
+        self.shm_size = convert_to_bytes(build.get('shm_size'), self.client.module, 'build.shm_size')
+        self.labels = clean_dict_booleans_for_docker_api(build.get('labels'))
 
         # If name contains a tag, it takes precedence over tag parameter.
         if not is_image_name_id(self.name):
@@ -498,9 +582,9 @@ class ImageManager(DockerBaseClass):
         if image:
             if not self.check_mode:
                 try:
-                    self.client.remove_image(name, force=self.force_absent)
+                    self.client.delete_json('/images/{0}', name, params={'force': self.force_absent})
                 except NotFound:
-                    # If the image vanished while we were trying to remove it, don't fail
+                    # If the image vanished while we were trying to remove it, do not fail
                     pass
                 except Exception as exc:
                     self.fail("Error removing image %s - %s" % (name, to_native(exc)))
@@ -509,12 +593,50 @@ class ImageManager(DockerBaseClass):
             self.results['actions'].append("Removed image %s" % (name))
             self.results['image']['state'] = 'Deleted'
 
+    @staticmethod
+    def archived_image_action(failure_logger, archive_path, current_image_name, current_image_id):
+        '''
+        If the archive is missing or requires replacement, return an action message.
+
+        :param failure_logger: a logging function that accepts one parameter of type str
+        :type failure_logger: Callable
+        :param archive_path: Filename to write archive to
+        :type archive_path: str
+        :param current_image_name: repo:tag
+        :type current_image_name: str
+        :param current_image_id: Hash, including hash type prefix such as "sha256:"
+        :type current_image_id: str
+
+        :returns: Either None, or an Ansible action message.
+        :rtype: str
+        '''
+
+        def build_msg(reason):
+            return 'Archived image %s to %s, %s' % (current_image_name, archive_path, reason)
+
+        try:
+            archived = archived_image_manifest(archive_path)
+        except ImageArchiveInvalidException as exc:
+            failure_logger('Unable to extract manifest summary from archive: %s' % to_native(exc))
+            return build_msg('overwriting an unreadable archive file')
+
+        if archived is None:
+            return build_msg('since none present')
+        elif current_image_id == api_image_id(archived.image_id) and [current_image_name] == archived.repo_tags:
+            return None
+        else:
+            name = ', '.join(archived.repo_tags)
+
+            return build_msg('overwriting archive with image %s named %s' % (archived.image_id, name))
+
     def archive_image(self, name, tag):
         '''
         Archive an image to a .tar file. Called when archive_path is passed.
 
-        :param name - name of the image. Type: str
-        :return None
+        :param name: Name/repository of the image
+        :type name: str
+        :param tag: Optional image tag; assumed to be "latest" if None
+        :type tag: str | None
         '''
 
         if not tag:
@@ -531,28 +653,35 @@ class ImageManager(DockerBaseClass):
             self.log("archive image: image %s not found" % image_name)
             return
 
-        self.results['actions'].append('Archived image %s to %s' % (image_name, self.archive_path))
-        self.results['changed'] = True
-        if not self.check_mode:
+        # Will have a 'sha256:' prefix
+        image_id = image['Id']
+
+        action = self.archived_image_action(self.client.module.debug, self.archive_path, image_name, image_id)
+
+        if action:
+            self.results['actions'].append(action)
+
+        self.results['changed'] = action is not None
+
+        if (not self.check_mode) and self.results['changed']:
             self.log("Getting archive of image %s" % image_name)
             try:
-                saved_image = self.client.get_image(image_name)
+                saved_image = self.client._stream_raw_result(
+                    self.client._get(self.client._url('/images/{0}/get', image_name), stream=True),
+                    DEFAULT_DATA_CHUNK_SIZE,
+                    False,
+                )
             except Exception as exc:
                 self.fail("Error getting image %s - %s" % (image_name, to_native(exc)))
 
             try:
                 with open(self.archive_path, 'wb') as fd:
-                    if self.client.docker_py_version >= LooseVersion('3.0.0'):
-                        for chunk in saved_image:
-                            fd.write(chunk)
-                    else:
-                        for chunk in saved_image.stream(2048, decode_content=False):
-                            fd.write(chunk)
+                    for chunk in saved_image:
+                        fd.write(chunk)
             except Exception as exc:
                 self.fail("Error writing image archive %s - %s" % (self.archive_path, to_native(exc)))
 
-        if image:
-            self.results['image'] = image
+        self.results['image'] = image
 
     def push_image(self, name, tag=None):
         '''
@@ -580,7 +709,24 @@ class ImageManager(DockerBaseClass):
                 status = None
                 try:
                     changed = False
-                    for line in self.client.push(repository, tag=tag, stream=True, decode=True):
+
+                    push_repository, push_tag = repository, tag
+                    if not push_tag:
+                        push_repository, push_tag = parse_repository_tag(push_repository)
+                    push_registry, dummy = resolve_repository_name(push_repository)
+                    headers = {}
+                    header = get_config_header(self.client, push_registry)
+                    if header:
+                        headers['X-Registry-Auth'] = header
+                    response = self.client._post_json(
+                        self.client._url("/images/{0}/push", push_repository),
+                        data=None,
+                        headers=headers,
+                        stream=True,
+                        params={'tag': push_tag},
+                    )
+                    self.client._raise_for_status(response)
+                    for line in self.client._stream_helper(response, decode=True):
                         self.log(line, pretty_print=True)
                         if line.get('errorDetail'):
                             raise Exception(line['errorDetail']['message'])
@@ -609,7 +755,7 @@ class ImageManager(DockerBaseClass):
         :param name: name of the image. required.
         :param tag: image tag.
         :param repository: path to the repository. required.
-        :param push: bool. push the image once it's tagged.
+        :param push: bool. push the image once it is tagged.
         :return: None
         '''
         repo, repo_tag = parse_repository_tag(repository)
@@ -631,9 +777,15 @@ class ImageManager(DockerBaseClass):
             if not self.check_mode:
                 try:
                     # Finding the image does not always work, especially running a localhost registry. In those
-                    # cases, if we don't set force=True, it errors.
-                    tag_status = self.client.tag(image_name, repo, tag=repo_tag, force=True)
-                    if not tag_status:
+                    # cases, if we do not set force=True, it errors.
+                    params = {
+                        'tag': repo_tag,
+                        'repo': repo,
+                        'force': True,
+                    }
+                    res = self.client._post(self.client._url('/images/{0}/tag', image_name), params=params)
+                    self.client._raise_for_status(res)
+                    if res.status_code != 201:
                         raise Exception("Tag operation failed.")
                 except Exception as exc:
                     self.fail("Error: failed to tag image - %s" % to_native(exc))
@@ -661,47 +813,94 @@ class ImageManager(DockerBaseClass):
 
         :return: image dict
         '''
-        params = dict(
-            path=self.build_path,
-            tag=self.name,
-            rm=self.rm,
-            nocache=self.nocache,
-            timeout=self.http_timeout,
-            pull=self.pull,
-            forcerm=self.rm,
-            dockerfile=self.dockerfile,
-            decode=True,
-        )
-        if self.client.docker_py_version < LooseVersion('3.0.0'):
-            params['stream'] = True
-
-        if self.tag:
-            params['tag'] = "%s:%s" % (self.name, self.tag)
-        if self.container_limits:
-            params['container_limits'] = self.container_limits
+        remote = context = None
+        headers = {}
+        buildargs = {}
         if self.buildargs:
             for key, value in self.buildargs.items():
-                self.buildargs[key] = to_native(value)
-            params['buildargs'] = self.buildargs
-        if self.cache_from:
-            params['cache_from'] = self.cache_from
-        if self.network:
-            params['network_mode'] = self.network
-        if self.extra_hosts:
-            params['extra_hosts'] = self.extra_hosts
+                buildargs[key] = to_native(value)
+
+        container_limits = self.container_limits or {}
+        for key in container_limits.keys():
+            if key not in CONTAINER_LIMITS_KEYS:
+                raise DockerException('Invalid container_limits key {key}'.format(key=key))
+
+        dockerfile = self.dockerfile
+        if self.build_path.startswith(('http://', 'https://', 'git://', 'github.com/', 'git@')):
+            remote = self.build_path
+        elif not os.path.isdir(self.build_path):
+            raise TypeError("You must specify a directory to build in path")
+        else:
+            dockerignore = os.path.join(self.build_path, '.dockerignore')
+            exclude = None
+            if os.path.exists(dockerignore):
+                with open(dockerignore) as f:
+                    exclude = list(filter(
+                        lambda x: x != '' and x[0] != '#',
+                        [line.strip() for line in f.read().splitlines()]
+                    ))
+            dockerfile = process_dockerfile(dockerfile, self.build_path)
+            context = tar(self.build_path, exclude=exclude, dockerfile=dockerfile, gzip=False)
+
+        params = {
+            't': "%s:%s" % (self.name, self.tag) if self.tag else self.name,
+            'remote': remote,
+            'q': False,
+            'nocache': self.nocache,
+            'rm': self.rm,
+            'forcerm': self.rm,
+            'pull': self.pull,
+            'dockerfile': dockerfile,
+        }
+        params.update(container_limits)
+
         if self.use_config_proxy:
-            params['use_config_proxy'] = self.use_config_proxy
-            # Due to a bug in docker-py, it will crash if
-            # use_config_proxy is True and buildargs is None
-            if 'buildargs' not in params:
-                params['buildargs'] = {}
+            proxy_args = self.client._proxy_configs.get_environment()
+            for k, v in proxy_args.items():
+                buildargs.setdefault(k, v)
+        if buildargs:
+            params.update({'buildargs': json.dumps(buildargs)})
+
+        if self.cache_from:
+            params.update({'cachefrom': json.dumps(self.cache_from)})
+
         if self.target:
-            params['target'] = self.target
+            params.update({'target': self.target})
+
+        if self.network:
+            params.update({'networkmode': self.network})
+
+        if self.extra_hosts is not None:
+            params.update({'extrahosts': format_extra_hosts(self.extra_hosts)})
+
         if self.build_platform is not None:
             params['platform'] = self.build_platform
 
+        if self.shm_size is not None:
+            params['shmsize'] = self.shm_size
+
+        if self.labels:
+            params['labels'] = json.dumps(self.labels)
+
+        if context is not None:
+            headers['Content-Type'] = 'application/tar'
+
+        self.client._set_auth_headers(headers)
+
+        response = self.client._post(
+            self.client._url('/build'),
+            data=context,
+            params=params,
+            headers=headers,
+            stream=True,
+            timeout=self.http_timeout,
+        )
+
+        if context is not None:
+            context.close()
+
         build_output = []
-        for line in self.client.build(**params):
+        for line in self.client._stream_helper(response, decode=True):
             # line = json.loads(line)
             self.log(line, pretty_print=True)
             self._extract_output_line(line, build_output)
@@ -719,8 +918,10 @@ class ImageManager(DockerBaseClass):
                     self.fail("Error building %s - message: %s, logs: %s" % (
                         self.name, line.get('error'), build_output))
 
-        return {"stdout": "\n".join(build_output),
-                "image": self.client.find_image(name=self.name, tag=self.tag)}
+        return {
+            "stdout": "\n".join(build_output),
+            "image": self.client.find_image(name=self.name, tag=self.tag),
+        }
 
     def load_image(self):
         '''
@@ -735,34 +936,20 @@ class ImageManager(DockerBaseClass):
             self.log("Opening image %s" % self.load_path)
             with open(self.load_path, 'rb') as image_tar:
                 self.log("Loading image from %s" % self.load_path)
-                output = self.client.load_image(image_tar)
-                if output is not None:
-                    # Old versions of Docker SDK of Python (before version 2.5.0) do not return anything.
-                    # (See https://github.com/docker/docker-py/commit/7139e2d8f1ea82340417add02090bfaf7794f159)
-                    # Note that before that commit, something else than None was returned, but that was also
-                    # only introduced in a commit that first appeared in 2.5.0 (see
-                    # https://github.com/docker/docker-py/commit/9e793806ff79559c3bc591d8c52a3bbe3cdb7350).
-                    # So the above check works for every released version of Docker SDK for Python.
+                res = self.client._post(self.client._url("/images/load"), data=image_tar, stream=True)
+                if LooseVersion(self.client.api_version) >= LooseVersion('1.23'):
                     has_output = True
-                    for line in output:
+                    for line in self.client._stream_helper(res, decode=True):
                         self.log(line, pretty_print=True)
                         self._extract_output_line(line, load_output)
                 else:
-                    if LooseVersion(docker_version) < LooseVersion('2.5.0'):
-                        self.client.module.warn(
-                            'The installed version of the Docker SDK for Python does not return the loading results'
-                            ' from the Docker daemon. Therefore, we cannot verify whether the expected image was'
-                            ' loaded, whether multiple images where loaded, or whether the load actually succeeded.'
-                            ' If you are not stuck with Python 2.6, *please* upgrade to a version newer than 2.5.0'
-                            ' (2.5.0 was released in August 2017).'
-                        )
-                    else:
-                        self.client.module.warn(
-                            'The API version of your Docker daemon is < 1.23, which does not return the image'
-                            ' loading result from the Docker daemon. Therefore, we cannot verify whether the'
-                            ' expected image was loaded, whether multiple images where loaded, or whether the load'
-                            ' actually succeeded. You should consider upgrading your Docker daemon.'
-                        )
+                    self.client._raise_for_status(res)
+                    self.client.module.warn(
+                        'The API version of your Docker daemon is < 1.23, which does not return the image'
+                        ' loading result from the Docker daemon. Therefore, we cannot verify whether the'
+                        ' expected image was loaded, whether multiple images where loaded, or whether the load'
+                        ' actually succeeded. You should consider upgrading your Docker daemon.'
+                    )
         except EnvironmentError as exc:
             if exc.errno == errno.ENOENT:
                 self.client.fail("Error opening image %s - %s" % (self.load_path, to_native(exc)))
@@ -815,8 +1002,8 @@ def main():
         build=dict(type='dict', options=dict(
             cache_from=dict(type='list', elements='str'),
             container_limits=dict(type='dict', options=dict(
-                memory=dict(type='int'),
-                memswap=dict(type='int'),
+                memory=dict(type='str'),
+                memswap=dict(type='str'),
                 cpushares=dict(type='int'),
                 cpusetcpus=dict(type='str'),
             )),
@@ -832,6 +1019,8 @@ def main():
             target=dict(type='str'),
             etc_hosts=dict(type='dict'),
             platform=dict(type='str'),
+            shm_size=dict(type='str'),
+            labels=dict(type='dict'),
         )),
         archive_path=dict(type='path'),
         force_source=dict(type='bool', default=False),
@@ -854,18 +1043,6 @@ def main():
         ('source', 'load', ['load_path']),
     ]
 
-    def detect_build_cache_from(client):
-        return client.module.params['build'] and client.module.params['build'].get('cache_from') is not None
-
-    def detect_build_network(client):
-        return client.module.params['build'] and client.module.params['build'].get('network') is not None
-
-    def detect_build_target(client):
-        return client.module.params['build'] and client.module.params['build'].get('target') is not None
-
-    def detect_use_config_proxy(client):
-        return client.module.params['build'] and client.module.params['build'].get('use_config_proxy') is not None
-
     def detect_etc_hosts(client):
         return client.module.params['build'] and bool(client.module.params['build'].get('etc_hosts'))
 
@@ -876,20 +1053,14 @@ def main():
         return client.module.params['pull'] and client.module.params['pull'].get('platform') is not None
 
     option_minimal_versions = dict()
-    option_minimal_versions["build.cache_from"] = dict(docker_py_version='2.1.0', docker_api_version='1.25', detect_usage=detect_build_cache_from)
-    option_minimal_versions["build.network"] = dict(docker_py_version='2.4.0', docker_api_version='1.25', detect_usage=detect_build_network)
-    option_minimal_versions["build.target"] = dict(docker_py_version='2.4.0', detect_usage=detect_build_target)
-    option_minimal_versions["build.use_config_proxy"] = dict(docker_py_version='3.7.0', detect_usage=detect_use_config_proxy)
-    option_minimal_versions["build.etc_hosts"] = dict(docker_py_version='2.6.0', docker_api_version='1.27', detect_usage=detect_etc_hosts)
-    option_minimal_versions["build.platform"] = dict(docker_py_version='3.0.0', docker_api_version='1.32', detect_usage=detect_build_platform)
-    option_minimal_versions["pull.platform"] = dict(docker_py_version='3.0.0', docker_api_version='1.32', detect_usage=detect_pull_platform)
+    option_minimal_versions["build.etc_hosts"] = dict(docker_api_version='1.27', detect_usage=detect_etc_hosts)
+    option_minimal_versions["build.platform"] = dict(docker_api_version='1.32', detect_usage=detect_build_platform)
+    option_minimal_versions["pull.platform"] = dict(docker_api_version='1.32', detect_usage=detect_pull_platform)
 
     client = AnsibleDockerClient(
         argument_spec=argument_spec,
         required_if=required_if,
         supports_check_mode=True,
-        min_docker_version='1.8.0',
-        min_docker_api_version='1.20',
         option_minimal_versions=option_minimal_versions,
     )
 
@@ -910,10 +1081,10 @@ def main():
         ImageManager(client, results)
         client.module.exit_json(**results)
     except DockerException as e:
-        client.fail('An unexpected docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
+        client.fail('An unexpected Docker error occurred: {0}'.format(to_native(e)), exception=traceback.format_exc())
     except RequestException as e:
         client.fail(
-            'An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(to_native(e)),
+            'An unexpected requests error occurred when trying to talk to the Docker daemon: {0}'.format(to_native(e)),
             exception=traceback.format_exc())
 
 

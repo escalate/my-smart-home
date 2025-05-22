@@ -1,4 +1,7 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Registering service name
   set_fact:
@@ -17,65 +20,65 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       preferences:
         - spread: "node.labels.test"
   register: placement_preferences_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.preferences (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       preferences:
         - spread: "node.labels.test"
   register: placement_preferences_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.preferences (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       preferences:
         - spread: "node.labels.test2"
   register: placement_preferences_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.preferences (empty)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       preferences: []
   register: placement_preferences_4
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.preferences (empty idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       preferences: []
   register: placement_preferences_5
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -87,8 +90,8 @@
   when: docker_api_version is version('1.27', '>=') and docker_py_version is version('2.4.0', '>=')
 - assert:
     that:
-    - placement_preferences_1 is failed
-    - "'Minimum version required' in placement_preferences_1.msg"
+      - placement_preferences_1 is failed
+      - "'Minimum version required' in placement_preferences_1.msg"
   when: docker_api_version is version('1.27', '<') or docker_py_version is version('2.4.0', '<')
 
 ####################################################################
@@ -99,91 +102,91 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       constraints:
         - "node.role == manager"
   register: constraints_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.constraints (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       constraints:
         - "node.role == manager"
   register: constraints_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.constraints (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       constraints:
         - "node.role == worker"
   register: constraints_3
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.constraints (add)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       constraints:
         - "node.role == worker"
         - "node.label != non_existent_label"
   register: constraints_4
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.constraints (order idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       constraints:
         - "node.label != non_existent_label"
         - "node.role == worker"
   register: constraints_5
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.constraints (empty)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       constraints: []
   register: constraints_6
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.constraints (empty idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       constraints: []
   register: constraints_7
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -197,8 +200,8 @@
   when: docker_api_version is version('1.27', '>=') and docker_py_version is version('2.4.0', '>=')
 - assert:
     that:
-    - constraints_1 is failed
-    - "'Minimum version required' in constraints_1.msg"
+      - constraints_1 is failed
+      - "'Minimum version required' in constraints_1.msg"
   when: docker_api_version is version('1.27', '<') or docker_py_version is version('2.4.0', '<')
 
 ####################################################################
@@ -209,41 +212,41 @@
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       replicas_max_per_node: 1
   register: replicas_max_per_node_1
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.replicas_max_per_node (idempotency)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       replicas_max_per_node: 1
   register: replicas_max_per_node_2
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: placement.replicas_max_per_node (change)
   docker_swarm_service:
     name: "{{ service_name }}"
     image: "{{ docker_test_image_alpine }}"
-    resolve_image: no
+    resolve_image: false
     command: '/bin/sh -v -c "sleep 10m"'
     placement:
       replicas_max_per_node: 2
   register: replicas_max_per_node_3
-  ignore_errors: yes
+  ignore_errors: true
 
 
 - name: cleanup
   docker_swarm_service:
     name: "{{ service_name }}"
     state: absent
-  diff: no
+  diff: false
 
 - assert:
     that:
@@ -253,6 +256,6 @@
   when: docker_api_version is version('1.40', '>=') and docker_py_version is version('4.4.3', '>=')
 - assert:
     that:
-    - replicas_max_per_node_1 is failed
-    - "'Minimum version required' in replicas_max_per_node_1.msg"
+      - replicas_max_per_node_1 is failed
+      - "'Minimum version required' in replicas_max_per_node_1.msg"
   when: docker_api_version is version('1.40', '<') or docker_py_version is version('4.4.3', '<')

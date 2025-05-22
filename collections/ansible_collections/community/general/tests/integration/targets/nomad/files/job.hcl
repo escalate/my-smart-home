@@ -1,3 +1,7 @@
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # There can only be a single job definition per file. This job is named
 # "example" so it will create a job with the ID and Name "example".
 
@@ -32,7 +36,7 @@ job "example" {
   #
   type = "service"
 
-
+  
   # The "constraint" stanza defines additional constraints for placing this job,
   # in addition to any resource or driver constraints. This stanza may be placed
   # at the "job", "group", or "task" level, and supports variable interpolation.

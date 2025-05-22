@@ -4,6 +4,17 @@
 # and should not be used as examples of how to write Ansible roles #
 ####################################################################
 
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: test zero is 0
+  assert:
+    that:
+      - "('0' | community.general.to_milliseconds) == 0"
+      - "('0' | community.general.to_seconds) == 0"
+      - "('0' | community.general.to_minutes) == 0"
+
 - name: test to_milliseconds filter
   assert:
     that:
@@ -70,7 +81,7 @@
 - name: test fail unknown unit
   debug:
     msg: "{{ '1s' | community.general.to_time_unit('lightyears') }}"
-  ignore_errors: yes
+  ignore_errors: true
   register: res
 
 - name: verify test fail unknown unit
@@ -82,7 +93,7 @@
 - name: test fail unknown string
   debug:
     msg: "{{ '1 s' | community.general.to_time_unit('s') }}"
-  ignore_errors: yes
+  ignore_errors: true
   register: res
 
 - name: test fail unknown string
@@ -94,7 +105,7 @@
 - name: test fail unknown kwarg
   debug:
     msg: "{{ '1s' | community.general.to_time_unit('s', second=23) }}"
-  ignore_errors: yes
+  ignore_errors: true
   register: res
 
 - name: test fail unknown kwarg

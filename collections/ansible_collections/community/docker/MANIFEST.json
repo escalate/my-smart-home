@@ -2,7 +2,7 @@
  "collection_info": {
   "namespace": "community",
   "name": "docker",
-  "version": "2.1.1",
+  "version": "4.6.0",
   "authors": [
    "Ansible Docker Working Group"
   ],
@@ -11,11 +11,16 @@
    "docker"
   ],
   "description": "Modules and plugins for working with Docker",
-  "license": [],
-  "license_file": "COPYING",
-  "dependencies": {},
+  "license": [
+   "GPL-3.0-or-later",
+   "Apache-2.0"
+  ],
+  "license_file": null,
+  "dependencies": {
+   "community.library_inventory_filtering_v1": ">=1.0.0"
+  },
   "repository": "https://github.com/ansible-collections/community.docker",
-  "documentation": null,
+  "documentation": "https://docs.ansible.com/ansible/latest/collections/community/docker/",
   "homepage": "https://github.com/ansible-collections/community.docker",
   "issues": "https://github.com/ansible-collections/community.docker/issues"
  },
@@ -23,7 +28,7 @@
   "name": "FILES.json",
   "ftype": "file",
   "chksum_type": "sha256",
-  "chksum_sha256": "81687ddfea63d5693b4f51bec5614d512fe6119bc64a87f6ccd861fda2b419e4",
+  "chksum_sha256": "58057e4f7033cd19c3ddc645ed27177f3cfe77a3b213bcf5b2f54685300c6230",
   "format": 1
  },
  "format": 1

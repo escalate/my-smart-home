@@ -1,29 +1,34 @@
 # Copyright (c), Felix Fontein <felix@fontein.de>, 2020
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-import json
-import textwrap
-
 import pytest
 
-from mock import MagicMock
-
-from ansible import constants as C
-from ansible.errors import AnsibleError
 from ansible.inventory.data import InventoryData
-from ansible.inventory.manager import InventoryManager
+from ansible.parsing.dataloader import DataLoader
+from ansible.template import Templar
+
+from ansible_collections.community.internal_test_tools.tests.unit.compat.mock import create_autospec
+from ansible_collections.community.internal_test_tools.tests.unit.utils.trust import make_trusted
 
 from ansible_collections.community.docker.plugins.inventory.docker_containers import InventoryModule
 
 
 @pytest.fixture(scope="module")
-def inventory():
+def templar():
+    dataloader = create_autospec(DataLoader, instance=True)
+    return Templar(loader=dataloader)
+
+
+@pytest.fixture(scope="module")
+def inventory(templar):
     r = InventoryModule()
     r.inventory = InventoryData()
+    r.templar = templar
     return r
 
 
@@ -93,29 +98,22 @@ def create_get_option(options, default=False):
 
 class FakeClient(object):
     def __init__(self, *hosts):
-        self.hosts = dict()
-        self.list_reply = []
+        self.get_results = {}
+        list_reply = []
         for host in hosts:
-            self.list_reply.append({
+            list_reply.append({
                 'Id': host['Id'],
                 'Names': [host['Name']] if host['Name'] else [],
                 'Image': host['Config']['Image'],
                 'ImageId': host['Image'],
             })
-            self.hosts[host['Name']] = host
-            self.hosts[host['Id']] = host
+            self.get_results['/containers/{0}/json'.format(host['Name'])] = host
+            self.get_results['/containers/{0}/json'.format(host['Id'])] = host
+        self.get_results['/containers/json'] = list_reply
 
-    def containers(self, all=False):
-        return list(self.list_reply)
-
-    def inspect_container(self, id):
-        return self.hosts[id]
-
-    def port(self, container, port):
-        host = self.hosts[container['Id']]
-        network_settings = host.get('NetworkSettings') or dict()
-        ports = network_settings.get('Ports') or dict()
-        return ports.get('{0}/tcp'.format(port)) or []
+    def get_json(self, url, *param, **kwargs):
+        url = url.format(*param)
+        return self.get_results[url]
 
 
 def test_populate(inventory, mocker):
@@ -128,6 +126,7 @@ def test_populate(inventory, mocker):
         'compose': {},
         'groups': {},
         'keyed_groups': {},
+        'filters': None,
     }))
     inventory._populate(client)
 
@@ -159,6 +158,7 @@ def test_populate_service(inventory, mocker):
         'groups': {},
         'keyed_groups': {},
         'docker_host': 'unix://var/run/docker.sock',
+        'filters': None,
     }))
     inventory._populate(client)
 
@@ -200,6 +200,7 @@ def test_populate_stack(inventory, mocker):
         'docker_host': 'unix://var/run/docker.sock',
         'default_ip': '127.0.0.1',
         'private_ssh_port': 22,
+        'filters': None,
     }))
     inventory._populate(client)
 
@@ -225,4 +226,47 @@ def test_populate_stack(inventory, mocker):
     assert len(inventory.inventory.groups['stack_my_stack'].hosts) == 1
     assert len(inventory.inventory.groups['unix://var/run/docker.sock'].hosts) == 1
     assert len(inventory.inventory.groups) == 10
+    assert len(inventory.inventory.hosts) == 1
+
+
+def test_populate_filter_none(inventory, mocker):
+    client = FakeClient(LOVING_THARP)
+
+    inventory.get_option = mocker.MagicMock(side_effect=create_get_option({
+        'verbose_output': True,
+        'connection_type': 'docker-api',
+        'add_legacy_groups': False,
+        'compose': {},
+        'groups': {},
+        'keyed_groups': {},
+        'filters': [
+            {'exclude': True},
+        ],
+    }))
+    inventory._populate(client)
+
+    assert len(inventory.inventory.hosts) == 0
+
+
+def test_populate_filter(inventory, mocker):
+    client = FakeClient(LOVING_THARP)
+
+    inventory.get_option = mocker.MagicMock(side_effect=create_get_option({
+        'verbose_output': True,
+        'connection_type': 'docker-api',
+        'add_legacy_groups': False,
+        'compose': {},
+        'groups': {},
+        'keyed_groups': {},
+        'filters': [
+            {'include': make_trusted('docker_state.Running is true')},
+            {'exclude': True},
+        ],
+    }))
+    inventory._populate(client)
+
+    host_1 = inventory.inventory.get_host('loving_tharp')
+    host_1_vars = host_1.get_vars()
+
+    assert host_1_vars['ansible_host'] == 'loving_tharp'
     assert len(inventory.inventory.hosts) == 1

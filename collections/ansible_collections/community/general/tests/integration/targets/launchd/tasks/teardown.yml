@@ -1,10 +1,13 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: "[{{ item }}] Unload service"
   launchd:
     name: "{{ launchd_service_name }}"
     state: unloaded
-  become: yes
+  become: true
   register: launchd_unloaded_result
 
 - name: "[{{ item }}] Validation"
@@ -18,10 +21,10 @@
   file:
     path: "{{ launchd_plist_location }}"
     state: absent
-  become: yes
+  become: true
 
 - name: "[{{ item }}] Remove test service server"
   file:
     path: "/usr/local/sbin/ansible_test_service"
     state: absent
-  become: yes
+  become: true

@@ -1,3 +1,8 @@
+---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 ##
 ## test setting timezone, idempotency and checkmode
 ##
@@ -5,7 +10,7 @@
 - name: set timezone to Australia/Brisbane (checkmode)
   timezone:
     name: Australia/Brisbane
-  check_mode: yes
+  check_mode: true
   register: timezone_set_checkmode
 
 - name: ensure timezone reported as changed in checkmode
@@ -19,7 +24,7 @@
   command: cmp /etc/localtime /usr/share/zoneinfo/Australia/Brisbane
   register: result
   failed_when: result is not failed
-  changed_when: no
+  changed_when: false
 
 - name: ensure that checkmode didn't update the timezone in the config file
   command: egrep '^(TIME)?ZONE="Etc/UTC"' {{ timezone_config_file }}
@@ -47,7 +52,7 @@
 
 - name: ensure that the timezone is actually set
   command: cmp /etc/localtime /usr/share/zoneinfo/Australia/Brisbane
-  changed_when: no
+  changed_when: false
 
 - name: ensure that the timezone is updated in the config file
   command: egrep '^(TIME)?ZONE="Australia/Brisbane"' {{ timezone_config_file }}
@@ -88,14 +93,14 @@
 - name: check dpkg-reconfigure
   shell: type dpkg-reconfigure
   register: check_dpkg_reconfigure
-  ignore_errors: yes
-  changed_when: no
+  ignore_errors: true
+  changed_when: false
 
 - name: check timedatectl
   shell: type timedatectl && timedatectl
   register: check_timedatectl
-  ignore_errors: yes
-  changed_when: no
+  ignore_errors: true
+  changed_when: false
 
 - block:
     - name: set timezone to Etc/UTC
@@ -156,7 +161,7 @@
 
     - name: check if the timezone is actually set (empty config file)
       command: cmp /etc/localtime /usr/share/zoneinfo/Europe/Belgrade
-      changed_when: no
+      changed_when: false
 
 
   ##
@@ -182,7 +187,7 @@
 
     - name: check if the timezone is actually set (no config file)
       command: cmp /etc/localtime /usr/share/zoneinfo/Europe/Belgrade
-      changed_when: no
+      changed_when: false
 
 
   ##
@@ -194,7 +199,7 @@
         src: /usr/share/zoneinfo/Etc/UTC
         dest: /etc/localtime
         state: link
-        force: yes
+        force: true
 
     - name: set timezone to Europe/Belgrade (over symlink)
       timezone:
@@ -210,7 +215,7 @@
 
     - name: check if the timezone is actually set (over symlink)
       command: cmp /etc/localtime /usr/share/zoneinfo/Europe/Belgrade
-      changed_when: no
+      changed_when: false
 
 
   ##
@@ -222,7 +227,7 @@
         src: /tmp/foo
         dest: /etc/localtime
         state: link
-        force: yes
+        force: true
 
     - name: set timezone to Europe/Belgrade (over broken symlink)
       timezone:
@@ -238,7 +243,7 @@
 
     - name: check if the timezone is actually set (over broken symlink)
       command: cmp /etc/localtime /usr/share/zoneinfo/Europe/Belgrade
-      changed_when: no
+      changed_when: false
 
 
   ##
@@ -249,7 +254,7 @@
       copy:
         src: /usr/share/zoneinfo/Etc/UTC
         dest: /etc/localtime
-        remote_src: yes
+        remote_src: true
 
     - name: set timezone to Europe/Belgrade (over copied file)
       timezone:
@@ -265,7 +270,7 @@
 
     - name: check if the timezone is actually set (over copied file)
       command: cmp /etc/localtime /usr/share/zoneinfo/Europe/Belgrade
-      changed_when: no
+      changed_when: false
   when:
     - ansible_service_mgr != 'systemd'
     - timezone_config_file is defined
@@ -278,16 +283,16 @@
 - name: check if hwclock is supported in the environment
   command: hwclock --test
   register: hwclock_test
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: check if timedatectl works in the environment
   command: timedatectl
   register: timedatectl_test
-  ignore_errors: yes
+  ignore_errors: true
 
 - name:
   set_fact:
-    hwclock_supported: '{{ hwclock_test is successful or timedatectl_test is successful }}'
+    hwclock_supported: '{{ hwclock_test is successful or (timedatectl_test is successful and "RTC time: n/a" not in timedatectl_test.stdout) }}'
 ##
 ## test set hwclock, idempotency and checkmode
 ##
@@ -300,7 +305,7 @@
     - name: set hwclock to UTC (checkmode)
       timezone:
         hwclock: UTC
-      check_mode: yes
+      check_mode: true
       register: hwclock_set_checkmode
 
     - name: ensure hwclock reported as changed (checkmode)
@@ -353,7 +358,7 @@
     - name: set hwclock to RTC again (checkmode)
       timezone:
         hwclock: UTC
-      check_mode: yes
+      check_mode: true
       register: hwclock_again_checkmode
 
     - name: set hwclock idempotency (checkmode)
@@ -426,7 +431,7 @@
               - hwclock_set_local_deleted_adjtime_local.changed
               - hwclock_set_local_deleted_adjtime_local.diff.after.hwclock == 'local'
               - hwclock_set_local_deleted_adjtime_local.diff.before.hwclock == 'UTC'
-
+     
 
         ##
         ## test set hwclock with conf file deleted
@@ -505,7 +510,7 @@
       timezone:
         name: Europe/Belgrade
         hwclock: UTC
-      check_mode: yes
+      check_mode: true
       register: tzclock_set_checkmode
 
     - name: ensure timezone and hwclock reported as changed in checkmode
@@ -521,7 +526,7 @@
       command: cmp /etc/localtime /usr/share/zoneinfo/Australia/Brisbane
       register: result
       failed_when: result is not failed
-      changed_when: no
+      changed_when: false
 
     - block:
         - name: ensure that checkmode didn't update the timezone in the config file
@@ -560,7 +565,7 @@
 
     - name: ensure that the timezone is actually set
       command: cmp /etc/localtime /usr/share/zoneinfo/Europe/Belgrade
-      changed_when: no
+      changed_when: false
 
     - block:
         - name: ensure that the timezone is updated in the config file

@@ -1,40 +1,44 @@
 # -*- coding: utf-8 -*-
-# (c) 2016, Andrew Zenk <azenk@umn.edu>
-# (c) 2017 Ansible Project
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2016, Andrew Zenk <azenk@umn.edu>
+# Copyright (c) 2017 Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-DOCUMENTATION = '''
-    name: lastpass
-    author:
-      - Andrew Zenk (!UNKNOWN) <azenk@umn.edu>
-    requirements:
-      - lpass (command line utility)
-      - must have already logged into lastpass
-    short_description: fetch data from lastpass
-    description:
-      - use the lpass command line utility to fetch specific fields from lastpass
-    options:
-      _terms:
-        description: key from which you want to retrieve the field
-        required: True
-      field:
-        description: field to return from lastpass
-        default: 'password'
-'''
+DOCUMENTATION = r"""
+name: lastpass
+author:
+  - Andrew Zenk (!UNKNOWN) <azenk@umn.edu>
+requirements:
+  - lpass (command line utility)
+  - must have already logged into LastPass
+short_description: fetch data from LastPass
+description:
+  - Use the lpass command line utility to fetch specific fields from LastPass.
+options:
+  _terms:
+    description: Key from which you want to retrieve the field.
+    required: true
+    type: list
+    elements: str
+  field:
+    description: Field to return from LastPass.
+    default: 'password'
+    type: str
+"""
 
-EXAMPLES = """
-- name: get 'custom_field' from lastpass entry 'entry-name'
+EXAMPLES = r"""
+- name: get 'custom_field' from LastPass entry 'entry-name'
   ansible.builtin.debug:
     msg: "{{ lookup('community.general.lastpass', 'entry-name', field='custom_field') }}"
 """
 
-RETURN = """
-  _raw:
-    description: secrets stored
-    type: list
-    elements: str
+RETURN = r"""
+_raw:
+  description: Secrets stored.
+  type: list
+  elements: str
 """
 
 from subprocess import Popen, PIPE
@@ -79,21 +83,23 @@ class LPass(object):
 
     def get_field(self, key, field):
         if field in ['username', 'password', 'url', 'notes', 'id', 'name']:
-            out, err = self._run(self._build_args("show", ["--{0}".format(field), key]))
+            out, err = self._run(self._build_args("show", [f"--{field}", key]))
         else:
-            out, err = self._run(self._build_args("show", ["--field={0}".format(field), key]))
+            out, err = self._run(self._build_args("show", [f"--field={field}", key]))
         return out.strip()
 
 
 class LookupModule(LookupBase):
 
     def run(self, terms, variables=None, **kwargs):
+        self.set_options(var_options=variables, direct=kwargs)
+        field = self.get_option('field')
+
         lp = LPass()
 
         if not lp.logged_in:
-            raise AnsibleError("Not logged into lastpass: please run 'lpass login' first")
+            raise AnsibleError("Not logged into LastPass: please run 'lpass login' first")
 
-        field = kwargs.get('field', 'password')
         values = []
         for term in terms:
             values.append(lp.get_field(term, field))

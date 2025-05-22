@@ -1,23 +1,13 @@
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from ansible.executor.task_result import TaskResult
-from ansible_collections.community.general.tests.unit.compat import unittest
-from ansible_collections.community.general.tests.unit.compat.mock import patch, call, MagicMock, Mock
+from ansible_collections.community.internal_test_tools.tests.unit.compat import unittest
+from ansible_collections.community.internal_test_tools.tests.unit.compat.mock import patch, Mock
 from ansible_collections.community.general.plugins.callback.splunk import SplunkHTTPCollectorSource
 from datetime import datetime
 
@@ -37,10 +27,10 @@ class TestSplunkClient(unittest.TestCase):
         self.mock_host = Mock('MockHost')
         self.mock_host.name = 'myhost'
 
-    @patch('ansible_collections.community.general.plugins.callback.splunk.datetime')
+    @patch('ansible_collections.community.general.plugins.callback.splunk.now')
     @patch('ansible_collections.community.general.plugins.callback.splunk.open_url')
-    def test_timestamp_with_milliseconds(self, open_url_mock, mock_datetime):
-        mock_datetime.utcnow.return_value = datetime(2020, 12, 1)
+    def test_timestamp_with_milliseconds(self, open_url_mock, mock_now):
+        mock_now.return_value = datetime(2020, 12, 1)
         result = TaskResult(host=self.mock_host, task=self.mock_task, return_data={}, task_fields=self.task_fields)
 
         self.splunk.send_event(
@@ -55,10 +45,10 @@ class TestSplunkClient(unittest.TestCase):
         self.assertEqual(sent_data['event']['host'], 'my-host')
         self.assertEqual(sent_data['event']['ip_address'], '1.2.3.4')
 
-    @patch('ansible_collections.community.general.plugins.callback.splunk.datetime')
+    @patch('ansible_collections.community.general.plugins.callback.splunk.now')
     @patch('ansible_collections.community.general.plugins.callback.splunk.open_url')
-    def test_timestamp_without_milliseconds(self, open_url_mock, mock_datetime):
-        mock_datetime.utcnow.return_value = datetime(2020, 12, 1)
+    def test_timestamp_without_milliseconds(self, open_url_mock, mock_now):
+        mock_now.return_value = datetime(2020, 12, 1)
         result = TaskResult(host=self.mock_host, task=self.mock_task, return_data={}, task_fields=self.task_fields)
 
         self.splunk.send_event(

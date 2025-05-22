@@ -1,7 +1,8 @@
 # Test code for the pkgutil module
 
-# Copyright: (c) 2019, Dag Wieers (@dagwieers) <dag@wieers.com>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2019, Dag Wieers (@dagwieers) <dag@wieers.com>
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 
 # CLEAN ENVIRONMENT
@@ -17,7 +18,7 @@
   pkgutil:
     name: CSWtop
     state: present
-  check_mode: yes
+  check_mode: true
   register: cm_add_package
 
 - name: Verify cm_add_package
@@ -40,7 +41,7 @@
   pkgutil:
     name: CSWtop
     state: present
-  check_mode: yes
+  check_mode: true
   register: cm_add_package_again
 
 - name: Verify cm_add_package_again
@@ -65,7 +66,7 @@
   pkgutil:
     name: CSWtop
     state: absent
-  check_mode: yes
+  check_mode: true
   register: cm_remove_package
 
 - name: Verify cm_remove_package
@@ -88,7 +89,7 @@
   pkgutil:
     name: CSWtop
     state: absent
-  check_mode: yes
+  check_mode: true
   register: cm_remove_package_again
 
 - name: Verify cm_remove_package_again

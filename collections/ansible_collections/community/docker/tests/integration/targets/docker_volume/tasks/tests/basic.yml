@@ -1,4 +1,8 @@
 ---
+# Copyright (c) Ansible Project
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Registering volume name
   set_fact:
     vname: "{{ name_prefix ~ '-basic' }}"
@@ -46,12 +50,12 @@
 
 - assert:
     that:
-    - create_1 is changed
-    - create_2 is not changed
-    - create_3 is not changed
-    - create_4 is changed
-    - absent_1 is changed
-    - absent_2 is not changed
+      - create_1 is changed
+      - create_2 is not changed
+      - create_3 is not changed
+      - create_4 is changed
+      - absent_1 is changed
+      - absent_2 is not changed
 
 ####################################################################
 ## driver_options ##################################################
@@ -105,14 +109,22 @@
 
 - assert:
     that:
-    - driver_options_1 is changed
-    - driver_options_2 is not changed
-    - driver_options_3 is not changed
-    - driver_options_4 is changed
+      - driver_options_1 is changed
+      - driver_options_2 is not changed
+      - driver_options_3 is not changed
+      - driver_options_4 is changed
 
 ####################################################################
 ## labels ##########################################################
 ####################################################################
+
+- name: Create a volume with an invalid label
+  docker_volume:
+    name: "{{ vname }}"
+    labels:
+      foo: 1.0
+  register: driver_labels_invalid
+  ignore_errors: true
 
 - name: Create a volume with labels
   docker_volume:
@@ -169,9 +181,11 @@
 
 - assert:
     that:
-    - driver_labels_1 is changed
-    - driver_labels_2 is not changed
-    - driver_labels_3 is not changed
-    - driver_labels_4 is not changed
-    - driver_labels_5 is not changed
-    - driver_labels_6 is changed
+      - driver_labels_invalid is failed
+      - driver_labels_invalid.msg == "The value 1.0 for 'foo' of labels is not a string or something than can be safely converted to a string!"
+      - driver_labels_1 is changed
+      - driver_labels_2 is not changed
+      - driver_labels_3 is not changed
+      - driver_labels_4 is not changed
+      - driver_labels_5 is not changed
+      - driver_labels_6 is changed
