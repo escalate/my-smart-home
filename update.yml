@@ -1,6 +1,7 @@
 # Updating: https://www.raspberrypi.org/documentation/raspbian/updating.md
 
-- hosts: gitops
+- name: Update Raspberry Pi OS
+  hosts: all
   tasks:
     - name: Update Raspberry Pi OS
       ansible.builtin.apt:

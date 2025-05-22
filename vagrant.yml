@@ -1,4 +1,5 @@
-- hosts: all
+- name: Vargrant
+  hosts: all
   tasks:
     - name: Create empty kernel cmdline file
       ansible.builtin.copy:

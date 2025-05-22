@@ -1,7 +1,8 @@
 # Bootmodes: https://www.raspberrypi.org/documentation/hardware/raspberrypi/bootmodes/README.md
 # Boot from USB: https://www.raspberrypi.org/forums/viewtopic.php?f=29&t=44177
 
-- hosts: gitops
+- name: Bootstrap
+  hosts: all
   tasks:
     - name: Install parted package
       ansible.builtin.apt:

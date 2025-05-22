@@ -1,4 +1,5 @@
-- hosts: gitops
+- name Smart Home
+  hosts: all
   roles:
     - role: cmdline
       tags: cmdline
