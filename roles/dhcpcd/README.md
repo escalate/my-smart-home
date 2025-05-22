@@ -1,14 +1,8 @@
-[![Molecule](https://github.com/escalate/ansible-raspberry-dhcpcd/actions/workflows/molecule.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/ansible-raspberry-dhcpcd/actions/workflows/molecule.yml)
+[![Test](https://github.com/escalate/ansible-raspberry-dhcpcd/actions/workflows/test.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/ansible-raspberry-dhcpcd/actions/workflows/test.yml)
 
 # Ansible Role: Raspberry - dhcpcd
 
-An Ansible role that manages [dhcpcd](https://roy.marples.name/projects/dhcpcd/) on Raspberry Pi OS (Debian Bullseye).
-
-## Install
-
-```
-$ ansible-galaxy install escalate.dhcpcd
-```
+An Ansible role that manages [dhcpcd](https://roy.marples.name/projects/dhcpcd/) on Raspberry Pi OS (Debian Bookworm).
 
 ## Role Variables
 
@@ -20,6 +14,12 @@ This role relies on the following dependencies:
 
 * Roles: None
 * Collections: None
+
+## Installation
+
+```
+$ ansible-galaxy role install escalate.dhcpcd
+```
 
 ## Example Playbook
 

@@ -6,6 +6,8 @@
     promtail_docker_labels:
       maintainer: me@example.com
     promtail_docker_network: internal
+    promtail_docker_publish_ports:
+      - 127.0.0.1:9080:9080
     promtail_data_path: /var/lib/promtail
     promtail_etc_path: /etc/promtail
     promtail_config:

@@ -14,15 +14,21 @@
     validate: "sshd -t -f %s"
   notify: Restart sshd service
 
-- name: Start and enable service
+- name: Start service
   ansible.builtin.systemd:
     name: sshd
     state: started
+    daemon_reload: true
+  register: sshd_service_started
+
+- name: Enable service
+  ansible.builtin.systemd:
+    name: sshd
     enabled: true
     daemon_reload: true
 
 - name: Force all notified handlers to run at this point
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Wait for service to become available
   ansible.builtin.wait_for:

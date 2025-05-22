@@ -37,3 +37,13 @@ def test_sendmail_command(host):
     f = host.file("/usr/sbin/sendmail")
     assert f.is_symlink
     assert f.linked_to == "/usr/bin/msmtp"
+
+
+@pytest.mark.parametrize("config", [
+    ("root: example@gmail.com"),
+    ("default: example@gmail.com")
+])
+def test_aliases_config(host, config):
+    """Check aliases config file"""
+    f = host.file("/etc/aliases")
+    assert config in f.content_string

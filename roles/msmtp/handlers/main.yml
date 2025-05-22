@@ -1,3 +1,4 @@
 - name: Update aliases database
   ansible.builtin.command:
     cmd: newaliases
+  changed_when: false

@@ -5,11 +5,11 @@ Requires=docker.service
 
 [Service]
 Type=simple
-ExecStartPre=-/usr/bin/docker stop %n
-ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=-/usr/bin/docker stop %N
+ExecStartPre=-/usr/bin/docker rm %N
 ExecStartPre=/usr/bin/docker pull grafana/promtail:{{ promtail_docker_image_version }}
 ExecStart=/usr/bin/docker run \
---name %n \
+--name %N \
 --init \
 --memory={{ promtail_docker_memory }} \
 {% if promtail_env_vars | dict2items | length > 0 %}
@@ -23,12 +23,18 @@ ExecStart=/usr/bin/docker run \
 --mount=type=bind,source=/run/log,destination=/hostfs/run/log,readonly=true \
 --mount=type=bind,source=/var/log,destination=/hostfs/var/log,readonly=true \
 --network={{ promtail_docker_network }} \
+{% if promtail_docker_network not in ['bridge', 'host', 'none'] %}
 --network-alias=promtail \
---publish=127.0.0.1:9080:9080 \
+{% endif %}
+{% if promtail_docker_publish_ports | length > 0 %}
+{% for port in promtail_docker_publish_ports %}
+--publish={{ port }} \
+{% endfor %}
+{% endif %}
 --user=10600:{{ promtail_group_gid | default('0') }} \
 grafana/promtail:{{ promtail_docker_image_version }}
-ExecStop=/usr/bin/docker stop %n
-SyslogIdentifier=%n
+ExecStop=/usr/bin/docker stop %N
+SyslogIdentifier=%N
 TimeoutStartSec=infinity
 StartLimitInterval=30
 StartLimitBurst=5

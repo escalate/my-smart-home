@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Common
 
-An Ansible role that manages basic operating system configuration on Raspberry Pi OS (Debian Bullseye & Bookworm).
+An Ansible role that manages basic operating system configuration on Raspberry Pi OS (Debian Bookworm).
 
 ## Role Variables
 

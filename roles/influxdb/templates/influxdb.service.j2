@@ -5,11 +5,11 @@ Requires=docker.service
 
 [Service]
 Type=simple
-ExecStartPre=-/usr/bin/docker stop %n
-ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=-/usr/bin/docker stop %N
+ExecStartPre=-/usr/bin/docker rm %N
 ExecStartPre=/usr/bin/docker pull influxdb:{{ influxdb_docker_image_version }}
 ExecStart=/usr/bin/docker run \
---name %n \
+--name %N \
 --init \
 --memory={{ influxdb_docker_memory }} \
 {% if influxdb_env_vars | dict2items | length > 0 %}
@@ -22,12 +22,18 @@ ExecStart=/usr/bin/docker run \
 --mount=type=bind,source={{ influxdb_data_path }},destination=/var/lib/influxdb2 \
 --mount=type=bind,source={{ influxdb_etc_path }},destination=/etc/influxdb2 \
 --network={{ influxdb_docker_network }} \
+{% if influxdb_docker_network not in ['bridge', 'host', 'none'] %}
 --network-alias=influxdb \
---publish=127.0.0.1:8086:8086 \
+{% endif %}
+{% if influxdb_docker_publish_ports | length > 0 %}
+{% for port in influxdb_docker_publish_ports %}
+--publish={{ port }} \
+{% endfor %}
+{% endif %}
 --user=10300:0 \
 influxdb:{{ influxdb_docker_image_version }}
-ExecStop=/usr/bin/docker stop %n
-SyslogIdentifier=%n
+ExecStop=/usr/bin/docker stop %N
+SyslogIdentifier=%N
 TimeoutStartSec=infinity
 StartLimitInterval=30
 StartLimitBurst=5

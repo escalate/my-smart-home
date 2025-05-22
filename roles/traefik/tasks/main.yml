@@ -1,5 +1,5 @@
 - name: Get all groups
-  getent:
+  ansible.builtin.getent:
     database: group
     split: ':'
 
@@ -69,15 +69,21 @@
     mode: 0644
   notify: Restart traefik service
 
-- name: Start and enable service
+- name: Start service
   ansible.builtin.systemd:
     name: traefik
     state: started
+    daemon_reload: true
+  register: traefik_service_started
+
+- name: Enable service
+  ansible.builtin.systemd:
+    name: traefik
     enabled: true
     daemon_reload: true
 
 - name: Force all notified handlers to run at this point
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Wait for service to become available
   ansible.builtin.uri:

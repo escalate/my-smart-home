@@ -2,122 +2,122 @@ roles:
   # https://galaxy.ansible.com/escalate/cmdline
   - name: cmdline
     src: escalate.cmdline
-    version: v1.9.0
+    version: v2.0.0
 
   # https://galaxy.ansible.com/escalate/common
   - name: common
     src: escalate.common
-    version: v1.18.0
+    version: v2.0.0
 
   # https://galaxy.ansible.com/escalate/dhcpcd
   - name: dhcpcd
     src: escalate.dhcpcd
-    version: v1.2.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/swap
   - name: swap
     src: escalate.swap
-    version: v1.1.0
+    version: v2.0.0
 
   # https://galaxy.ansible.com/escalate/cron
   - name: cron
     src: escalate.cron
-    version: v1.1.0
+    version: v2.0.0
 
   # https://galaxy.ansible.com/escalate/locale
   - name: locale
     src: escalate.locale
-    version: v1.3.0
+    version: v2.0.0
 
   # https://galaxy.ansible.com/escalate/timesyncd
   - name: timesyncd
     src: escalate.timesyncd
-    version: v1.1.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/sshd
   - name: sshd
     src: escalate.sshd
-    version: v1.2.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/ssh_login
   - name: ssh_login
     src: escalate.ssh_login
-    version: v1.3.0
+    version: v2.0.0
 
   # https://galaxy.ansible.com/escalate/msmtp
   - name: msmtp
     src: escalate.msmtp
-    version: v1.2.0
+    version: v2.0.0
 
   # https://galaxy.ansible.com/escalate/smb_mount
   - name: smb_mount
     src: escalate.smb_mount
-    version: v1.3.0
+    version: v2.0.0
 
   # https://galaxy.ansible.com/escalate/remote_backup
   - name: remote_backup
     src: escalate.remote_backup
-    version: v1.2.0
+    version: v2.0.0
 
   # https://galaxy.ansible.com/escalate/docker
   - name: docker
     src: escalate.docker
-    version: v2.7.0
+    version: v3.1.0
 
   # https://galaxy.ansible.com/escalate/influxdb
   - name: influxdb
     src: escalate.influxdb
-    version: v1.16.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/grafana
   - name: grafana
     src: escalate.grafana
-    version: v1.13.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/home_assistant
   - name: home_assistant
     src: escalate.home_assistant
-    version: v1.11.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/telegraf
   - name: telegraf
     src: escalate.telegraf
-    version: v1.5.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/loki
   - name: loki
     src: escalate.loki
-    version: v1.1.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/promtail
   - name: promtail
     src: escalate.promtail
-    version: v1.5.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/traefik
   - name: traefik
     src: escalate.traefik
-    version: v1.11.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/coredns
   - name: coredns
     src: escalate.coredns
-    version: v1.7.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/luxtronik
   - name: luxtronik
     src: escalate.luxtronik
-    version: v1.2.0
+    version: v2.0.0
 
 collections:
   # https://galaxy.ansible.com/ansible/posix
   - name: ansible.posix
-    version: 1.6.2
+    version: 2.0.0
 
   # https://galaxy.ansible.com/community/docker
   - name: community.docker
-    verion: 2.1.1
+    version: 4.6.0
 
   # https://galaxy.ansible.com/community/general
   - name: community.general
-    version: 4.3.0
+    version: 10.7.0

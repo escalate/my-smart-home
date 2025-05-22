@@ -61,7 +61,7 @@ def test_traefik_service(host):
 
 def test_traefik_docker_container(host):
     """Check Traefik docker container"""
-    d = host.docker("traefik.service").inspect()
+    d = host.docker("traefik").inspect()
     assert d["HostConfig"]["Memory"] == 1073741824
     assert d["Config"]["Image"] == "traefik:latest"
     assert d["Config"]["Labels"]["maintainer"] == "me@example.com"

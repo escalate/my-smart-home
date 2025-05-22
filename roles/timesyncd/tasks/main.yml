@@ -14,9 +14,9 @@
     owner: root
     group: root
     mode: 0644
-  notify: Restart service
+  notify: Restart systemd-timesyncd service
 
-- name: Configure FallbackNTP servers
+- name: Configure Fallback NTP servers
   community.general.ini_file:
     path: /etc/systemd/timesyncd.conf
     section: Time
@@ -26,11 +26,17 @@
     owner: root
     group: root
     mode: 0644
-  notify: Restart service
+  notify: Restart systemd-timesyncd service
 
-- name: Start and enable service
+- name: Start service
   ansible.builtin.systemd:
     name: systemd-timesyncd
     state: started
+    daemon_reload: true
+  tags: molecule-notest
+
+- name: Enable service
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
     enabled: true
     daemon_reload: true

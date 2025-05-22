@@ -1,14 +1,8 @@
-[![Molecule](https://github.com/escalate/ansible-raspberry-loki-docker/actions/workflows/molecule.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/ansible-raspberry-loki-docker/actions/workflows/molecule.yml)
+[![Test](https://github.com/escalate/ansible-raspberry-loki-docker/actions/workflows/test.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/ansible-raspberry-loki-docker/actions/workflows/test.yml)
 
 # Ansible Role: Raspberry - Loki (Docker)
 
-An Ansible role that manages [Loki](https://grafana.com/oss/loki/) Docker container with systemd on Raspberry Pi OS (Debian Bullseye).
-
-## Install
-
-```
-$ ansible-galaxy install escalate.loki
-```
+An Ansible role that manages [Loki](https://grafana.com/oss/loki/) Docker container with systemd on Raspberry Pi OS (Debian Bookworm).
 
 ## Role Variables
 
@@ -19,7 +13,13 @@ Please see [defaults/main.yml](https://github.com/escalate/ansible-raspberry-lok
 This role relies on the following dependencies:
 
 * Roles: [requirements.yml](https://github.com/escalate/ansible-raspberry-loki-docker/blob/master/requirements.yml)
-* Collections: [collections.yml](https://github.com/escalate/ansible-raspberry-loki-docker/blob/master/collections.yml)
+* Collections: [requirements.yml](https://github.com/escalate/ansible-raspberry-loki-docker/blob/master/requirements.yml)
+
+## Installation
+
+```
+$ ansible-galaxy role install escalate.loki
+```
 
 ## Example Playbook
 

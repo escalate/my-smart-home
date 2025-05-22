@@ -70,7 +70,7 @@
 
 - name: Pull Docker image
   community.docker.docker_image:
-    name: "homeassistant/home-assistant:{{ home_assistant_docker_image_version }}"
+    name: "ghcr.io/home-assistant/home-assistant:{{ home_assistant_docker_image_version }}"
     source: pull
 
 - name: Create systemd service
@@ -82,15 +82,21 @@
     mode: 0644
   notify: Restart home-assistant service
 
-- name: Start and enable service
+- name: Start service
   ansible.builtin.systemd:
     name: home-assistant
     state: started
+    daemon_reload: true
+  register: home_assistant_service_started
+
+- name: Enable service
+  ansible.builtin.systemd:
+    name: home-assistant
     enabled: true
     daemon_reload: true
 
 - name: Force all notified handlers to run at this point
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Wait for service to become available
   ansible.builtin.uri:

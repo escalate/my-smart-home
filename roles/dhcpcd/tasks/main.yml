@@ -13,9 +13,15 @@
     mode: 0644
   notify: Restart dhcpcd service
 
-- name: Start and enable service
+- name: Start service
   ansible.builtin.systemd:
     name: dhcpcd
     state: started
+    daemon_reload: true
+  register: dhcpcd_service_started
+
+- name: Enable service
+  ansible.builtin.systemd:
+    name: dhcpcd
     enabled: true
     daemon_reload: true

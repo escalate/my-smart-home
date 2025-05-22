@@ -36,7 +36,7 @@ def test_loki_service(host):
 
 def test_loki_docker_container(host):
     """Check Loki docker container"""
-    d = host.docker("loki.service").inspect()
+    d = host.docker("loki").inspect()
     assert d["HostConfig"]["Memory"] == 1073741824
     assert d["Config"]["Image"] == "grafana/loki:latest"
     assert d["Config"]["Labels"]["maintainer"] == "me@example.com"

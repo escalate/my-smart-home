@@ -2,6 +2,8 @@ home_assistant_docker_image_version: latest
 home_assistant_docker_memory: 1G
 home_assistant_docker_labels: {}
 home_assistant_docker_network: bridge
+home_assistant_docker_publish_ports:
+  - 127.0.0.1:8123:8123
 
 home_assistant_backup_path: /var/backups/home-assistant
 home_assistant_data_path: /var/lib/home-assistant
@@ -15,6 +17,7 @@ home_assistant_config:
 # https://www.home-assistant.io/docs/configuration/yaml/#environment-variables
 home_assistant_env_vars:
   # https://github.com/tribut/homeassistant-docker-venv
+  TZ: Europe/Berlin
   PUID: 10200
   PGID: 0
   PACKAGES: iputils

@@ -1,14 +1,8 @@
-[![Molecule](https://github.com/escalate/ansible-raspberry-swap/actions/workflows/molecule.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/ansible-raspberry-swap/actions/workflows/molecule.yml)
+[![Test](https://github.com/escalate/ansible-raspberry-swap/actions/workflows/test.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/ansible-raspberry-swap/actions/workflows/test.yml)
 
 # Ansible Role: Raspberry - Swap
 
-An Ansible role that manages [swap](https://wiki.debian.org/Swap) with [dphys-swapfile](http://neil.franklin.ch/Projects/dphys-swapfile/) on Raspberry Pi OS (Debian Bullseye).
-
-## Install
-
-```
-$ ansible-galaxy install escalate.swap
-```
+An Ansible role that manages [swap](https://wiki.debian.org/Swap) with [dphys-swapfile](http://neil.franklin.ch/Projects/dphys-swapfile/) on Raspberry Pi OS (Debian Bookworm).
 
 ## Role Variables
 
@@ -19,7 +13,13 @@ Please see [defaults/main.yml](https://github.com/escalate/ansible-raspberry-swa
 This role relies on the following dependencies:
 
 * Roles: None
-* Collections: [collections.yml](https://github.com/escalate/ansible-raspberry-swap/blob/master/collections.yml)
+* Collections: [requirements.yml](https://github.com/escalate/ansible-raspberry-swap/blob/master/requirements.yml)
+
+## Installation
+
+```
+$ ansible-galaxy role install escalate.swap
+```
 
 ## Example Playbook
 

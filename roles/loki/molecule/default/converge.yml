@@ -6,6 +6,8 @@
     loki_docker_labels:
       maintainer: me@example.com
     loki_docker_network: internal
+    loki_docker_publish_ports:
+      - 127.0.0.1:3100:3100
     loki_data_path: /var/lib/loki
     loki_etc_path: /etc/loki
     loki_config: {}

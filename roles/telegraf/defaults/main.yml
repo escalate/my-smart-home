@@ -17,52 +17,53 @@ telegraf_config: |
     interval = "20s"
 
   # Read metrics about cpu usage
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/cpu/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/cpu/README.md
   [[inputs.cpu]]
 
   # Read metrics about disk usage by mount point
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/disk/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/disk/README.md
   [[inputs.disk]]
+    ignore_fs = ["nsfs"]
 
   # Read metrics about disk IO by device
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/diskio/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/diskio/README.md
   [[inputs.diskio]]
 
   # Generic HTTP write listener
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/http_listener_v2/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/http_listener_v2/README.md
   [[inputs.http_listener_v2]]
     service_address = ":8080"
 
   # Get kernel statistics from /proc/stat
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/kernel/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/kernel/README.md
   [[inputs.kernel]]
 
   # Read metrics about memory usage
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/mem/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/mem/README.md
   [[inputs.mem]]
 
   # Read metrics about network interface usage
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/net/NET_README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/net/NET_README.md
   [[inputs.net]]
 
   # Get the number of processes and group them by status
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/processes/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/processes/README.md
   [[inputs.processes]]
 
   # Generic socket listener capable of handling multiple socket types.
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/socket_listener/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/socket_listener/README.md
   [[inputs.socket_listener]]
     service_address = "udp://:8094"
 
   # Read metrics about swap memory usage
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/swap/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/swap/README.md
   [[inputs.swap]]
 
   # Read metrics about system load & uptime
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/inputs/system/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/inputs/system/README.md
   [[inputs.system]]
 
-  # https://github.com/influxdata/telegraf/blob/release-1.19/plugins/outputs/influxdb_v2/README.md
+  # https://github.com/influxdata/telegraf/blob/master/plugins/outputs/influxdb_v2/README.md
   [[outputs.influxdb_v2]]
     urls = ["http://influxdb:8086"]
     organization = "my-org"

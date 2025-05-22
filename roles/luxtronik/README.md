@@ -2,7 +2,7 @@
 
 # Ansible Role: Raspberry - Luxtronik
 
-An Ansible role that manages Luxtronik statistics backup on Raspberry Pi OS (Debian Bullseye).
+An Ansible role that manages Luxtronik statistics backup on Raspberry Pi OS (Debian Bookworm).
 
 ## Install
 

@@ -1,6 +1,7 @@
 roles:
-  - name: common
-    src: escalate.common
+  - name: escalate.common
+  - name: escalate.cron
 
-  - name: cron
-    src: escalate.cron
+collections:
+  - name: community.docker
+  - name: community.general

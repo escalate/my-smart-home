@@ -3,3 +3,4 @@
     name: telegraf
     state: restarted
     daemon_reload: true
+  when: not telegraf_service_started.changed

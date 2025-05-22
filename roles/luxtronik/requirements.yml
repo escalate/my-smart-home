@@ -1,6 +1,3 @@
 roles:
-  - name: common
-    src: escalate.common
-
-  - name: cron
-    src: escalate.cron
+  - name: escalate.common
+  - name: escalate.cron

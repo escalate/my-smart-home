@@ -3,3 +3,4 @@
     name: traefik
     state: restarted
     daemon_reload: true
+  when: not traefik_service_started.changed

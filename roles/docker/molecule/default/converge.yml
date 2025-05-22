@@ -1,11 +1,13 @@
 - name: Converge
   hosts: all
   vars:
+    docker_system_prune_cron: true
     docker_daemon_json:
       live-restore: true
       log-driver: local
       log-opts:
         max-size: 100m
+        max-file: "5"
     docker_networks:
       - name: internal
         subnet: 172.25.0.0/16

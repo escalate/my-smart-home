@@ -62,15 +62,21 @@
     mode: 0644
   notify: Restart influxdb service
 
-- name: Start and enable service
+- name: Start service
   ansible.builtin.systemd:
     name: influxdb
     state: started
+    daemon_reload: true
+  register: influxdb_service_started
+
+- name: Enable service
+  ansible.builtin.systemd:
+    name: influxdb
     enabled: true
     daemon_reload: true
 
 - name: Force all notified handlers to run at this point
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Wait for service to become available
   ansible.builtin.uri:
@@ -82,7 +88,7 @@
 
 - name: Initialize service
   ansible.builtin.command: |
-    docker exec --interactive influxdb.service \
+    docker exec --interactive influxdb \
     influx setup \
     --username '{{ influxdb_primary_user }}' \
     --password '{{ influxdb_primary_user_password }}' \
@@ -95,7 +101,7 @@
 
 - name: List users
   ansible.builtin.command: |
-    docker exec --interactive influxdb.service \
+    docker exec --interactive influxdb \
     influx user list \
     --json
   failed_when: false
@@ -104,18 +110,19 @@
 
 - name: Create users
   ansible.builtin.command: |
-    docker exec --interactive influxdb.service \
+    docker exec --interactive influxdb \
     influx user create \
     --name '{{ item.name }}' \
     --password '{{ item.password }}' \
     --org '{{ influxdb_primary_organization_name }}'
   when: item.name not in (influxdb_user_list.stdout | from_json | map(attribute='name'))
+  changed_when: false
   loop: "{{ influxdb_users }}"
   no_log: true
 
 - name: List buckets
   ansible.builtin.command: |
-    docker exec --interactive influxdb.service \
+    docker exec --interactive influxdb \
     influx bucket list \
     --org '{{ influxdb_primary_organization_name }}' \
     --json
@@ -125,18 +132,19 @@
 
 - name: Create buckets
   ansible.builtin.command: |
-    docker exec --interactive influxdb.service \
+    docker exec --interactive influxdb \
     influx bucket create \
     --name '{{ item.name }}' \
     --description '{{ item.description }}' \
     --org '{{ influxdb_primary_organization_name }}' \
     --retention '{{ item.retention }}'
   when: item.name not in (influxdb_bucket_list.stdout | from_json | map(attribute='name'))
+  changed_when: false
   loop: "{{ influxdb_buckets }}"
 
 - name: List authorizations
   ansible.builtin.command: |
-    docker exec --interactive influxdb.service \
+    docker exec --interactive influxdb \
     influx auth list \
     --org '{{ influxdb_primary_organization_name }}' \
     --json
@@ -147,12 +155,13 @@
 
 - name: Create authorizations
   ansible.builtin.command: |
-    docker exec --interactive influxdb.service \
+    docker exec --interactive influxdb \
     influx auth create \
     --user '{{ item.user }}' \
     --description '{{ item.description }}' \
     --{{ item.permissions | join(' --') }}
   when: item.user not in (influxdb_auth_list.stdout | from_json | map(attribute='userName'))
+  changed_when: false
   loop: "{{ influxdb_authorizations }}"
   no_log: true
 

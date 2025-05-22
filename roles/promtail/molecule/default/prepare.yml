@@ -6,14 +6,15 @@
       log-driver: local
       log-opts:
         max-size: 100m
+        max-file: "5"
       storage-driver: vfs
     docker_networks:
       - name: internal
         subnet: 172.25.0.0/16
   roles:
-    - role: common
+    - role: escalate.common
       tags: common
-    - role: cron
+    - role: escalate.cron
       tags: cron
-    - role: docker
+    - role: escalate.docker
       tags: docker

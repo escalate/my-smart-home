@@ -50,9 +50,12 @@ def test_home_assistant_service(host):
 
 def test_home_assistant_docker_container(host):
     """Check Home Assistant docker container"""
-    d = host.docker("home-assistant.service").inspect()
+    d = host.docker("home-assistant").inspect()
     assert d["HostConfig"]["Memory"] == 1073741824
-    assert d["Config"]["Image"] == "homeassistant/home-assistant:latest"
+    assert d["Config"]["Image"] == (
+        "ghcr.io/home-assistant/home-assistant"
+        ":latest"
+    )
     assert d["Config"]["Labels"]["maintainer"] == "me@example.com"
     assert "PACKAGES=iputils" in d["Config"]["Env"]
     assert "internal" in d["NetworkSettings"]["Networks"]

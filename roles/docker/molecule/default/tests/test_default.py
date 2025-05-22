@@ -13,6 +13,7 @@ def test_daemon_config(host):
         "  \"live-restore\": true,\n"
         "  \"log-driver\": \"local\",\n"
         "  \"log-opts\": {\n"
+        "    \"max-file\": \"5\",\n"
         "    \"max-size\": \"100m\"\n"
         "  }\n"
         "}"
@@ -22,7 +23,7 @@ def test_daemon_config(host):
 
 def test_cron_job(host):
     """Check cron job"""
-    cmd = "docker system prune --all --volumes --force"
+    cmd = "/usr/local/bin/docker-system-prune.sh"
     f = host.file("/var/spool/cron/crontabs/root").content_string
     assert cmd in f
 

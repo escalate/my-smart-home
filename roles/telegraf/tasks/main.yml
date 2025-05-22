@@ -56,9 +56,15 @@
     mode: 0644
   notify: Restart telegraf service
 
-- name: Start and enable service
+- name: Start service
   ansible.builtin.systemd:
     name: telegraf
     state: started
+    daemon_reload: true
+  register: telegraf_service_started
+
+- name: Enable service
+  ansible.builtin.systemd:
+    name: telegraf
     enabled: true
     daemon_reload: true

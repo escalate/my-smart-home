@@ -6,6 +6,9 @@
     traefik_docker_labels:
       maintainer: me@example.com
     traefik_docker_network: internal
+    traefik_docker_publish_ports:
+      - 80:80
+      - 443:443
     traefik_data_path: /var/lib/traefik
     traefik_etc_path: /etc/traefik
     traefik_config:

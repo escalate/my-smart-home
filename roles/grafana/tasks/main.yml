@@ -109,15 +109,21 @@
     mode: 0644
   notify: Restart grafana service
 
-- name: Start and enable service
+- name: Start service
   ansible.builtin.systemd:
     name: grafana
     state: started
+    daemon_reload: true
+  register: grafana_service_started
+
+- name: Enable service
+  ansible.builtin.systemd:
+    name: grafana
     enabled: true
     daemon_reload: true
 
 - name: Force all notified handlers to run at this point
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Wait for service to become available
   ansible.builtin.uri:
@@ -163,7 +169,7 @@
 
 - name: Install plugins
   ansible.builtin.command: |
-    docker exec --interactive grafana.service \
+    docker exec --interactive grafana \
     grafana-cli plugins install {{ item }}
   args:
     creates: "{{ grafana_data_path }}/plugins/{{ item }}"

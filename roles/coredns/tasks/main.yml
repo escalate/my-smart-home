@@ -56,10 +56,16 @@
     mode: 0644
   notify: Restart coredns service
 
-- name: Start and enable service
+- name: Start service
   ansible.builtin.systemd:
     name: coredns
     state: started
+    daemon_reload: true
+  register: coredns_service_started
+
+- name: Enable service
+  ansible.builtin.systemd:
+    name: coredns
     enabled: true
     daemon_reload: true
 

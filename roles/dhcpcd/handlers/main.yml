@@ -3,3 +3,4 @@
     name: dhcpcd
     state: restarted
     daemon_reload: true
+  when: not dhcpcd_service_started.changed
