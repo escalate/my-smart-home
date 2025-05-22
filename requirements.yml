@@ -102,7 +102,7 @@ roles:
   # https://galaxy.ansible.com/escalate/coredns
   - name: coredns
     src: escalate.coredns
-    version: v1.3.0
+    version: v1.7.0
 
   # https://galaxy.ansible.com/escalate/luxtronik
   - name: luxtronik
