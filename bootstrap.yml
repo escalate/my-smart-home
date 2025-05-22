@@ -102,6 +102,9 @@
         src: /etc/hostname
         dest: /mnt/usbdisk/etc/hostname
         remote_src: true
+        mode: "0644"
+        owner: root
+        group: root
 
     - name: Create Ansible installation cron job
       ansible.builtin.cron:
