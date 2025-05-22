@@ -1,4 +1,4 @@
-- name Smart Home
+- name: Smart Home
   hosts: all
   roles:
     - role: cmdline
