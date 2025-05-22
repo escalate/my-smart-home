@@ -1,7 +1,4 @@
-# Bootmodes: https://www.raspberrypi.org/documentation/hardware/raspberrypi/bootmodes/README.md
-# Boot from USB: https://www.raspberrypi.org/forums/viewtopic.php?f=29&t=44177
-
-- name: Bootstrap
+- name: Bootstrap and switch to USB disk boot
   hosts: all
   tasks:
     - name: Install parted package
@@ -23,11 +20,12 @@
         state: absent
       loop: "{{ sda_info.partitions }}"
 
-    # Using fdisk because parted v3.2-25 performs on Debian Buster not idempotent
-    - name: Create partition on disk
-      ansible.builtin.shell:
-        cmd: echo -e "o\nn\np\n1\n81920\n\nw" | fdisk /dev/sda
-      changed_when: false
+    - name: Create primary partition
+      community.general.parted:
+        device: /dev/sda
+        number: 1
+        state: present
+        fs_type: ext4
 
     - name: Create ext4 filesystem on partition
       community.general.filesystem:
@@ -46,14 +44,13 @@
     - name: Get Raspberry Pi OS image archive
       ansible.builtin.find:
         paths: /var/tmp
-        patterns: "*.zip"
+        patterns: "*.xz"
       register: raspberry_pi_os_image_archive
 
     - name: Unarchive Raspberry Pi OS image archive
-      ansible.builtin.unarchive:
-        src: "{{ raspberry_pi_os_image_archive.files[0].path }}"
-        dest: /var/tmp
-        remote_src: true
+      ansible.builtin.command:
+        cmd: "xz --decompress {{ raspberry_pi_os_image_archive.files[0].path }}"
+      changed_when: false
 
     - name: Get Raspberry Pi OS image file
       ansible.builtin.find:
@@ -102,24 +99,24 @@
         src: /etc/hostname
         dest: /mnt/usbdisk/etc/hostname
         remote_src: true
-        mode: "0644"
         owner: root
         group: root
+        mode: "0644"
 
-    - name: Create Ansible installation cron job
+    - name: Create Ansible GitOps boostrap cron job
       ansible.builtin.cron:
-        name: Ansible installation
+        name: Ansible GitOps bootstrap
         special_time: reboot
         user: root
-        job: "sleep 60 && export $(cat /boot/gitops-bootstrap.env | xargs) && /boot/gitops-install-and-configure-ansible.sh 2>&1 | logger --tag ansible-installation"
+        job: "sleep 60 && export $(cat /boot/firmware/gitops-bootstrap.env | xargs) && /boot/firmware/gitops-install-and-configure-ansible.sh 2>&1 | logger --tag ansible-bootstrap"
         cron_file: /mnt/usbdisk/etc/crontab
 
-    - name: Create Ansible deployment cron job
+    - name: Create Ansible GitOps deployment cron job
       ansible.builtin.cron:
-        name: Ansible deployment
+        name: Ansible GitOps deployment
         minute: "*/10"
         user: root
-        job: "ansible-pull --url=https://github.com/escalate/my-smart-home.git --directory=/etc/gitops --inventory=/etc/ansible/hosts site.yml 2>&1 | logger --tag ansible-deployment"
+        job: "ansible-pull --url=https://github.com/escalate/my-smart-home.git --directory=/etc/gitops --inventory=/etc/ansible/hosts.yml --only-if-changed --track-subs site.yml 2>&1 | logger --tag ansible-deployment"
         cron_file: /mnt/usbdisk/etc/crontab
 
     - name: Regather facts
@@ -162,14 +159,22 @@
     # Using PARTUUID of USB disk because with UUID the system does not boot
     - name: Switch to USB disk root partition
       ansible.builtin.replace:
-        path: /boot/cmdline.txt
+        path: /boot/firmware/cmdline.txt
         regexp: "root=PARTUUID=[-a-z0-9]* "
         replace: "root=PARTUUID={{ usbdisk_partuuid.stdout }} "
 
     - name: Activate SSHD on boot
       ansible.builtin.file:
-        path: /boot/ssh
+        path: /boot/ssh.txt
         state: touch
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Add default user pi with password raspberry
+      ansible.builtin.copy:
+        content: "pi:$6$MVEGdHTqed7c7za0$ESdhSXBIjSTVWKY7YWBII3UjQM6LhFur1alIXWJ9/Hf4mxgZqIuyX1yEsVf/qct4/sT0NStmvIPZs5de3SNNy0"
+        dest: /boot/userconf.txt
         owner: root
         group: root
         mode: "0755"
