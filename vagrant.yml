@@ -3,8 +3,11 @@
   tasks:
     - name: Create empty kernel cmdline file
       ansible.builtin.copy:
-        dest: /boot/cmdline.txt
         content: ""
+        dest: /boot/cmdline.txt
+        mode: "0755"
+        owner: root
+        group: root
 
     - name: Create special groups
       ansible.builtin.group:
