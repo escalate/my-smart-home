@@ -1,3 +1,9 @@
+- name: Install package
+  ansible.builtin.apt:
+    name: systemd-timesyncd
+    state: present
+    update_cache: true
+
 - name: Configure NTP servers
   community.general.ini_file:
     path: /etc/systemd/timesyncd.conf

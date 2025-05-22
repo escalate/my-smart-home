@@ -37,7 +37,7 @@ def test_coredns_service(host):
 
 def test_coredns_docker_container(host):
     """Check CoreDNS docker container"""
-    d = host.docker("coredns.service").inspect()
+    d = host.docker("coredns").inspect()
     assert d["HostConfig"]["Memory"] == 1073741824
     assert d["Config"]["Image"] == "coredns/coredns:latest"
     assert d["Config"]["Labels"]["maintainer"] == "me@example.com"

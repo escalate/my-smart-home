@@ -1,14 +1,8 @@
-[![Molecule](https://github.com/escalate/ansible-raspberry-cmdline/actions/workflows/molecule.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/ansible-raspberry-cmdline/actions/workflows/molecule.yml)
+[![Test](https://github.com/escalate/ansible-raspberry-cmdline/actions/workflows/test.yml/badge.svg?branch=master&event=push)](https://github.com/escalate/ansible-raspberry-cmdline/actions/workflows/test.yml)
 
 # Ansible Role: Raspberry - Cmdline
 
-An Ansible role that manages the [Linux kernel command line](https://www.raspberrypi.com/documentation/computers/configuration.html#the-kernel-command-line) on Raspberry Pi OS (Debian Bullseye).
-
-## Install
-
-```
-$ ansible-galaxy install escalate.cmdline
-```
+An Ansible role that manages the [Linux kernel command line](https://www.raspberrypi.com/documentation/computers/configuration.html#the-kernel-command-line) on Raspberry Pi OS (Debian Bullseye & Bookworm).
 
 ## Role Variables
 
@@ -20,6 +14,12 @@ This role relies on the following dependencies:
 
 * Roles: None
 * Collections: None
+
+## Installation
+
+```
+$ ansible-galaxy role install escalate.cmdline
+```
 
 ## Example Playbook
 

@@ -6,6 +6,10 @@
   community.general.timezone:
     name: "{{ common_timezone }}"
 
+- name: Persist timezone to /etc/timezone
+  ansible.builtin.command: dpkg-reconfigure --frontend noninteractive tzdata
+  changed_when: false
+
 - name: Install basic packages
   ansible.builtin.apt:
     name: "{{ packages }}"
