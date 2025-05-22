@@ -51,7 +51,7 @@ roles:
 	rm --recursive --force roles/
 	until ansible-galaxy role install \
 		--roles-path="roles/" \
-		--role-file="requirements.yml";
+		--role-file="requirements.yml"; \
 	do \
 		echo "Download of Ansible roles failed. Try again"; \
 	done
@@ -60,7 +60,7 @@ roles:
 collections:
 	rm --recursive --force ~/.ansible/collections/
 	until ansible-galaxy collection install \
-		--requirements-file="requirements.yml";
+		--requirements-file="requirements.yml"; \
 	do \
 		echo "Download of Ansible collections failed. Try again"; \
 	done
