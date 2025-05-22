@@ -6,7 +6,7 @@ The central repository for managing my Smart Home on the Raspberry Pi based on t
 
 ## Raspberry Pi OS Lite custom image
 
-URL: https://github.com/escalate/ansible-gitops-raspberry-pi-os-custom-image
+URL: https://github.com/escalate/ansible-gitops-raspberry-pi-os-custom-disk-image
 
 ## Manual Ansible deployment
 
