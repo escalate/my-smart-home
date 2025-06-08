@@ -1,6 +1,0 @@
-[tool.black]
-preview = true
-extend-exclude = '^/collections|^/roles'
-
-[tool.isort]
-profile = "black"
