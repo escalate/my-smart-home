@@ -1,1 +1,2 @@
-- import_playbook: smart_home.yml
+- name: Smart Home
+  ansible.builtin.import_playbook: smart_home.yml
