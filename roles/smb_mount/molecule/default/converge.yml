@@ -1,8 +1,0 @@
-- name: Converge
-  hosts: all
-  vars:
-    smb_mount_path: /mnt
-    smb_mount_list: []
-  roles:
-    - role: ansible-raspberry-smb-mount
-      tags: smbmount

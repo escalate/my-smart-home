@@ -1,6 +1,0 @@
-- name: Restart coredns service
-  ansible.builtin.systemd:
-    name: coredns
-    state: restarted
-    daemon_reload: true
-  when: not coredns_service_started.changed

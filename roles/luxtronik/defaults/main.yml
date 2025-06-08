@@ -1,3 +1,0 @@
-luxtronik_ip_address: 127.0.0.1
-luxtronik_backup_path: /var/backups/luxtronik
-luxtronik_backup_cron_enabled: true

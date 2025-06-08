@@ -1,3 +1,0 @@
-roles:
-  - name: escalate.common
-  - name: escalate.cron

@@ -1,7 +1,0 @@
-{% for p in cmdline_parameters -%}
-{%- if "root=" in p -%}
-{{ cmdline_content | regex_search('root=(PART)?UUID=[-a-z0-9]*') }}{% raw %} {% endraw %}
-{%- else -%}
-{{ p }}{% raw %} {% endraw %}
-{%- endif -%}
-{%- endfor %}

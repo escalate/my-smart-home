@@ -1,7 +1,0 @@
-- name: Prepare
-  hosts: all
-  roles:
-    - role: escalate.common
-      tags: common
-    - role: escalate.cron
-      tags: cron

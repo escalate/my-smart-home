@@ -1,7 +1,0 @@
-roles:
-  - name: escalate.common
-  - name: escalate.cron
-
-collections:
-  - name: community.docker
-  - name: community.general

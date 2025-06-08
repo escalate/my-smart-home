@@ -1,8 +1,0 @@
-- name: Converge
-  hosts: all
-  vars:
-    sshd_allow_groups:
-      - operator
-  roles:
-    - role: ansible-raspberry-sshd
-      tags: sshd

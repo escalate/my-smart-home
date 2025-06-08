@@ -1,5 +1,0 @@
-- name: Restart system
-  ansible.builtin.reboot:
-    msg: Reboot by ansible because the kernel boot parameters are changed
-    reboot_timeout: 300
-  when: ansible_virtualization_role != "guest"
