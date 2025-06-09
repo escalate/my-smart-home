@@ -116,7 +116,7 @@ collections:
 
   # https://galaxy.ansible.com/community/docker
   - name: community.docker
-    version: 4.6.0
+    version: 4.6.1
 
   # https://galaxy.ansible.com/community/general
   - name: community.general
