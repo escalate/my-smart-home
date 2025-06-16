@@ -120,4 +120,4 @@ collections:
 
   # https://galaxy.ansible.com/community/general
   - name: community.general
-    version: 10.7.0
+    version: 11.0.0
