@@ -77,14 +77,14 @@ lint:
 	yamllint --strict --config-file .yamllint .
 	ansible-lint .
 ifndef CI
-	find . -maxdepth 1 -name "*.yml" -not -name "requirements.yml" | xargs -n1 ansible-playbook --inventory="hosts" --syntax-check
+	find . -maxdepth 1 -name "*.yml" -not -name "requirements.yml" | xargs -n1 ansible-playbook --inventory="hosts.yml" --syntax-check
 endif
 
 .PHONY: bootstrap
 bootstrap:
 	ansible-playbook \
 		$(ANSIBLE_ARGS) \
-		--inventory="hosts" \
+		--inventory="hosts.yml" \
 		--limit="$(ANSIBLE_LIMIT)" \
 		bootstrap.yml
 
@@ -92,7 +92,7 @@ bootstrap:
 update:
 	ansible-playbook \
 		$(ANSIBLE_ARGS) \
-		--inventory="hosts" \
+		--inventory="hosts.yml" \
 		--limit="$(ANSIBLE_LIMIT)" \
 		update.yml
 
@@ -100,6 +100,6 @@ update:
 deploy:
 	ansible-playbook \
 		$(ANSIBLE_ARGS) \
-		--inventory="hosts" \
+		--inventory="hosts.yml" \
 		--limit="$(ANSIBLE_LIMIT)" \
 		$(ANSIBLE_PLAYBOOK)
