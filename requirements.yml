@@ -17,7 +17,7 @@ roles:
   # https://galaxy.ansible.com/escalate/cron
   - name: cron
     src: escalate.cron
-    version: v2.0.0
+    version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/locale
   - name: locale
