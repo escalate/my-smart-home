@@ -9,11 +9,6 @@ roles:
     src: escalate.common
     version: v2.1.0
 
-  # https://galaxy.ansible.com/escalate/dhcpcd
-  - name: dhcpcd
-    src: escalate.dhcpcd
-    version: v2.1.0
-
   # https://galaxy.ansible.com/escalate/swap
   - name: swap
     src: escalate.swap

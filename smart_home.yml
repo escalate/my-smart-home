@@ -5,8 +5,6 @@
       tags: cmdline
     - role: common
       tags: common
-    - role: dhcpcd
-      tags: dhcpcd
     - role: swap
       tags: swap
     - role: cron
