@@ -27,7 +27,7 @@ roles:
   # https://galaxy.ansible.com/escalate/systemd_timesyncd
   - name: systemd_timesyncd
     src: escalate.systemd_timesyncd
-    version: v2.1.0
+    version: v2.2.0
 
   # https://galaxy.ansible.com/escalate/sshd
   - name: sshd
