@@ -11,7 +11,7 @@
       tags: cron
     - role: locale
       tags: locale
-    - role: timesyncd
+    - role: systemd_timesyncd
       tags: timesyncd
     - role: sshd
       tags: sshd

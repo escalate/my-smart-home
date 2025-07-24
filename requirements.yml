@@ -24,9 +24,9 @@ roles:
     src: escalate.locale
     version: v2.0.0
 
-  # https://galaxy.ansible.com/escalate/timesyncd
-  - name: timesyncd
-    src: escalate.timesyncd
+  # https://galaxy.ansible.com/escalate/systemd_timesyncd
+  - name: systemd_timesyncd
+    src: escalate.systemd_timesyncd
     version: v2.1.0
 
   # https://galaxy.ansible.com/escalate/sshd
