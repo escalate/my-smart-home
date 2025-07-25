@@ -1,45 +1,45 @@
 - name: Smart Home
   hosts: all
   roles:
-    - role: escalate.cmdline
+    - role: escalate.raspberry.cmdline
       tags: cmdline
-    - role: escalate.common
+    - role: escalate.raspberry.common
       tags: common
-    - role: escalate.swap
+    - role: escalate.raspberry.swap
       tags: swap
-    - role: escalate.cron
+    - role: escalate.raspberry.cron
       tags: cron
-    - role: escalate.locale
+    - role: escalate.raspberry.locale
       tags: locale
-    - role: escalate.systemd_timesyncd
+    - role: escalate.raspberry.systemd_timesyncd
       tags: timesyncd
-    - role: escalate.sshd
+    - role: escalate.raspberry.sshd
       tags: sshd
-    - role: escalate.ssh_login
+    - role: escalate.raspberry.ssh_login
       tags: sshlogin
-    - role: escalate.msmtp
+    - role: escalate.raspberry.msmtp
       tags: msmtp
-    - role: escalate.smb_mount
+    - role: escalate.raspberry.smb_mount
       tags: smbmount
-    - role: escalate.remote_backup
+    - role: escalate.raspberry.remote_backup
       tags: remotebackup
-    - role: escalate.docker
+    - role: escalate.raspberry.docker
       tags: docker
-    - role: escalate.influxdb
+    - role: escalate.raspberry.influxdb
       tags: influxdb
-    - role: escalate.grafana
+    - role: escalate.raspberry.grafana
       tags: grafana
-    - role: escalate.home_assistant
+    - role: escalate.raspberry.home_assistant
       tags: homeassistant
-    - role: escalate.telegraf
+    - role: escalate.raspberry.telegraf
       tags: telegraf
-    - role: escalate.loki
+    - role: escalate.raspberry.loki
       tags: loki
-    - role: escalate.promtail
+    - role: escalate.raspberry.promtail
       tags: promtail
-    - role: escalate.traefik
+    - role: escalate.raspberry.traefik
       tags: traefik
-    - role: escalate.coredns
+    - role: escalate.raspberry.coredns
       tags: coredns
     - role: escalate.luxtronik
       tags: luxtronik
