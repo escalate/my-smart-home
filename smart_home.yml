@@ -1,45 +1,45 @@
 - name: Smart Home
   hosts: all
   roles:
-    - role: cmdline
+    - role: escalate.cmdline
       tags: cmdline
-    - role: common
+    - role: escalate.common
       tags: common
-    - role: swap
+    - role: escalate.swap
       tags: swap
-    - role: cron
+    - role: escalate.cron
       tags: cron
-    - role: locale
+    - role: escalate.locale
       tags: locale
-    - role: systemd_timesyncd
+    - role: escalate.systemd_timesyncd
       tags: timesyncd
-    - role: sshd
+    - role: escalate.sshd
       tags: sshd
-    - role: ssh_login
+    - role: escalate.ssh_login
       tags: sshlogin
-    - role: msmtp
+    - role: escalate.msmtp
       tags: msmtp
-    - role: smb_mount
+    - role: escalate.smb_mount
       tags: smbmount
-    - role: remote_backup
+    - role: escalate.remote_backup
       tags: remotebackup
-    - role: docker
+    - role: escalate.docker
       tags: docker
-    - role: influxdb
+    - role: escalate.influxdb
       tags: influxdb
-    - role: grafana
+    - role: escalate.grafana
       tags: grafana
-    - role: home_assistant
+    - role: escalate.home_assistant
       tags: homeassistant
-    - role: telegraf
+    - role: escalate.telegraf
       tags: telegraf
-    - role: loki
+    - role: escalate.loki
       tags: loki
-    - role: promtail
+    - role: escalate.promtail
       tags: promtail
-    - role: traefik
+    - role: escalate.traefik
       tags: traefik
-    - role: coredns
+    - role: escalate.coredns
       tags: coredns
-    - role: luxtronik
+    - role: escalate.luxtronik
       tags: luxtronik

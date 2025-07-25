@@ -1,7 +1,6 @@
 roles:
   # https://galaxy.ansible.com/ui/standalone/roles/escalate/luxtronik/
-  - name: luxtronik
-    src: escalate.luxtronik
+  - name: escalate.luxtronik
     version: v2.0.0
 
 collections:
