@@ -6,4 +6,4 @@ roles:
 collections:
   # https://galaxy.ansible.com/ui/repo/published/escalate/raspberry/
   - name: escalate.raspberry
-    version: 1.20.0
+    version: 1.21.0
